@@ -29,6 +29,10 @@ Summary across all six papers:
   seed to a population: the seed plus its single-segment ablations, each with
   a measured loss delta. Ablative rather than lexical variation, bounded by
   the seed's content.
+- Voronov 2024 shows that a population's ranking is specific to the
+  executor, the scoring rule, and the demonstrations: top-10 formats rarely
+  overlap even within a model family, and template components have no stable
+  individual effect. Populations do not transfer; re-derive per setting.
 
 ## 2022, Zhou: Large Language Models are Human-Level Prompt Engineers
 
@@ -258,4 +262,34 @@ contain anything the seed did not, and the segmenter's choice of units bounds
 the diversity. A natural combination is to use masked variants as the
 structured core of a population and sampled or paraphrased candidates for
 content the seed lacks.
+
+## 2024, Voronov: Mind Your Format: Towards Consistent Evaluation of In-Context Learning Improvements
+
+Saved as [2401.06766v3.md](../2401.06766v3.md). No optimizer, but the
+strongest evidence here that starting prompts are setting-specific.
+
+The template space is a small combinatorial grid (verbalizers and separators),
+so a random sample of 10 templates is a ready-made population and 30 give a
+near-complete ranking. Three results matter for population design:
+
+- The best templates do not transfer. Intersection-over-union of the top-10
+  templates between models exceeded 0.5 for only a few pairs, including
+  models in the same family trained on the same data. Transfer between
+  prediction methods (Direct, Channel, Calibration) was similarly low, and
+  changing the demonstration set, even adding demonstrations chosen by the
+  same method, reordered the top templates. A population tuned for one
+  executor or scoring rule has to be re-derived for another; this is the
+  same conclusion Zhou 2022 reached for instructions.
+- The top of the ranking is flat. The tenth-best of 30 templates averaged
+  about 90 percent of the best template's score, so a modest random sample
+  reliably contains a near-best member, which is the same diminishing-return
+  shape Zhou 2022 saw for instruction samples.
+- Components do not have stable individual effects. No verbalizer or
+  separator was consistently bad, part rankings flipped between models, and
+  good templates were assembled from parts that were individually mediocre.
+  This is a caution for the masking note under Zhao 2025 above: a
+  single-segment loss delta is specific to the executor and to the other
+  segments present, so a masked population's attribution labels should be
+  treated as local to the setting they were measured in, not as properties of
+  the segments.
 

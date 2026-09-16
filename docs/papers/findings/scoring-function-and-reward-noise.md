@@ -29,6 +29,10 @@ Summary:
   cheapest and least noisy score in the set, but requires gold outputs, full
   log-probabilities, and at least a few examples to avoid lexical
   overfitting.
+- Voronov 2024 measures how much of a likelihood-based score is format
+  noise: up to 35 percent relative spread across templates on strong models,
+  reported method gains inside that spread, and a 5-template probability
+  ensemble that raises the mean and cuts the variance.
 
 ## 2026, Gao: p1: Better Prompt Optimization with Fewer Prompts
 
@@ -92,6 +96,47 @@ text, so our per-item RC outputs already contain the PMPO-style signal for
 every candidate we evaluate, and the MC and RC accuracies on the same items
 let us measure directly how well a loss-based ranking agrees with an
 accuracy-based one.
+
+## 2024, Voronov: Mind Your Format: Towards Consistent Evaluation of In-Context Learning Improvements
+
+Saved as [2401.06766v3.md](../2401.06766v3.md). An evaluation
+study rather than an optimizer, but the clearest measurement in the set of
+how much score variance comes from prompt format alone.
+
+Setup: 21 base and instruct models (0.77B to 70B), 4 classification datasets,
+templates built from a grid of input verbalizer, output verbalizer,
+intra-separator, and inter-separator (168 to 216 combinations), scored by
+label-token likelihood (their Direct method) with 2 or 4 demonstrations,
+10 random templates per seed and 3 demonstration seeds.
+
+Findings that bear on scoring:
+
+- Format alone moves accuracy by a large fraction of its value. Even Llama 2
+  70B and Falcon 40B had standard deviations across templates up to 35
+  percent of the mean, and a poor template took strong models to chance.
+  Reported gains of several in-context-learning methods were within the
+  spread of templates for the plain baseline, so a method-versus-method
+  comparison on one template is mostly template luck.
+- The prediction method changes both mean and variance. Channel (score the
+  input given the label) and Calibration (correct for label prior) usually
+  beat Direct on average, but Calibration was the most template-sensitive,
+  and for many settings Direct's best templates matched the others. Which
+  scoring rule you use changes which prompts look best.
+- Template ensembles reduce the noise. Averaging label probabilities across
+  5 random templates raised mean accuracy for every model and prediction
+  method and cut the template-induced variance; majority voting over labels
+  worked poorly on many-class tasks. Gains saturate at 4 or 5 templates;
+  smaller ensembles can drop if one bad template is drawn. Cost is N times
+  the forward passes.
+- No component is safely prunable. Decomposing templates into parts showed
+  every part with high variance, part rankings that flip between models, and
+  optimal templates built from individually suboptimal parts.
+
+Local relevance: their Direct method is the same likelihood-over-choices
+scoring family as OLMES RC and MC, and their 4-shot classification setting is
+close to OLMES's 5-shot ARC. Their 35 percent relative spread is a benchmark
+for how much of our per-prompt score variance to expect from format rather
+than content when we compare candidate system prompts.
 
 ## 2022, Zhou: Large Language Models are Human-Level Prompt Engineers
 

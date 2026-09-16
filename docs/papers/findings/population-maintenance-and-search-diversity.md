@@ -29,6 +29,9 @@ Summary:
   improves; it is the greedy baseline that GEPA's Pareto ablation argues
   against, kept viable by cheap scoring rather than by any diversity
   mechanism.
+- Voronov 2024 reframes the end of the search: averaging predictions over
+  4 or 5 retained candidates beat picking one, with lower variance, at N
+  times the inference cost.
 
 ## 2025, Agrawal: GEPA: Reflective Prompt Evolution Can Outperform Reinforcement Learning
 
@@ -131,4 +134,20 @@ the only diversity is the temperature sampling of the 4 variants per hard
 example and the rotation of which 3 examples are hardest as the prompt
 changes. The paper does not report the acceptance rate or how often runs
 stall, but the case-study loss curve flattens after about 8 of 20 iterations.
+
+## 2024, Voronov: Mind Your Format: Towards Consistent Evaluation of In-Context Learning Improvements
+
+Saved as [2401.06766v3.md](../2401.06766v3.md). Offers an
+alternative to selecting one winner from a population: keep several and
+ensemble them.
+
+Template Ensembles average label probabilities across N randomly chosen
+formats at test time. Accuracy rose for every model and prediction method
+tested and template-induced variance fell, with gains saturating at N of 4
+or 5 and small ensembles occasionally dropping when a bad template was drawn.
+Majority voting was worse than probability averaging on many-class tasks. The
+cost is N forward passes per prediction. For an optimizer this suggests a
+different terminal step: rather than returning the single best candidate from
+the final pool, return the top few and ensemble, trading inference cost for
+robustness to the noise in whichever candidate happened to rank first.
 

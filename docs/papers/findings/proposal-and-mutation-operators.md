@@ -26,6 +26,9 @@ Summary:
   measure the loss change, and hand the table to the rewriter as a hint. It
   is the only operator in the set that measures rather than infers which part
   of the prompt to edit.
+- Voronov 2024 warns that component effects interact and flip across
+  executors, so per-component attribution and greedy single-part edits are
+  conditional on context.
 
 ## 2025, Agrawal: GEPA: Reflective Prompt Evolution Can Outperform Reinforcement Learning
 
@@ -160,3 +163,21 @@ its own samples. Qualitatively, the prompt it learned on AIME was a general
 reasoning-style instruction, whereas GEPA's on the same data contained
 question-specific guidance that the authors read as memorization of the
 training set.
+
+## 2024, Voronov: Mind Your Format: Towards Consistent Evaluation of In-Context Learning Improvements
+
+Saved as [2401.06766v3.md](../2401.06766v3.md). Not an operator paper, but
+its component analysis constrains how edit operators should be evaluated.
+
+Templates were decomposed into four parts and each part's score distribution
+measured with the others varying. Every part had high variance, the best
+choice for a part flipped between models (an output verbalizer that ranked
+first for Llama 2 70B was among the worst for Falcon 40B), and optimal
+templates contained individually suboptimal parts. Two consequences for
+operators that edit one component at a time, including differential mutation
+(Guo 2023) and mask-guided rewriting (Zhao 2025): a component's measured
+contribution is conditional on the rest of the prompt and on the executor,
+so an edit accepted in one context can be wrong after other edits land, and
+greedy per-component improvement can miss combinations that are only good
+together.
+
