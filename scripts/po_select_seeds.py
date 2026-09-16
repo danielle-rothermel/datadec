@@ -1,0 +1,45 @@
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Annotated
+
+import typer
+
+from datadec.po.gepa_jobs import DEFAULT_ROOT, rank_seeds, select_seeds, write_jobs
+from datadec.po.results import load_sweep
+from datadec.po.subsets import ItemSubset
+
+app = typer.Typer()
+
+
+@app.command()
+def main(
+    name: Annotated[str, typer.Option("--name")],
+    sweep_dir: Annotated[Path, typer.Option("--sweep-dir")],
+    train_subset: Annotated[Path, typer.Option("--train-subset")],
+    val_subset: Annotated[Path, typer.Option("--val-subset")],
+    n: Annotated[int, typer.Option("--n")] = 3,
+    metric: Annotated[str, typer.Option("--metric")] = "correct_prob",
+    max_metric_calls: Annotated[int, typer.Option("--max-metric-calls")] = 600,
+    formulations: Annotated[str | None, typer.Option("--formulations", help="restrict, e.g. rc")] = None,
+    reflection_model: Annotated[str, typer.Option("--reflection-model")] = "openai/gpt-5.1",
+    reflection_reasoning: Annotated[str, typer.Option("--reflection-reasoning")] = "medium",
+    device: Annotated[str, typer.Option("--device")] = "mps",
+    root: Annotated[Path, typer.Option("--root")] = DEFAULT_ROOT,
+) -> None:
+    """Rank a sweep's seeds per (model, formulation), pick the n best and n worst, write GEPA jobs."""
+    items = load_sweep(sweep_dir)["items"]
+    ranked = rank_seeds(items, metric=metric)
+    selected = select_seeds(ranked, n)
+    paths = write_jobs(
+        name=name, sweep_dir=sweep_dir, selected=selected,
+        train_subset=ItemSubset.load(train_subset), val_subset=ItemSubset.load(val_subset),
+        max_metric_calls=max_metric_calls, reflection_model=reflection_model, reflection_reasoning=reflection_reasoning,
+        device=device, formulations=tuple(formulations.split(",")) if formulations else None, root=root,
+    )
+    typer.echo(selected[["model", "formulation", "group", "rank", "format_id", "instruction_id", "score", "acc_raw"]].to_string(index=False))
+    typer.echo(f"wrote {len(paths)} jobs under {root / name / 'jobs'}")
+
+
+if __name__ == "__main__":
+    app()

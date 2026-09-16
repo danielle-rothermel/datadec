@@ -1,0 +1,88 @@
+"""Select best/worst seeds from a sweep and write GEPA job files."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pandas as pd
+
+from datadec.po.model_cards import model_card
+from datadec.po.subsets import ItemSubset
+
+DEFAULT_ROOT = Path.home() / "drotherm" / "data" / "runs" / "po" / "gepa"
+
+
+def rank_seeds(items: pd.DataFrame, *, metric: str = "correct_prob") -> pd.DataFrame:
+    """Mean metric per (model, revision, formulation, format_id, instruction_id), ranked within (model, formulation)."""
+    keys = ["model", "revision", "formulation", "format_id", "instruction_id"]
+    g = items.groupby(keys, dropna=False).agg(score=(metric, "mean"), acc_raw=("acc_raw", "mean"), n=("native_id", "size")).reset_index()
+    g["rank"] = g.groupby(["model", "revision", "formulation"])["score"].rank(ascending=False, method="first")
+    g["n_seeds"] = g.groupby(["model", "revision", "formulation"])["score"].transform("size")
+    return g.sort_values(["model", "revision", "formulation", "rank"]).reset_index(drop=True)
+
+
+def select_seeds(ranked: pd.DataFrame, n: int) -> pd.DataFrame:
+    top = ranked[ranked["rank"] <= n].assign(group="best")
+    bottom = ranked[ranked["rank"] > ranked["n_seeds"] - n].assign(group="worst")
+    return pd.concat([top, bottom]).sort_values(["model", "revision", "formulation", "rank"]).reset_index(drop=True)
+
+
+def write_jobs(
+    *,
+    name: str,
+    sweep_dir: Path,
+    selected: pd.DataFrame,
+    train_subset: ItemSubset,
+    val_subset: ItemSubset,
+    max_metric_calls: int,
+    reflection_model: str = "openai/gpt-5.1",
+    reflection_reasoning: str = "medium",
+    device: str = "mps",
+    formulations: tuple[str, ...] | None = None,
+    root: Path = DEFAULT_ROOT,
+) -> list[Path]:
+    sweep = json.loads((Path(sweep_dir) / "sweep.json").read_text())
+    formats = {f_id: f for f_id, f in ((_fid(f), f) for f in sweep["formats"])}
+    instructions = {i["id"]: i["text"] for i in sweep["instructions"]} | {"none": None}
+    if train_subset.split != val_subset.split:
+        raise ValueError("train and val subsets must come from the same split")
+    if set(train_subset.ids) & set(val_subset.ids):
+        raise ValueError("train and val subsets overlap")
+    out_root = root / name
+    jobs_dir = out_root / "jobs"
+    jobs_dir.mkdir(parents=True, exist_ok=True)
+    paths = []
+    for _, row in selected.iterrows():
+        if formulations and row["formulation"] not in formulations:
+            continue
+        text = instructions[row["instruction_id"]]
+        if text is None:
+            raise ValueError("cannot GEPA-optimize a seed with no instruction; select seeds from an instruction sweep")
+        job_id = f"{_slug(row['model'])}--{row['formulation']}--{row['group']}-r{int(row['rank']):02d}--{row['format_id']}--{row['instruction_id']}"
+        job = {
+            "job_id": job_id, "group": row["group"], "seed_rank": int(row["rank"]), "seed_score": float(row["score"]),
+            "model": row["model"], "revision": row["revision"] if isinstance(row["revision"], str) else None,
+            "device": device, "formulation": row["formulation"],
+            "prompt_format": formats[row["format_id"]], "format_id": row["format_id"],
+            "seed_instruction": {"id": row["instruction_id"], "text": text},
+            "split": train_subset.split, "train_ids": list(train_subset.ids), "val_ids": list(val_subset.ids),
+            "max_metric_calls": max_metric_calls, "reflection_model": reflection_model,
+            "reflection_reasoning": reflection_reasoning,
+            "model_card": model_card(row["model"], row["revision"] if isinstance(row["revision"], str) else None),
+            "source_sweep": str(sweep_dir), "run_dir": str(out_root / "runs" / job_id), "seed": 0,
+        }
+        p = jobs_dir / f"{job_id}.json"
+        p.write_text(json.dumps(job, indent=1) + "\n")
+        paths.append(p)
+    (out_root / "selection.csv").write_text(selected.to_csv(index=False))
+    return paths
+
+
+def _fid(fmt: dict) -> str:
+    from datadec.po.formats import AXES, format_id
+    return format_id({a: fmt[a] for a in AXES})
+
+
+def _slug(model: str) -> str:
+    return model.replace("/", "--")
