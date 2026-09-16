@@ -89,6 +89,17 @@ Caveat: 2022-era models on short single-step instruction-induction tasks with
 a few demonstrations. Whether 50 samples saturate the space for a multi-rule
 reasoning system prompt is untested here.
 
+Era caveat: all results are on the 2022 OpenAI API family (ada through
+text-davinci-002, InstructGPT 175B) and on instruction-induction tasks such
+as pluralization, antonyms, and first-letter extraction, plus a 2022 subset
+of BIG-Bench and TruthfulQA. These are short single-step tasks that modern
+models, including small ones, solve near-perfectly zero-shot, and the
+proposers are far weaker than current small instruct models. Treat the
+qualitative shapes (diminishing returns in sample count, meta-prompt
+sensitivity, proposer-executor mismatch) as the transferable content; the
+specific saturation points (64 samples, 3 resampling rounds) and the
+transfer failures between GPT-3 and InstructGPT are era-specific.
+
 ## 2023, Guo: EvoPrompt: Connecting LLMs with Evolutionary Algorithms Yields Powerful Prompt Optimizers
 
 Saved as [2309.08532v3.md](../2309.08532v3.md). The only paper here that runs
@@ -130,6 +141,16 @@ Diversity beyond initialization:
 Caveat: the ablation is on a five-class sentiment task with a 2023-era model,
 effect sizes are small relative to variance, and diversity means paraphrases
 of a fixed set of human prompts rather than structurally different strategies.
+
+Era caveat: the task executor is Alpaca-7B (a 2023 LLaMA-1 fine-tune) for
+classification and generation, with GPT-3.5 as the optimizer and for BBH;
+tasks are SST-2/SST-5, Subj, AGNews-style classification, SAMSum, ASSET,
+and 3-shot BBH. The initialization and operator ablations are on SST-5
+only. Modern small models are near ceiling on these classification sets
+and far more robust to prompt wording, so the absolute effect sizes (1 to 6
+points) and the population-size curve should not be assumed to carry over.
+The relative findings (bad-only seeds hurt, differing-parts mutation beats
+whole-prompt mutation) are the part worth keeping.
 
 ## 2024, Voronov: Mind Your Format: Towards Consistent Evaluation of In-Context Learning Improvements
 
@@ -188,6 +209,17 @@ Findings about the resulting population:
   population's attribution labels are local to the setting they were
   measured in, not properties of the segments.
 
+Era caveat: 19 of the 21 models are pre-2024 base models (GPT-J, GPT-NeoX,
+BLOOM, OPT, Pythia, LLaMA-1, Llama 2, Falcon), with Llama 3 8B Instruct and
+Mistral 7B Instruct v0.3 added in an appendix, and the tasks are SST-2,
+DBPedia, AGNews, and TREC with 2 to 4 demonstrations. These are easy
+classification sets that current models solve near ceiling, so the absolute
+spreads (up to 35 percent of the mean) are almost certainly larger than a
+modern model would show on the same tasks. The appendix on the two 2024
+instruct models found the same non-transfer and lack of variance reduction,
+which is the best evidence in the paper that the qualitative findings
+persist; whether they persist on reasoning benchmarks is untested.
+
 ## 2023, Sclar: Quantifying Language Models' Sensitivity to Spurious Features in Prompt Design or: How I learned to start worrying about prompt formatting
 
 Saved as [2310.11324v2.md](../2310.11324v2.md). Extends
@@ -220,6 +252,17 @@ What it says about populations of formats:
 - Ten members is a lower bound. Spread kept growing from 10 to 20 sampled
   formats on about a sixth of tasks, so population size for formats should
   be set by budget, not by an assumed saturation.
+
+Era caveat: models are LLaMA-2 7B to 70B (the 70B at 4-bit), Falcon 7B and
+7B-Instruct, and GPT-3.5-Turbo; tasks are 53 classification and
+multiple-choice tasks from Super-NaturalInstructions with 1 or 5 shots.
+The headline 76-point spread is LLaMA-2-13B on a stereotype-classification
+task, and GPT-3.5's median spread of 6.4 points was already much lower than
+the open models'. Current models are markedly more format-robust than
+LLaMA-2, so the magnitudes here are upper-end estimates for older base
+models; the structural findings (non-monotonic edit space, model-specific
+rankings, the grammar itself, the bandit) are the part that transfers. No
+reasoning-heavy benchmark was tested.
 
 ## 2026, Gao: p1: Better Prompt Optimization with Fewer Prompts
 

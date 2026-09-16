@@ -122,6 +122,16 @@ versus 69.8 for a random member and 69.1 for dropping the step. The
 differential variant also produced longer, higher-variance prompts and kept
 mutating new words late in the run.
 
+Era caveat: the task executor is Alpaca-7B (a 2023 LLaMA-1 fine-tune) for
+classification and generation, with GPT-3.5 as the optimizer and for BBH;
+tasks are SST-2/SST-5, Subj, AGNews-style classification, SAMSum, ASSET,
+and 3-shot BBH. The initialization and operator ablations are on SST-5
+only. Modern small models are near ceiling on these classification sets
+and far more robust to prompt wording, so the absolute effect sizes (1 to 6
+points) and the population-size curve should not be assumed to carry over.
+The relative findings (bad-only seeds hurt, differing-parts mutation beats
+whole-prompt mutation) are the part worth keeping.
+
 ## 2022, Zhou: Large Language Models are Human-Level Prompt Engineers
 
 Saved as [2211.01910v2.md](../2211.01910v2.md).
@@ -136,6 +146,17 @@ helping some tasks and hurting others, and one template reached instructions
 the other never produced. Proposers other than the executor worked nearly as
 well in forward mode, but a proposer whose instruction style did not match the
 executor (an infilling model trained for short text) failed.
+
+Era caveat: all results are on the 2022 OpenAI API family (ada through
+text-davinci-002, InstructGPT 175B) and on instruction-induction tasks such
+as pluralization, antonyms, and first-letter extraction, plus a 2022 subset
+of BIG-Bench and TruthfulQA. These are short single-step tasks that modern
+models, including small ones, solve near-perfectly zero-shot, and the
+proposers are far weaker than current small instruct models. Treat the
+qualitative shapes (diminishing returns in sample count, meta-prompt
+sensitivity, proposer-executor mismatch) as the transferable content; the
+specific saturation points (64 samples, 3 resampling rounds) and the
+transfer failures between GPT-3 and InstructGPT are era-specific.
 
 ## 2026, Agrawal: optimize_anything: A Universal API for Optimizing any Text Parameter
 
@@ -184,6 +205,17 @@ so an edit accepted in one context can be wrong after other edits land, and
 greedy per-component improvement can miss combinations that are only good
 together.
 
+Era caveat: 19 of the 21 models are pre-2024 base models (GPT-J, GPT-NeoX,
+BLOOM, OPT, Pythia, LLaMA-1, Llama 2, Falcon), with Llama 3 8B Instruct and
+Mistral 7B Instruct v0.3 added in an appendix, and the tasks are SST-2,
+DBPedia, AGNews, and TREC with 2 to 4 demonstrations. These are easy
+classification sets that current models solve near ceiling, so the absolute
+spreads (up to 35 percent of the mean) are almost certainly larger than a
+modern model would show on the same tasks. The appendix on the two 2024
+instruct models found the same non-transfer and lack of variance reduction,
+which is the best evidence in the paper that the qualitative findings
+persist; whether they persist on reasoning benchmarks is untested.
+
 ## 2023, Sclar: Quantifying Language Models' Sensitivity to Spurious Features in Prompt Design or: How I learned to start worrying about prompt formatting
 
 Saved as [2310.11324v2.md](../2310.11324v2.md). A negative
@@ -201,4 +233,15 @@ interaction result, this says the format dimension of a prompt should be
 sampled and selected, not mutated; the reflective and differential operators
 in this file are operators over instruction content and should leave format
 fixed or draw it from a grammar.
+
+Era caveat: models are LLaMA-2 7B to 70B (the 70B at 4-bit), Falcon 7B and
+7B-Instruct, and GPT-3.5-Turbo; tasks are 53 classification and
+multiple-choice tasks from Super-NaturalInstructions with 1 or 5 shots.
+The headline 76-point spread is LLaMA-2-13B on a stereotype-classification
+task, and GPT-3.5's median spread of 6.4 points was already much lower than
+the open models'. Current models are markedly more format-robust than
+LLaMA-2, so the magnitudes here are upper-end estimates for older base
+models; the structural findings (non-monotonic edit space, model-specific
+rankings, the grammar itself, the bandit) are the part that transfers. No
+reasoning-heavy benchmark was tested.
 

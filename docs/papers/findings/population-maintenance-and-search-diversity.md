@@ -83,6 +83,16 @@ are poor. Population size from 4 to 12 helped on harder tasks and saturated
 early on an easy one. Parent selection by roulette wheel slightly beat
 tournament and random.
 
+Era caveat: the task executor is Alpaca-7B (a 2023 LLaMA-1 fine-tune) for
+classification and generation, with GPT-3.5 as the optimizer and for BBH;
+tasks are SST-2/SST-5, Subj, AGNews-style classification, SAMSum, ASSET,
+and 3-shot BBH. The initialization and operator ablations are on SST-5
+only. Modern small models are near ceiling on these classification sets
+and far more robust to prompt wording, so the absolute effect sizes (1 to 6
+points) and the population-size curve should not be assumed to carry over.
+The relative findings (bad-only seeds hurt, differing-parts mutation beats
+whole-prompt mutation) are the part worth keeping.
+
 ## 2026, Liu: Reflection in the Dark: Exposing and Escaping the Black Box in Reflective Prompt Optimization
 
 Saved as [2603.18388v2.md](../2603.18388v2.md).
@@ -108,6 +118,17 @@ marginal except on tasks where the initial set was poor. The authors chose
 non-iterative sampling as the default. This is the clearest evidence in the
 set that local resampling around good candidates narrows rather than widens
 the search.
+
+Era caveat: all results are on the 2022 OpenAI API family (ada through
+text-davinci-002, InstructGPT 175B) and on instruction-induction tasks such
+as pluralization, antonyms, and first-letter extraction, plus a 2022 subset
+of BIG-Bench and TruthfulQA. These are short single-step tasks that modern
+models, including small ones, solve near-perfectly zero-shot, and the
+proposers are far weaker than current small instruct models. Treat the
+qualitative shapes (diminishing returns in sample count, meta-prompt
+sensitivity, proposer-executor mismatch) as the transferable content; the
+specific saturation points (64 samples, 3 resampling rounds) and the
+transfer failures between GPT-3 and InstructGPT are era-specific.
 
 ## 2026, Gao: p1: Better Prompt Optimization with Fewer Prompts
 
@@ -150,4 +171,15 @@ cost is N forward passes per prediction. For an optimizer this suggests a
 different terminal step: rather than returning the single best candidate from
 the final pool, return the top few and ensemble, trading inference cost for
 robustness to the noise in whichever candidate happened to rank first.
+
+Era caveat: 19 of the 21 models are pre-2024 base models (GPT-J, GPT-NeoX,
+BLOOM, OPT, Pythia, LLaMA-1, Llama 2, Falcon), with Llama 3 8B Instruct and
+Mistral 7B Instruct v0.3 added in an appendix, and the tasks are SST-2,
+DBPedia, AGNews, and TREC with 2 to 4 demonstrations. These are easy
+classification sets that current models solve near ceiling, so the absolute
+spreads (up to 35 percent of the mean) are almost certainly larger than a
+modern model would show on the same tasks. The appendix on the two 2024
+instruct models found the same non-transfer and lack of variance reduction,
+which is the best evidence in the paper that the qualitative findings
+persist; whether they persist on reasoning benchmarks is untested.
 

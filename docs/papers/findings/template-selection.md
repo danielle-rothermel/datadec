@@ -83,6 +83,17 @@ Findings:
   saturate at 4 or 5; majority vote was worse on many-class tasks; cost is N
   forward passes.
 
+Era caveat: 19 of the 21 models are pre-2024 base models (GPT-J, GPT-NeoX,
+BLOOM, OPT, Pythia, LLaMA-1, Llama 2, Falcon), with Llama 3 8B Instruct and
+Mistral 7B Instruct v0.3 added in an appendix, and the tasks are SST-2,
+DBPedia, AGNews, and TREC with 2 to 4 demonstrations. These are easy
+classification sets that current models solve near ceiling, so the absolute
+spreads (up to 35 percent of the mean) are almost certainly larger than a
+modern model would show on the same tasks. The appendix on the two 2024
+instruct models found the same non-transfer and lack of variance reduction,
+which is the best evidence in the paper that the qualitative findings
+persist; whether they persist on reasoning benchmarks is untested.
+
 ## 2023, Sclar: Quantifying Language Models' Sensitivity to Spurious Features in Prompt Design or: How I learned to start worrying about prompt formatting
 
 Saved as [2310.11324v2.md](../2310.11324v2.md). FormatSpread. The
@@ -134,6 +145,17 @@ Falcon 7B and 7B-Instruct, GPT-3.5, 1- and 5-shot:
   formats rather than one number, especially when comparing models; a
   single format remains a valid engineering choice for building a system.
 
+Era caveat: models are LLaMA-2 7B to 70B (the 70B at 4-bit), Falcon 7B and
+7B-Instruct, and GPT-3.5-Turbo; tasks are 53 classification and
+multiple-choice tasks from Super-NaturalInstructions with 1 or 5 shots.
+The headline 76-point spread is LLaMA-2-13B on a stereotype-classification
+task, and GPT-3.5's median spread of 6.4 points was already much lower than
+the open models'. Current models are markedly more format-robust than
+LLaMA-2, so the magnitudes here are upper-end estimates for older base
+models; the structural findings (non-monotonic edit space, model-specific
+rankings, the grammar itself, the bandit) are the part that transfers. No
+reasoning-heavy benchmark was tested.
+
 ## 2026, Liu: Reflection in the Dark: Exposing and Escaping the Black Box in Reflective Prompt Optimization
 
 Saved as [2603.18388v2.md](../2603.18388v2.md). The seed-trap result is a
@@ -173,6 +195,17 @@ for selection: instructions chosen by zero-shot accuracy sometimes hurt
 when demonstrations were added, and selecting by few-shot accuracy fixed
 most cases. The template the candidate will be deployed in should be the
 one it is scored in.
+
+Era caveat: all results are on the 2022 OpenAI API family (ada through
+text-davinci-002, InstructGPT 175B) and on instruction-induction tasks such
+as pluralization, antonyms, and first-letter extraction, plus a 2022 subset
+of BIG-Bench and TruthfulQA. These are short single-step tasks that modern
+models, including small ones, solve near-perfectly zero-shot, and the
+proposers are far weaker than current small instruct models. Treat the
+qualitative shapes (diminishing returns in sample count, meta-prompt
+sensitivity, proposer-executor mismatch) as the transferable content; the
+specific saturation points (64 samples, 3 resampling rounds) and the
+transfer failures between GPT-3 and InstructGPT are era-specific.
 
 ## 2025, Zhao: PMPO: Probabilistic Metric Prompt Optimization for Small and Large Language Models
 

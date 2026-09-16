@@ -77,6 +77,17 @@ Findings:
   words from each other (Appendix A), so their published comparisons are
   not on equal footing.
 
+Era caveat: 19 of the 21 models are pre-2024 base models (GPT-J, GPT-NeoX,
+BLOOM, OPT, Pythia, LLaMA-1, Llama 2, Falcon), with Llama 3 8B Instruct and
+Mistral 7B Instruct v0.3 added in an appendix, and the tasks are SST-2,
+DBPedia, AGNews, and TREC with 2 to 4 demonstrations. These are easy
+classification sets that current models solve near ceiling, so the absolute
+spreads (up to 35 percent of the mean) are almost certainly larger than a
+modern model would show on the same tasks. The appendix on the two 2024
+instruct models found the same non-transfer and lack of variance reduction,
+which is the best evidence in the paper that the qualitative findings
+persist; whether they persist on reasoning benchmarks is untested.
+
 ## 2025, Agrawal: GEPA: Reflective Prompt Evolution Can Outperform Reinforcement Learning
 
 Saved as [2507.19457v2.md](../2507.19457v2.md). GEPA optimizes instructions
@@ -118,12 +129,33 @@ number of demonstrations shown to the proposer and the number of proposals
 per demonstration set were tuned hyperparameters that moved five tasks to
 human level.
 
+Era caveat: all results are on the 2022 OpenAI API family (ada through
+text-davinci-002, InstructGPT 175B) and on instruction-induction tasks such
+as pluralization, antonyms, and first-letter extraction, plus a 2022 subset
+of BIG-Bench and TruthfulQA. These are short single-step tasks that modern
+models, including small ones, solve near-perfectly zero-shot, and the
+proposers are far weaker than current small instruct models. Treat the
+qualitative shapes (diminishing returns in sample count, meta-prompt
+sensitivity, proposer-executor mismatch) as the transferable content; the
+specific saturation points (64 samples, 3 resampling rounds) and the
+transfer failures between GPT-3 and InstructGPT are era-specific.
+
 ## 2023, Guo: EvoPrompt: Connecting LLMs with Evolutionary Algorithms Yields Powerful Prompt Optimizers
 
 Saved as [2309.08532v3.md](../2309.08532v3.md). Demonstrations are fixed per
 task family and not optimized: 1-shot for classification with Alpaca, 0-shot
 for generation, and 3-shot chain-of-thought for BBH. The evolved instruction
 is inserted into a fixed task template around them.
+
+Era caveat: the task executor is Alpaca-7B (a 2023 LLaMA-1 fine-tune) for
+classification and generation, with GPT-3.5 as the optimizer and for BBH;
+tasks are SST-2/SST-5, Subj, AGNews-style classification, SAMSum, ASSET,
+and 3-shot BBH. The initialization and operator ablations are on SST-5
+only. Modern small models are near ceiling on these classification sets
+and far more robust to prompt wording, so the absolute effect sizes (1 to 6
+points) and the population-size curve should not be assumed to carry over.
+The relative findings (bad-only seeds hurt, differing-parts mutation beats
+whole-prompt mutation) are the part worth keeping.
 
 ## 2026, Gao: p1: Better Prompt Optimization with Fewer Prompts
 

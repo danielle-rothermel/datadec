@@ -61,6 +61,17 @@ diminishing returns, and iterative resampling rounds plateaued after about
 three. Larger aligned proposers produce shorter instructions, which reduced
 scoring cost enough to dominate the accuracy-cost frontier.
 
+Era caveat: all results are on the 2022 OpenAI API family (ada through
+text-davinci-002, InstructGPT 175B) and on instruction-induction tasks such
+as pluralization, antonyms, and first-letter extraction, plus a 2022 subset
+of BIG-Bench and TruthfulQA. These are short single-step tasks that modern
+models, including small ones, solve near-perfectly zero-shot, and the
+proposers are far weaker than current small instruct models. Treat the
+qualitative shapes (diminishing returns in sample count, meta-prompt
+sensitivity, proposer-executor mismatch) as the transferable content; the
+specific saturation points (64 samples, 3 resampling rounds) and the
+transfer failures between GPT-3 and InstructGPT are era-specific.
+
 ## 2025, Zhao: PMPO: Probabilistic Metric Prompt Optimization for Small and Large Language Models
 
 Saved as [2505.16307v2.md](../2505.16307v2.md). Removes the gate by making
@@ -111,6 +122,17 @@ same machinery ranks candidate system prompts under a budget when the score
 is per-example correctness; the Beta posterior makes "how many more
 examples does this pair need" an answerable question rather than a fixed
 minibatch size.
+
+Era caveat: models are LLaMA-2 7B to 70B (the 70B at 4-bit), Falcon 7B and
+7B-Instruct, and GPT-3.5-Turbo; tasks are 53 classification and
+multiple-choice tasks from Super-NaturalInstructions with 1 or 5 shots.
+The headline 76-point spread is LLaMA-2-13B on a stereotype-classification
+task, and GPT-3.5's median spread of 6.4 points was already much lower than
+the open models'. Current models are markedly more format-robust than
+LLaMA-2, so the magnitudes here are upper-end estimates for older base
+models; the structural findings (non-monotonic edit space, model-specific
+rankings, the grammar itself, the bandit) are the part that transfers. No
+reasoning-heavy benchmark was tested.
 
 ## 2026, Liu: Reflection in the Dark: Exposing and Escaping the Black Box in Reflective Prompt Optimization
 
@@ -163,3 +185,14 @@ per iteration and the differential-evolution variant scores one challenger
 per population member. Their population-size study is the budget result: on
 an easy task a population of 6 matched 10 at less than half the cost; on
 harder classification tasks scores kept rising up to 12.
+
+Era caveat: the task executor is Alpaca-7B (a 2023 LLaMA-1 fine-tune) for
+classification and generation, with GPT-3.5 as the optimizer and for BBH;
+tasks are SST-2/SST-5, Subj, AGNews-style classification, SAMSum, ASSET,
+and 3-shot BBH. The initialization and operator ablations are on SST-5
+only. Modern small models are near ceiling on these classification sets
+and far more robust to prompt wording, so the absolute effect sizes (1 to 6
+points) and the population-size curve should not be assumed to carry over.
+The relative findings (bad-only seeds hurt, differing-parts mutation beats
+whole-prompt mutation) are the part worth keeping.
+
