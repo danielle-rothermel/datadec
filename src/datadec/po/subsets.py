@@ -10,8 +10,10 @@ from pathlib import Path
 from datasets import load_dataset
 
 ARC_EASY = ("allenai/ai2_arc", "ARC-Easy")
+DATASET_NAMES = {"arc_easy": "ARC-Easy", "arc_challenge": "ARC-Challenge"}
 # The five curated demonstrations OLMES prepends to every ARC-Easy prompt (fewshot_sources.py in the fork).
 OLMES_ARC_EASY_FEWSHOT_IDS = ("MCAS_2007_8_5189", "Mercury_SC_401169", "MCAS_2004_8_27", "NYSEDREGENTS_2006_8_10", "Mercury_7013388", "Mercury_7179953", "Mercury_7205118", "MCAS_2016_8_13")
+OLMES_ARC_CHALLENGE_FEWSHOT_IDS = ('Mercury_SC_415702', 'MCAS_2009_5_6516', 'Mercury_7233695', 'Mercury_7041615', 'MCAS_1998_4_3', 'Mercury_7041860', 'ACTAAP_2013_5_11', 'MDSA_2008_5_30', 'MEA_2016_8_14', 'Mercury_SC_401653', 'Mercury_7106908')
 
 
 @dataclass(frozen=True, slots=True)

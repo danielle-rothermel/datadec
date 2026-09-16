@@ -43,6 +43,17 @@ def main(
                               "format_id": job["format_id"], "seed_instruction_id": job["seed_instruction"]["id"],
                               "seed_val_score": r["seed_val_score"], "best_val_score": r["best_val_score"]})
     (root / "optimized_instructions.json").write_text(json.dumps(optimized, indent=1) + "\n")
+    pairs = []
+    for job_path in jobs:
+        job = json.loads(job_path.read_text())
+        res = Path(job["run_dir"]) / "result.json"
+        if res.exists():
+            r = json.loads(res.read_text())
+            pairs.append({"format": job["prompt_format"], "format_id": job["format_id"], "formulation": job["formulation"],
+                          "instruction": {"id": f"gepa-{job['job_id']}", "text": r["best_candidate"]["system_prompt"]}})
+            pairs.append({"format": job["prompt_format"], "format_id": job["format_id"], "formulation": job["formulation"],
+                          "instruction": {"id": f"seed-{job['job_id']}", "text": job["seed_instruction"]["text"] or None}})
+    (root / "optimized_pairs.json").write_text(json.dumps({"seed": None, "n": len(pairs), "sources": {"jobs_dir": str(jobs_dir)}, "pairs": pairs}, indent=1) + "\n")
     typer.echo(f"{len(optimized)} optimized instructions written to {root / 'optimized_instructions.json'}; {failures} failures")
     raise typer.Exit(1 if failures else 0)
 

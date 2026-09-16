@@ -40,10 +40,13 @@ def write_jobs(
     reflection_reasoning: str = "medium",
     device: str = "mps",
     formulations: tuple[str, ...] | None = None,
+    max_group_score: float | None = None,
     root: Path = DEFAULT_ROOT,
 ) -> list[Path]:
+    """Write one job per selected seed. max_group_score skips (model, formulation) groups whose best seed
+    already scores at or above it (no headroom)."""
     sweep = json.loads((Path(sweep_dir) / "sweep.json").read_text())
-    formats = {f_id: f for f_id, f in ((_fid(f), f) for f in sweep["formats"])}
+    formats = {_fid(f): f for f in sweep["formats"]} | {p["format_id"]: p["format"] for p in sweep.get("pairs", [])}
     instructions = {i["id"]: i["text"] for i in sweep["instructions"]} | {"none": None}
     if train_subset.split != val_subset.split:
         raise ValueError("train and val subsets must come from the same split")
@@ -53,17 +56,21 @@ def write_jobs(
     jobs_dir = out_root / "jobs"
     jobs_dir.mkdir(parents=True, exist_ok=True)
     paths = []
+    skipped_groups = []
     for _, row in selected.iterrows():
         if formulations and row["formulation"] not in formulations:
             continue
-        text = instructions[row["instruction_id"]]
-        if text is None:
-            raise ValueError("cannot GEPA-optimize a seed with no instruction; select seeds from an instruction sweep")
+        if max_group_score is not None:
+            group_best = selected[(selected["model"] == row["model"]) & (selected["formulation"] == row["formulation"])]["score"].max()
+            if group_best >= max_group_score:
+                skipped_groups.append((row["model"], row["formulation"], round(float(group_best), 3)))
+                continue
+        text = instructions[row["instruction_id"]] or ""  # no-instruction seeds start GEPA from an empty prompt
         job_id = f"{_slug(row['model'])}--{row['formulation']}--{row['group']}-r{int(row['rank']):02d}--{row['format_id']}--{row['instruction_id']}"
         job = {
             "job_id": job_id, "group": row["group"], "seed_rank": int(row["rank"]), "seed_score": float(row["score"]),
             "model": row["model"], "revision": row["revision"] if isinstance(row["revision"], str) else None,
-            "device": device, "formulation": row["formulation"],
+            "device": device, "task": sweep.get("task", "arc_easy"), "formulation": row["formulation"],
             "prompt_format": formats[row["format_id"]], "format_id": row["format_id"],
             "seed_instruction": {"id": row["instruction_id"], "text": text},
             "split": train_subset.split, "train_ids": list(train_subset.ids), "val_ids": list(val_subset.ids),
@@ -76,6 +83,8 @@ def write_jobs(
         p.write_text(json.dumps(job, indent=1) + "\n")
         paths.append(p)
     (out_root / "selection.csv").write_text(selected.to_csv(index=False))
+    if skipped_groups:
+        (out_root / "skipped_groups.json").write_text(json.dumps(sorted(set(skipped_groups)), indent=1) + "\n")
     return paths
 
 

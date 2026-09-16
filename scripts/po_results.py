@@ -13,6 +13,8 @@ app = typer.Typer()
 @app.command()
 def main(sweep_dir: Annotated[Path, typer.Argument()]) -> None:
     """Flatten a finished sweep into analysis/{tasks,items,choices}.parquet and print a summary."""
+    if not sweep_dir.is_dir() or not (sweep_dir / "sweep.json").exists():
+        raise typer.BadParameter(f"{sweep_dir} is not a sweep directory")
     out = write_analysis(sweep_dir)
     tables = load_sweep(sweep_dir)
     t = tables["tasks"]

@@ -1,0 +1,14 @@
+{
+ "dataset_path": "allenai/ai2_arc",
+ "dataset_name": "ARC-Challenge",
+ "split": "test",
+ "seed": 0,
+ "ids": [
+  "Mercury_7271513",
+  "Mercury_SC_401373",
+  "MCAS_1999_4_23",
+  "Mercury_7085225",
+  "NCEOGA_2013_5_11"
+ ],
+ "n": 5
+}

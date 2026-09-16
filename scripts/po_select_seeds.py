@@ -25,6 +25,7 @@ def main(
     reflection_model: Annotated[str, typer.Option("--reflection-model")] = "openai/gpt-5.1",
     reflection_reasoning: Annotated[str, typer.Option("--reflection-reasoning")] = "medium",
     device: Annotated[str, typer.Option("--device")] = "mps",
+    max_group_score: Annotated[float | None, typer.Option("--max-group-score", help="skip groups whose best seed scores >= this (no headroom)")] = None,
     root: Annotated[Path, typer.Option("--root")] = DEFAULT_ROOT,
 ) -> None:
     """Rank a sweep's seeds per (model, formulation), pick the n best and n worst, write GEPA jobs."""
@@ -35,7 +36,8 @@ def main(
         name=name, sweep_dir=sweep_dir, selected=selected,
         train_subset=ItemSubset.load(train_subset), val_subset=ItemSubset.load(val_subset),
         max_metric_calls=max_metric_calls, reflection_model=reflection_model, reflection_reasoning=reflection_reasoning,
-        device=device, formulations=tuple(formulations.split(",")) if formulations else None, root=root,
+        device=device, formulations=tuple(formulations.split(",")) if formulations else None,
+        max_group_score=max_group_score, root=root,
     )
     typer.echo(selected[["model", "formulation", "group", "rank", "format_id", "instruction_id", "score", "acc_raw"]].to_string(index=False))
     typer.echo(f"wrote {len(paths)} jobs under {root / name / 'jobs'}")

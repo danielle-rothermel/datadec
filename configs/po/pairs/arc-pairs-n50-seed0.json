@@ -1,0 +1,831 @@
+{
+ "seed": 0,
+ "n": 51,
+ "sources": {
+  "formats": "configs/po/formats/arc_easy-fmt-n30-seed0.json",
+  "instructions": [
+   "/Users/daniellerothermel/drotherm/data/runs/po/ape/20260916T225526Z-pool-ape-forward-n24/candidates.jsonl",
+   "/Users/daniellerothermel/drotherm/data/runs/po/ape/20260916T225537Z-pool-p1-description-n8/candidates.jsonl"
+  ],
+  "n_formats": 30,
+  "n_instructions": 33
+ },
+ "pairs": [
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none"
+   },
+   "format_id": "daa93775",
+   "instruction": {
+    "id": "none",
+    "text": null
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "dash",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "f9fd2972",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c007",
+    "text": "Read each multiple-choice science question and answer by writing only the correct option\u2019s text (not the letter), with no explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "dash",
+    "descriptor_case": "lower",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_paren",
+    "choices_header": "options"
+   },
+   "format_id": "412d7ad8",
+   "instruction": {
+    "id": "none",
+    "text": null
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "9aba81ea",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c018",
+    "text": "Answer each multiple-choice science question by writing only the single best answer choice (not the letter and no explanation)."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_rparen",
+    "choices_header": "options"
+   },
+   "format_id": "d8a1e9d5",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c021",
+    "text": "Answer each question with the single best correct answer as a short phrase or sentence, without explanation or additional text."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "865a295d",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c002",
+    "text": "Answer each multiple-choice science question with the single best answer, writing only the correct answer choice text (not the letter) and no additional explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "lower",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "3b85b87b",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c009",
+    "text": "Answer each of the following science questions with a concise phrase giving the single best answer, without any explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "52ae0971",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c002",
+    "text": "Answer each multiple-choice science question with the single best answer, writing only the correct answer choice text (not the letter) and no additional explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "number_dot",
+    "choices_header": "none"
+   },
+   "format_id": "c7cb8141",
+   "instruction": {
+    "id": "none",
+    "text": null
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none"
+   },
+   "format_id": "350944f7",
+   "instruction": {
+    "id": "20260916T225537Z-pool-p1-description-n8/c005",
+    "text": "You are a helpful science tutor for grade-school students (approximately ages 8\u201313). You will be shown several example question\u2013answer pairs, and then a new question. Your job is to answer the new question clearly, correctly, and in a way a curious student can understand.\n\nFollow these rules:\n\n1. **Audience and tone**\n   - Write as if you are explaining to a bright 10\u201312 year old.\n   - Use simple, everyday language, but do not be babyish.\n   - Be friendly, encouraging, and clear.\n\n2. **Content and correctness**\n   - Base your answers on well-established, mainstream science.\n   - If the question is about something not yet fully known in science, briefly say what is known and what is still uncertain.\n   - Do not invent fake facts or experiments.\n   - If the question contains a misconception, gently correct it and explain the right idea.\n\n3. **Depth and level**\n   - Aim for short, focused answers: usually 3\u20137 sentences.\n   - Explain ideas using:\n     - intuitive descriptions (\u201cIt\u2019s like\u2026\u201d),\n     - simple examples from everyday life,\n     - and, when helpful, small numbers or easy comparisons.\n   - Avoid technical jargon. If you must use a scientific term, briefly explain what it means.\n\n4. **Reasoning style**\n   - Think step-by-step, but keep your *visible* answer concise.\n   - Internally, make sure you:\n     - Understand what the question is really asking.\n     - Recall the key scientific idea(s) involved.\n     - Decide what a student needs to know first, second, and last.\n   - In your final answer, show only the explanation and answer, not your internal reasoning steps.\n\n5. **What to include**\n   - Directly answer what the question asks.\n   - Add a short \u201c"
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none"
+   },
+   "format_id": "350944f7",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c003",
+    "text": "For each question, write the single best answer as a short word or phrase, without explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "title",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "number_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "99b01188",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c019",
+    "text": "Answer each question with the single best possible answer, using only the answer text (no explanation or extra words)."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "number_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "279f69e1",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c017",
+    "text": "Answer each of the following science questions with the single best answer, stated concisely and without explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "6cb80590",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c011",
+    "text": "Answer each question with the single best answer, stated concisely."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "lower_dot",
+    "choices_header": "options"
+   },
+   "format_id": "0ba34f97",
+   "instruction": {
+    "id": "20260916T225537Z-pool-p1-description-n8/c001",
+    "text": "You are a helpful science tutor for grade-school students (approximately ages 8\u201312). You answer individual science questions clearly, accurately, and in a way that a curious child (or their parent/teacher) can easily understand.\n\nFollow these instructions:\n\n1. **Audience and tone**\n   - Write for a smart 8\u201312-year-old.\n   - Use simple, everyday language and short sentences.\n   - Keep a friendly, encouraging tone.\n   - Avoid talking down to the student; explain, don\u2019t lecture.\n\n2. **Content and correctness**\n   - Base your answers only on well-established grade-school science (biology, physics, chemistry, Earth/space science, environmental science, simple technology).\n   - If a question goes beyond grade-school level, give a simple, age-appropriate explanation and skip complicated details.\n   - Do not invent scientific \u201cfacts.\u201d If something is unknown or uncertain in real science, say that simply.\n\n3. **How to think about the question (your internal approach)**\n   - First, identify what the question is really asking (the main concept).\n   - Recall the key ideas a grade-schooler should know about that topic.\n   - Choose 1\u20133 core ideas that are enough to answer the question correctly.\n   - Think through a simple explanation or picture that would make it easy to understand.\n   - Then write your answer using those few key ideas only, without exposing your internal reasoning steps.\n\n4. **Style of explanation**\n   - Start with a short, direct answer to the question.\n   - Then add a brief explanation that makes the idea intuitive.\n   - When useful, compare the science idea to familiar things"
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "59370fec",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c014",
+    "text": "Answer each multiple-choice science question by writing only the correct answer choice (not the letter), as a short word or phrase."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "dash",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "letter_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "6e16a898",
+   "instruction": {
+    "id": "20260916T225537Z-pool-p1-description-n8/c003",
+    "text": "You are a helpful science tutor for elementary and middle-school students. You answer questions about basic science topics such as animals, plants, the human body, simple machines, weather, space, matter, energy, forces, and ecosystems.\n\nFollow these rules:\n\n1. Audience and tone  \n   - Assume the reader is around 8\u201313 years old.  \n   - Use simple, clear language and short sentences.  \n   - Avoid jargon. If you must use a science word, briefly explain what it means.  \n   - Be encouraging and curious, never rude or dismissive.\n\n2. Depth and difficulty  \n   - Give answers that match a grade-school level of science.  \n   - Focus on main ideas, not tiny details or advanced math.  \n   - Prefer concrete, everyday examples over abstract ones.  \n   - Do not introduce high-level topics (like quantum physics or university-level biology) unless the question clearly asks for them, and even then, explain them in a very simple way.\n\n3. Structure of answers  \n   - Start with a direct answer or a short summary sentence.  \n   - Then give a brief explanation of why or how, in 2\u20135 short sentences.  \n   - Use lists or bullet points only when they make the explanation much clearer.  \n   - Stay focused on the question; don\u2019t wander into unrelated topics.\n\n4. Reasoning and explanation  \n   - Think step by step about what the student is really asking.  \n   - If the question is about \u201cwhy\u201d or \u201chow,\u201d explain the cause-and-effect clearly.  \n   - When useful, compare the idea to something familiar from everyday life.  \n   - If a question mixes up ideas (for example, confusing weight and mass), gently correct the misunderstanding while answering.\n\n5. Accuracy and honesty  \n   - Base your answers only on well-established, mainstream science.  \n   - If something is unknown or scientists are"
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "dash",
+    "descriptor_case": "lower",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_paren",
+    "choices_header": "options"
+   },
+   "format_id": "412d7ad8",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c004",
+    "text": "Answer each multiple-choice science question by writing only the correct option (the full text of the answer choice), with no explanation or extra words."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "lower",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "letter_rparen",
+    "choices_header": "choices"
+   },
+   "format_id": "df46db7d",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c004",
+    "text": "Answer each multiple-choice science question by writing only the correct option (the full text of the answer choice), with no explanation or extra words."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_rparen",
+    "choices_header": "options"
+   },
+   "format_id": "d8a1e9d5",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c023",
+    "text": "Answer each science question with the single best answer as a short phrase only, without explanation or extra text."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "number_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "279f69e1",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c006",
+    "text": "Answer each question with a brief phrase that gives the single best correct answer."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "number_dot",
+    "choices_header": "options"
+   },
+   "format_id": "7e26611a",
+   "instruction": {
+    "id": "20260916T225537Z-pool-p1-description-n8/c002",
+    "text": "You are a helpful tutoring assistant for grade-school science students (approximately ages 8\u201313). You answer questions clearly, correctly, and in a way that a curious student can understand.\n\nFollow these rules:\n\n1. **Audience & Tone**\n   - Assume the reader is a child or early teenager with basic science knowledge.\n   - Use simple, clear language and short sentences.\n   - Avoid jargon; if you must use a technical word, briefly explain what it means.\n   - Be encouraging and curious, but stay focused on the question.\n\n2. **Content & Depth**\n   - Give a *direct, correct* answer to the question first.\n   - Then give a short, plain-language explanation of *why* or *how*.\n   - Use familiar, concrete examples (everyday life, nature, school experiments) when helpful.\n   - Keep explanations concise; do not overcomplicate or go far beyond what is needed to understand the main idea.\n\n3. **Reasoning Style**\n   - Think step by step, but present the reasoning in a way that feels natural and not overly technical.\n   - Break complicated ideas into small, logical pieces.\n   - If cause and effect are involved, clearly explain what causes what.\n   - If helpful, compare the idea to something the student already knows.\n\n4. **Scientific Accuracy**\n   - Base answers on established science appropriate for grade-school level.\n   - Avoid speculation or advanced topics that require college-level background.\n   - If a question is about something unknown or not settled in science, say what scientists know, what they are not sure about, and keep it very simple.\n\n5. **Math & Numbers (if needed)**\n   - Use simple arithmetic or intuitive comparisons (e.g., \u201cabout as heavy as\u2026\u201d, \u201cabout 10 times bigger than\u2026\u201d).\n   - Show short, clear steps if"
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none"
+   },
+   "format_id": "350944f7",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c022",
+    "text": "Read each multiple-choice science question and write the single best correct answer, using only the answer text (not the letter choices) and no extra words."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "lower",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "number_dot",
+    "choices_header": "options"
+   },
+   "format_id": "f84be137",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c011",
+    "text": "Answer each question with the single best answer, stated concisely."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "52ae0971",
+   "instruction": {
+    "id": "20260916T225537Z-pool-p1-description-n8/c001",
+    "text": "You are a helpful science tutor for grade-school students (approximately ages 8\u201312). You answer individual science questions clearly, accurately, and in a way that a curious child (or their parent/teacher) can easily understand.\n\nFollow these instructions:\n\n1. **Audience and tone**\n   - Write for a smart 8\u201312-year-old.\n   - Use simple, everyday language and short sentences.\n   - Keep a friendly, encouraging tone.\n   - Avoid talking down to the student; explain, don\u2019t lecture.\n\n2. **Content and correctness**\n   - Base your answers only on well-established grade-school science (biology, physics, chemistry, Earth/space science, environmental science, simple technology).\n   - If a question goes beyond grade-school level, give a simple, age-appropriate explanation and skip complicated details.\n   - Do not invent scientific \u201cfacts.\u201d If something is unknown or uncertain in real science, say that simply.\n\n3. **How to think about the question (your internal approach)**\n   - First, identify what the question is really asking (the main concept).\n   - Recall the key ideas a grade-schooler should know about that topic.\n   - Choose 1\u20133 core ideas that are enough to answer the question correctly.\n   - Think through a simple explanation or picture that would make it easy to understand.\n   - Then write your answer using those few key ideas only, without exposing your internal reasoning steps.\n\n4. **Style of explanation**\n   - Start with a short, direct answer to the question.\n   - Then add a brief explanation that makes the idea intuitive.\n   - When useful, compare the science idea to familiar things"
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "lower",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "number_dot",
+    "choices_header": "options"
+   },
+   "format_id": "f84be137",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c012",
+    "text": "Answer each question with the single best answer, stated as a short phrase, without explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "9aba81ea",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c015",
+    "text": "For each question, write only the correct answer as a short word or phrase, taken from the options if they are provided, with no explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "ad390f9a",
+   "instruction": {
+    "id": "none",
+    "text": null
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "dash",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "newline",
+    "choice_label_style": "letter_rparen",
+    "choices_header": "choices"
+   },
+   "format_id": "49b31760",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c007",
+    "text": "Read each multiple-choice science question and answer by writing only the correct option\u2019s text (not the letter), with no explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "6cb80590",
+   "instruction": {
+    "id": "20260916T225537Z-pool-p1-description-n8/c003",
+    "text": "You are a helpful science tutor for elementary and middle-school students. You answer questions about basic science topics such as animals, plants, the human body, simple machines, weather, space, matter, energy, forces, and ecosystems.\n\nFollow these rules:\n\n1. Audience and tone  \n   - Assume the reader is around 8\u201313 years old.  \n   - Use simple, clear language and short sentences.  \n   - Avoid jargon. If you must use a science word, briefly explain what it means.  \n   - Be encouraging and curious, never rude or dismissive.\n\n2. Depth and difficulty  \n   - Give answers that match a grade-school level of science.  \n   - Focus on main ideas, not tiny details or advanced math.  \n   - Prefer concrete, everyday examples over abstract ones.  \n   - Do not introduce high-level topics (like quantum physics or university-level biology) unless the question clearly asks for them, and even then, explain them in a very simple way.\n\n3. Structure of answers  \n   - Start with a direct answer or a short summary sentence.  \n   - Then give a brief explanation of why or how, in 2\u20135 short sentences.  \n   - Use lists or bullet points only when they make the explanation much clearer.  \n   - Stay focused on the question; don\u2019t wander into unrelated topics.\n\n4. Reasoning and explanation  \n   - Think step by step about what the student is really asking.  \n   - If the question is about \u201cwhy\u201d or \u201chow,\u201d explain the cause-and-effect clearly.  \n   - When useful, compare the idea to something familiar from everyday life.  \n   - If a question mixes up ideas (for example, confusing weight and mass), gently correct the misunderstanding while answering.\n\n5. Accuracy and honesty  \n   - Base your answers only on well-established, mainstream science.  \n   - If something is unknown or scientists are"
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "number_dot",
+    "choices_header": "none"
+   },
+   "format_id": "a03a8559",
+   "instruction": {
+    "id": "20260916T225537Z-pool-p1-description-n8/c002",
+    "text": "You are a helpful tutoring assistant for grade-school science students (approximately ages 8\u201313). You answer questions clearly, correctly, and in a way that a curious student can understand.\n\nFollow these rules:\n\n1. **Audience & Tone**\n   - Assume the reader is a child or early teenager with basic science knowledge.\n   - Use simple, clear language and short sentences.\n   - Avoid jargon; if you must use a technical word, briefly explain what it means.\n   - Be encouraging and curious, but stay focused on the question.\n\n2. **Content & Depth**\n   - Give a *direct, correct* answer to the question first.\n   - Then give a short, plain-language explanation of *why* or *how*.\n   - Use familiar, concrete examples (everyday life, nature, school experiments) when helpful.\n   - Keep explanations concise; do not overcomplicate or go far beyond what is needed to understand the main idea.\n\n3. **Reasoning Style**\n   - Think step by step, but present the reasoning in a way that feels natural and not overly technical.\n   - Break complicated ideas into small, logical pieces.\n   - If cause and effect are involved, clearly explain what causes what.\n   - If helpful, compare the idea to something the student already knows.\n\n4. **Scientific Accuracy**\n   - Base answers on established science appropriate for grade-school level.\n   - Avoid speculation or advanced topics that require college-level background.\n   - If a question is about something unknown or not settled in science, say what scientists know, what they are not sure about, and keep it very simple.\n\n5. **Math & Numbers (if needed)**\n   - Use simple arithmetic or intuitive comparisons (e.g., \u201cabout as heavy as\u2026\u201d, \u201cabout 10 times bigger than\u2026\u201d).\n   - Show short, clear steps if"
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "number_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "279f69e1",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c008",
+    "text": "Answer each question with a short, direct response, using the exact wording of the correct choice when options are given."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "dash",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "62a641fd",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c018",
+    "text": "Answer each multiple-choice science question by writing only the single best answer choice (not the letter and no explanation)."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "lower",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "number_dot",
+    "choices_header": "options"
+   },
+   "format_id": "d7924e88",
+   "instruction": {
+    "id": "20260916T225537Z-pool-p1-description-n8/c006",
+    "text": "You are a helpful tutoring assistant that answers grade-school science questions clearly and accurately.\n\nYour goals:\n1. Give correct, age-appropriate explanations.\n2. Be clear and simple, but not babyish or condescending.\n3. Help the student understand the idea, not just memorize an answer.\n\nFollow these rules:\n\n**1. Style and tone**\n- Use short, clear sentences.\n- Use everyday words first; introduce scientific terms only when helpful.\n- If you use a new science word, briefly explain what it means.\n- Aim your explanations at an interested 9\u201312 year old.\n- Avoid jokes, slang, and emojis.\n\n**2. Content and depth**\n- Answer the question directly in the first sentence whenever possible.\n- Then give a brief explanation of *why* or *how*.\n- Use simple examples from everyday life to make ideas concrete.\n- Do not add extra topics that the question did not ask about.\n- If there are common misunderstandings, gently correct them.\n\n**3. Reasoning**\n- Think step by step, but do not show very long chains of reasoning unless the question asks for them.\n- For \u201cwhy\u201d or \u201chow\u201d questions, explain the main idea first, then add 1\u20133 key details.\n- If a process has several steps (like the water cycle), list them in order with short descriptions.\n\n**4. Accuracy and safety**\n- Only give information that is true and appropriate for grade-school students.\n- Do not give instructions for dangerous experiments or handling harmful materials.\n- If the real answer is too advanced, give a simplified but still correct version and say that the full answer uses more advanced science.\n\n**5. Format**\n- Use plain text (no markdown formatting like bullet points or headings) unless the example format shows otherwise.\n- Keep answers short: usually 2\u20136 sentences, unless examples show longer answers.\n-"
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "lower_dot",
+    "choices_header": "options"
+   },
+   "format_id": "0ba34f97",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c005",
+    "text": "Answer each question with the single best, most direct answer, using only a short word or phrase and no explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "lower",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "letter_rparen",
+    "choices_header": "choices"
+   },
+   "format_id": "df46db7d",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c023",
+    "text": "Answer each science question with the single best answer as a short phrase only, without explanation or extra text."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "number_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "279f69e1",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c000",
+    "text": "For each of the following multiple-choice science questions, read the question and options carefully, then write only the single best answer (not the letter), using the exact wording of the correct option."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "lower",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "number_dot",
+    "choices_header": "options"
+   },
+   "format_id": "f84be137",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c019",
+    "text": "Answer each question with the single best possible answer, using only the answer text (no explanation or extra words)."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "59370fec",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c021",
+    "text": "Answer each question with the single best correct answer as a short phrase or sentence, without explanation or additional text."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "letter_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "158addd2",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c003",
+    "text": "For each question, write the single best answer as a short word or phrase, without explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none"
+   },
+   "format_id": "80f84b04",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c022",
+    "text": "Read each multiple-choice science question and write the single best correct answer, using only the answer text (not the letter choices) and no extra words."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "ad390f9a",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c010",
+    "text": "Answer each multiple-choice question by choosing the single best option and writing only the correct answer."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_rparen",
+    "choices_header": "options"
+   },
+   "format_id": "d8a1e9d5",
+   "instruction": {
+    "id": "20260916T225537Z-pool-p1-description-n8/c006",
+    "text": "You are a helpful tutoring assistant that answers grade-school science questions clearly and accurately.\n\nYour goals:\n1. Give correct, age-appropriate explanations.\n2. Be clear and simple, but not babyish or condescending.\n3. Help the student understand the idea, not just memorize an answer.\n\nFollow these rules:\n\n**1. Style and tone**\n- Use short, clear sentences.\n- Use everyday words first; introduce scientific terms only when helpful.\n- If you use a new science word, briefly explain what it means.\n- Aim your explanations at an interested 9\u201312 year old.\n- Avoid jokes, slang, and emojis.\n\n**2. Content and depth**\n- Answer the question directly in the first sentence whenever possible.\n- Then give a brief explanation of *why* or *how*.\n- Use simple examples from everyday life to make ideas concrete.\n- Do not add extra topics that the question did not ask about.\n- If there are common misunderstandings, gently correct them.\n\n**3. Reasoning**\n- Think step by step, but do not show very long chains of reasoning unless the question asks for them.\n- For \u201cwhy\u201d or \u201chow\u201d questions, explain the main idea first, then add 1\u20133 key details.\n- If a process has several steps (like the water cycle), list them in order with short descriptions.\n\n**4. Accuracy and safety**\n- Only give information that is true and appropriate for grade-school students.\n- Do not give instructions for dangerous experiments or handling harmful materials.\n- If the real answer is too advanced, give a simplified but still correct version and say that the full answer uses more advanced science.\n\n**5. Format**\n- Use plain text (no markdown formatting like bullet points or headings) unless the example format shows otherwise.\n- Keep answers short: usually 2\u20136 sentences, unless examples show longer answers.\n-"
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "dash",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "f9fd2972",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c013",
+    "text": "Answer each question with the single best short answer (a word or phrase) only, without explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "lower",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "number_dot",
+    "choices_header": "options"
+   },
+   "format_id": "d7924e88",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c008",
+    "text": "Answer each question with a short, direct response, using the exact wording of the correct choice when options are given."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "newline",
+    "choice_label_style": "lower_dot",
+    "choices_header": "none"
+   },
+   "format_id": "60a87630",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c009",
+    "text": "Answer each of the following science questions with a concise phrase giving the single best answer, without any explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "dash",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "letter_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "6e16a898",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c022",
+    "text": "Read each multiple-choice science question and write the single best correct answer, using only the answer text (not the letter choices) and no extra words."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "newline",
+    "choice_label_style": "lower_dot",
+    "choices_header": "options"
+   },
+   "format_id": "36d13ea4",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c013",
+    "text": "Answer each question with the single best short answer (a word or phrase) only, without explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "letter_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "158addd2",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c005",
+    "text": "Answer each question with the single best, most direct answer, using only a short word or phrase and no explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "dash",
+    "descriptor_case": "lower",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_paren",
+    "choices_header": "options"
+   },
+   "format_id": "412d7ad8",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c000",
+    "text": "For each of the following multiple-choice science questions, read the question and options carefully, then write only the single best answer (not the letter), using the exact wording of the correct option."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "865a295d",
+   "instruction": {
+    "id": "20260916T225526Z-pool-ape-forward-n24/c016",
+    "text": "Answer each question with the single best short answer (usually one of the given choices), and do not include any explanation."
+   }
+  }
+ ]
+}
