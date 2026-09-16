@@ -25,6 +25,10 @@ Summary across all six papers:
   from several meta-prompts on purpose, or tests structurally different
   strategies as seeds. Single-seed methods obtain diversity during the run
   through Pareto-front retention, not at initialization.
+- Zhao 2025's segment masking is an untested but mechanical route from one
+  seed to a population: the seed plus its single-segment ablations, each with
+  a measured loss delta. Ablative rather than lexical variation, bounded by
+  the seed's content.
 
 ## 2022, Zhou: Large Language Models are Human-Level Prompt Engineers
 
@@ -239,4 +243,19 @@ says nothing about seed choice beyond holding it constant for fairness. The
 first iteration's rewrite already replaces it with a task-specific
 instruction, so the seed's content has little influence on the result;
 what it does fix is the segmentation the mask analysis starts from.
+
+Note from Danielle: the masking step is itself a way to turn one seed into an
+initial population automatically. Segmenting the seed into up to 5 removable
+units and masking each one yields the seed plus up to 5 variants, each
+differing from the seed by exactly one identifiable component, and the same
+forward passes that score them produce the per-segment loss deltas. Masking
+subsets of segments extends this to up to 2^m variants with known structure.
+Unlike paraphrase resampling (Zhou 2022, Guo 2023) the variation is
+ablative rather than lexical, it is deterministic given the segmentation, and
+every member comes with an attribution of what it lacks. The limits are the
+mirror image: all members are subsets of the seed, so the population cannot
+contain anything the seed did not, and the segmenter's choice of units bounds
+the diversity. A natural combination is to use masked variants as the
+structured core of a population and sampled or paraphrased candidates for
+content the seed lacks.
 
