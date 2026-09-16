@@ -228,3 +228,15 @@ an auxiliary refiner prompt tracked on the same front. Proposer strength
 matters more than the seed in their data: on AIME the same seed reached 60
 percent with GPT-5.1 as proposer and 50 percent with GPT-5-nano, from a 46.67
 percent baseline.
+
+## 2025, Zhao: PMPO: Probabilistic Metric Prompt Optimization for Small and Large Language Models
+
+Saved as [2505.16307v2.md](../2505.16307v2.md). Single seed, fixed across methods.
+
+Every optimizer in their comparison starts from the same chain-of-thought
+baseline prompt, "Let's think step by step" (Appendix A.2.3), so the paper
+says nothing about seed choice beyond holding it constant for fairness. The
+first iteration's rewrite already replaces it with a task-specific
+instruction, so the seed's content has little influence on the result;
+what it does fix is the segmentation the mask analysis starts from.
+

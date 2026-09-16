@@ -25,6 +25,10 @@ Summary:
 - Gao 2026 maintains no population at all; each RL step draws fresh samples
   from the current policy, and diversity is whatever the policy's temperature
   1 sampling provides.
+- Zhao 2025 keeps a single incumbent and accepts a variant only if its loss
+  improves; it is the greedy baseline that GEPA's Pareto ablation argues
+  against, kept viable by cheap scoring rather than by any diversity
+  mechanism.
 
 ## 2025, Agrawal: GEPA: Reflective Prompt Evolution Can Outperform Reinforcement Learning
 
@@ -114,3 +118,17 @@ training works is that a cleaner reward lets the policy move further from its
 initialization, whereas noisy full-dataset reward keeps it near the start,
 which is a statement about exploitation being blocked by noise rather than
 about diversity being lost.
+
+## 2025, Zhao: PMPO: Probabilistic Metric Prompt Optimization for Small and Large Language Models
+
+Saved as [2505.16307v2.md](../2505.16307v2.md). Single-incumbent hill climbing,
+the baseline design the other papers depart from.
+
+One prompt is carried between iterations. Each iteration proposes 12 variants,
+scores them with the incumbent, keeps the best only if its loss is lower, and
+discards the rest. There is no archive, no front, and no explicit exploration;
+the only diversity is the temperature sampling of the 4 variants per hard
+example and the rotation of which 3 examples are hardest as the prompt
+changes. The paper does not report the acceptance rate or how often runs
+stall, but the case-study loss curve flattens after about 8 of 20 iterations.
+

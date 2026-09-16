@@ -56,6 +56,31 @@ Limits: the ranking depends on the specific candidate draw; N, M, and the
 meta-prompt are not ablated for the filtering stage; the filter costs N x K x M
 rollouts up front; and the filtered subset neither helped nor hurt GEPA.
 
+## 2025, Zhao: PMPO: Probabilistic Metric Prompt Optimization for Small and Large Language Models
+
+Saved as [2505.16307v2.md](../2505.16307v2.md). Selects inputs by difficulty
+under the current prompt rather than by discriminative power across prompts.
+
+Each iteration computes the loss of every training example under the
+incumbent prompt and takes the top-k = 3 highest-loss examples as the
+rewrite targets ("bad case analysis"). Each hard example is shown to the
+rewriter together with the mask analysis and yields 4 variants. Candidate
+selection then uses the loss over the full 50-example training set, so hard
+examples steer proposal but not acceptance. Removing this selection cost
+about 1.1 points on BBH in the cumulative ablation.
+
+Two points of contact with the TODO above:
+
+- This is the always-wrong end of the spectrum p1 warns about: the
+  highest-loss examples under one prompt need not be the ones that separate
+  prompts. PMPO tolerates that because the loss is continuous and
+  deterministic, so an example the model gets wrong still yields a usable
+  gradient-like signal, and because acceptance is decided on the whole set.
+- Their single-example failure mode (a prompt that hard-codes one review's
+  details) and their recommendation of at least 3 to 5 examples is empirical
+  support for needing a small but diverse selected set rather than the single
+  most informative input.
+
 ## 2022, Zhou: Large Language Models are Human-Level Prompt Engineers
 
 Saved as [2211.01910v2.md](../2211.01910v2.md). Input selection appears as

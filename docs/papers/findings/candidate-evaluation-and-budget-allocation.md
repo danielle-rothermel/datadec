@@ -21,6 +21,9 @@ Summary:
 - No paper adapts the number of samples per candidate to the observed
   variance between candidates. That is the gap the statistical-power note in
   [user-input-selection.md](user-input-selection.md) points at.
+- Zhao 2025 sidesteps the gate entirely: likelihood scoring is one prefill
+  per example, so all 13 candidates per iteration are scored on the whole
+  50-example training set and a 20-iteration run takes about 20 minutes.
 
 ## 2025, Agrawal: GEPA: Reflective Prompt Evolution Can Outperform Reinforcement Learning
 
@@ -53,6 +56,24 @@ candidate count from 4 to 128 improved the selected instruction with
 diminishing returns, and iterative resampling rounds plateaued after about
 three. Larger aligned proposers produce shorter instructions, which reduced
 scoring cost enough to dominate the accuracy-cost frontier.
+
+## 2025, Zhao: PMPO: Probabilistic Metric Prompt Optimization for Small and Large Language Models
+
+Saved as [2505.16307v2.md](../2505.16307v2.md). Removes the gate by making
+evaluation cheap enough not to need one.
+
+Every candidate is scored on the full training set of at most 50 examples
+with one forward pass per example and no decoding. Per iteration the
+candidate set is the incumbent plus 3 hard examples times 4 variants, so 13
+prompts times 50 examples of teacher-forced scoring, plus the masking
+analysis (up to 5 extra scorings of the incumbent with one segment removed).
+Twenty iterations took about 20 minutes on a single H800 with a 14B model.
+The paper's efficiency argument is that generation-based methods pay for
+autoregressive decoding on every candidate and every example, whereas
+likelihood scoring costs one prefill, so many more candidates fit in a fixed
+budget. It does not report rollout or dollar budgets comparable to the other
+papers, and the baselines were run under their own default settings rather
+than a matched budget.
 
 ## 2026, Liu: Reflection in the Dark: Exposing and Escaping the Black Box in Reflective Prompt Optimization
 

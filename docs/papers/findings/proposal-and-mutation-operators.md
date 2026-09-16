@@ -22,6 +22,10 @@ Summary:
 - Two papers observe that unconstrained reflection can go wrong in specific
   ways: memorizing training questions (Gao 2026's reading of GEPA's AIME
   prompt) and never questioning seed structure (Liu 2026).
+- Zhao 2025 adds an explicit attribution step: mask each prompt segment,
+  measure the loss change, and hand the table to the rewriter as a hint. It
+  is the only operator in the set that measures rather than infers which part
+  of the prompt to edit.
 
 ## 2025, Agrawal: GEPA: Reflective Prompt Evolution Can Outperform Reinforcement Learning
 
@@ -64,6 +68,31 @@ Ablation: the taxonomy is the dominant component, contributing nearly 60 of
 74 points on the defective-seed task; with epsilon = 1 (no taxonomy) accuracy
 collapsed to 23 percent. Restart and parallel sampling added a few points
 each. Their own prompts for both agents are in Appendix E.
+
+## 2025, Zhao: PMPO: Probabilistic Metric Prompt Optimization for Small and Large Language Models
+
+Saved as [2505.16307v2.md](../2505.16307v2.md). Adds a credit-assignment step
+before rewriting.
+
+Mask-guided importance: the model is asked to split the current prompt into
+up to 5 independent, removable segments; each segment is masked in turn and
+the change in mean training loss is measured. Positive change means the
+segment helps, negative means it hurts or is redundant, near zero means
+inert. This per-segment table is passed to the rewriter as a soft hint
+alongside the task description, the current prompt, one hard example, and a
+fixed list of edit types (rephrase rigid wording, tighten constraints, remove
+redundancy, simplify, fix flow, expand underspecified parts, merge
+overlapping rules). The rewriter produces 4 variants per hard example by
+temperature and top-p sampling and is not restricted to the masked regions.
+Separate rewriting templates exist for large models (diagnose then rewrite)
+and small models (a fill-in form with the same fields), which is how the
+method runs on 0.5B and 1.5B executors.
+
+Ablation on BBH with Qwen2.5-14B: removing the mask analysis cost about 1.6
+points, the largest single component in their table. The case study shows
+the prompt evolving from "Let's think step by step" into a structured
+multi-step instruction over 15 iterations, with most of the loss reduction
+in the first few.
 
 ## 2023, Guo: EvoPrompt: Connecting LLMs with Evolutionary Algorithms Yields Powerful Prompt Optimizers
 
