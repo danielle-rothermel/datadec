@@ -24,6 +24,10 @@ Summary:
 - Zhao 2025 sidesteps the gate entirely: likelihood scoring is one prefill
   per example, so all 13 candidates per iteration are scored on the whole
   50-example training set and a 20-iteration run takes about 20 minutes.
+- Sclar 2023 is the exception on allocation: a Thompson-sampling bandit
+  over candidates with Beta posteriors on per-example accuracy found the
+  best and worst of 320 formats within 1 point using about 5 percent of
+  exhaustive cost, beating UCB and uniform allocation.
 
 ## 2025, Agrawal: GEPA: Reflective Prompt Evolution Can Outperform Reinforcement Learning
 
@@ -74,6 +78,39 @@ likelihood scoring costs one prefill, so many more candidates fit in a fixed
 budget. It does not report rollout or dollar budgets comparable to the other
 papers, and the baselines were run under their own default settings rather
 than a matched budget.
+
+## 2023, Sclar: Quantifying Language Models' Sensitivity to Spurious Features in Prompt Design or: How I learned to start worrying about prompt formatting
+
+Saved as [2310.11324v2.md](../2310.11324v2.md). The most
+explicit treatment in the set of allocating a fixed evaluation budget across
+a candidate set, which is the statistical-power question in
+[user-input-selection.md](user-input-selection.md) applied to candidates
+rather than inputs.
+
+Setup. Given n sampled formats (arms), a dataset, and a budget of E
+example-evaluations in minibatches of B = 20, the goal is to find the best
+and worst arm; half the budget goes to each search and evaluations from the
+first are reused as priors for the second. Because per-example accuracy is
+a Bernoulli trial, each arm's accuracy is modeled as a Beta posterior and
+arms are drawn by Thompson sampling: sample a value from each posterior,
+evaluate the arm with the highest draw on B fresh examples, update. Priors
+can be informative. UCB with c = 2 (the setting Pryzant et al. 2023 found
+best for prompt optimization) and naive uniform allocation are the
+comparisons.
+
+Results. With 320 formats and a budget of 51,200 evaluations, Thompson
+sampling found a spread within 1 accuracy point of the truth, naive
+allocation within 4, and UCB within 11. Exploring about 5 percent of the
+full format-by-example space estimated spread within 2 points. FormatSpread
+needs no model weights, so it runs on API models; the GPT-3.5 study cost
+under 10 dollars per task.
+
+Relevance. This is a cheaper and more principled version of Zhou 2022's
+successive halving for the same job, and it comes with a noise model. The
+same machinery ranks candidate system prompts under a budget when the score
+is per-example correctness; the Beta posterior makes "how many more
+examples does this pair need" an answerable question rather than a fixed
+minibatch size.
 
 ## 2026, Liu: Reflection in the Dark: Exposing and Escaping the Black Box in Reflective Prompt Optimization
 

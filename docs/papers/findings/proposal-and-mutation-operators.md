@@ -29,6 +29,9 @@ Summary:
 - Voronov 2024 warns that component effects interact and flip across
   executors, so per-component attribution and greedy single-part edits are
   conditional on context.
+- Sclar 2023 shows the format space is non-monotonic under atomic edits
+  (chance-level monotonicity along edit chains), so edit operators should
+  act on instruction content and treat format as a sampled variable.
 
 ## 2025, Agrawal: GEPA: Reflective Prompt Evolution Can Outperform Reinforcement Learning
 
@@ -180,4 +183,22 @@ contribution is conditional on the rest of the prompt and on the executor,
 so an edit accepted in one context can be wrong after other edits land, and
 greedy per-component improvement can miss combinations that are only good
 together.
+
+## 2023, Sclar: Quantifying Language Models' Sensitivity to Spurious Features in Prompt Design or: How I learned to start worrying about prompt formatting
+
+Saved as [2310.11324v2.md](../2310.11324v2.md). A negative
+result for edit-based operators over format.
+
+Along 300 chains per task of three formats each one atomic edit apart
+(change a separator, a space, casing, or numbering), accuracy was monotonic
+in 32 to 34 percent of chains, the rate expected from random ordering. The
+authors conclude that local search methods such as simulated annealing are
+not effective in this space. Individual atomic features also rarely predict
+accuracy on their own; only the descriptor separator and enumeration
+numbering had strong marginal effects on more than a few tasks, yet single
+edits could shift accuracy by tens of points. Together with Voronov 2024's
+interaction result, this says the format dimension of a prompt should be
+sampled and selected, not mutated; the reflective and differential operators
+in this file are operators over instruction content and should leave format
+fixed or draw it from a grammar.
 

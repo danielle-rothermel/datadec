@@ -37,6 +37,10 @@ Summary across all six papers:
   component-level analysis for free. Its rankings are setting-specific
   (top-10 formats rarely overlap even within a model family) and components
   have no stable individual effect, so the space cannot be pruned by parts.
+- Sclar 2023 generalizes the grid to a validated grammar with semantic
+  equivalence classes, and shows the format space is non-monotonic under
+  single edits, so for format the sampled population is the search rather
+  than a starting point for local mutation.
 
 ## 2022, Zhou: Large Language Models are Human-Level Prompt Engineers
 
@@ -183,6 +187,39 @@ Findings about the resulting population:
   to the executor and to the other segments present, so a masked
   population's attribution labels are local to the setting they were
   measured in, not properties of the segments.
+
+## 2023, Sclar: Quantifying Language Models' Sensitivity to Spurious Features in Prompt Design or: How I learned to start worrying about prompt formatting
+
+Saved as [2310.11324v2.md](../2310.11324v2.md). Extends
+Voronov 2024's grid to a recursive grammar, and adds two results about
+searching the resulting population.
+
+How the population is built. A Backus-Naur grammar composes basic fields
+(descriptor, separator, text slot) with joiners, enumerations, casing
+functions, and item-numbering functions, each drawing from a small
+user-defined constant set. It generates the formats of 100+ human-written
+tasks, so it is a validated model of the plausible-format space rather than a
+hand-picked list. An equivalence relation restricts sampling to
+meaning-preserving variants of a given starting format, and contextual
+restrictions rule out unnatural combinations. This is the grid recipe with
+structure: nested rather than flat slots, and an explicit notion of which
+members are semantically the same as the seed. Descriptor paraphrase is
+mentioned as a possible extra function but not used.
+
+What it says about populations of formats:
+
+- Sample rather than mutate. Accuracy along chains of single atomic edits
+  was monotonic at chance rate, so a local search from a seed format has no
+  gradient to follow; the paper's own tool samples formats and allocates
+  evaluation budget among them instead of mutating. For the format
+  component of a prompt, an initial population drawn from the grammar is
+  the search, not a warm start for it.
+- The population's ranking is model-specific. If one format beats another
+  on one model, the same order holds on a second model with probability
+  below 0.62; there are no inherently good formats to seed with.
+- Ten members is a lower bound. Spread kept growing from 10 to 20 sampled
+  formats on about a sixth of tasks, so population size for formats should
+  be set by budget, not by an assumed saturation.
 
 ## 2026, Gao: p1: Better Prompt Optimization with Fewer Prompts
 

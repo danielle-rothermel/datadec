@@ -31,16 +31,20 @@ Summary:
   0.51, so at small scale the template decides whether the score carries any
   signal. Both formats and the five fixed demonstrations are pinned in the
   OLMES fork, so template is a controlled variable in our local evals.
+- Sclar 2023 measured the same effect at larger scale with a
+  meaning-preserving format grammar: median spread 7.5 points from 10
+  formats, maxima above 70, model rankings that reverse with significance
+  in both directions, and a format space that is non-monotonic under atomic
+  edits. FormatSpread estimates the spread interval with a Thompson-sampling
+  bandit at a few percent of exhaustive cost.
 
 ## TODO
 
 - Pull the OLMES paper (Gu et al. 2024, "OLMES: A Standard for Language
   Model Evaluations") for its rationale on the RC and MC formats, the
   curated few-shot sets, and its per-format normalization choices.
-- Pull Sclar et al. 2023 ("Quantifying Language Models' Sensitivity to
-  Spurious Features in Prompt Design", FormatSpread), the format-sensitivity
-  study Voronov 2024 builds on, and Zhao et al. 2021 ("Calibrate Before
-  Use") for the calibration scoring rule.
+- Pull Zhao et al. 2021 ("Calibrate Before Use") for the calibration
+  scoring rule.
 
 ## 2024, Voronov: Mind Your Format: Towards Consistent Evaluation of In-Context Learning Improvements
 
@@ -78,6 +82,57 @@ Findings:
   raised accuracy for every model and scoring rule and cut variance; gains
   saturate at 4 or 5; majority vote was worse on many-class tasks; cost is N
   forward passes.
+
+## 2023, Sclar: Quantifying Language Models' Sensitivity to Spurious Features in Prompt Design or: How I learned to start worrying about prompt formatting
+
+Saved as [2310.11324v2.md](../2310.11324v2.md). FormatSpread. The
+larger-scale predecessor of Voronov 2024, with the same conclusion and a
+search tool.
+
+Format space. A hand-written grammar over descriptors, separators, spaces,
+casing, and enumeration styles (letters, numerals, wrappers) that generates
+the formats of 100+ Super-NaturalInstructions tasks, with an equivalence
+relation so that only meaning-preserving variants of a task's original
+format are explored, and contextual restrictions (for example no newline
+inside a field when fields are joined without newlines) to keep formats
+natural. Instruction and demonstration choice are held fixed so format is
+the only variable.
+
+Findings, 53 classification and multiple-choice tasks, LLaMA-2 7B to 70B,
+Falcon 7B and 7B-Instruct, GPT-3.5, 1- and 5-shot:
+
+- Spread is large and does not go away. With only 10 sampled formats the
+  median spread was 7.5 accuracy points, 20 percent of tasks had at least 15
+  points under every LLaMA-2 setting, several tasks exceeded 70 points, and
+  the maximum for LLaMA-2-13B was 76. Larger models, more shots, and
+  instruction tuning did not remove it; 4-bit LLaMA-2-70B at 1-shot had a
+  median spread of 17 points across 320 formats, GPT-3.5 a median of 6.4
+  with a maximum of 56.
+- Ten formats is a lower bound. About 17 percent of tasks gain at least 5
+  points of spread going from 10 to 20 sampled formats.
+- Model comparisons reverse under format change. Given model M beats M' by
+  at least 2 points on one format, M' beats M by at least 2 points on
+  another with probability about 0.14 for both 13B-versus-70B and
+  7B-versus-Falcon-7B, and in 76 and 47 percent of those reversals both
+  directions were statistically significant on 1,000 examples. If format A
+  beats B on one model, it beats B on another with probability under 0.62.
+  Formats are not inherently good or bad.
+- Few atomic features predict performance alone. Over 500 formats on 31
+  tasks, only the descriptor-text separator and the enumeration numbering
+  style produced strongly different accuracy distributions on more than a
+  handful of tasks; spacing, item wrappers, and casing never did, despite
+  each having large variance. Single-character changes still moved
+  accuracy by up to 78 points (a colon after the descriptor versus none).
+- The space is non-monotonic. Along chains of three formats each one atomic
+  edit apart, accuracy was monotonic 32 to 34 percent of the time, which is
+  chance. Local search over formats has nothing to climb.
+- Formats are identifiable in the embedding. The top 100 principal
+  components of the last-layer prompt embedding classify which of 10
+  formats produced it with at least 0.98 accuracy, and separability in the
+  top two components correlates moderately (0.42 to 0.56) with spread.
+- Recommendation: report a performance interval over sampled plausible
+  formats rather than one number, especially when comparing models; a
+  single format remains a valid engineering choice for building a system.
 
 ## 2026, Liu: Reflection in the Dark: Exposing and Escaping the Black Box in Reflective Prompt Optimization
 

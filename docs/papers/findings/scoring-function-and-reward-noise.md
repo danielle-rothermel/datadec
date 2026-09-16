@@ -33,6 +33,11 @@ Summary:
   noise: up to 35 percent relative spread across templates on strong models,
   reported method gains inside that spread, and a 5-template probability
   ensemble that raises the mean and cuts the variance.
+- Sclar 2023 adds that the scoring rule changes the sensitivity (prefix
+  matching is noisier than likelihood ranking), and that format-induced
+  differences are large enough to produce statistically significant
+  reversals in both directions, a noise term separate from response
+  sampling.
 
 ## 2026, Gao: p1: Better Prompt Optimization with Fewer Prompts
 
@@ -137,6 +142,33 @@ scoring family as OLMES RC and MC, and their 4-shot classification setting is
 close to OLMES's 5-shot ARC. Their 35 percent relative spread is a benchmark
 for how much of our per-prompt score variance to expect from format rather
 than content when we compare candidate system prompts.
+
+## 2023, Sclar: Quantifying Language Models' Sensitivity to Spurious Features in Prompt Design or: How I learned to start worrying about prompt formatting
+
+Saved as [2310.11324v2.md](../2310.11324v2.md). Two
+results on the scoring rule and one on what the spread means for
+comparisons.
+
+- The scoring rule changes the measured sensitivity. Exact prefix matching
+  of the generated answer produced larger spreads than probability ranking
+  over the valid options, partly because some formats make the model
+  degenerate (answer with no valid option at all). Under prefix matching 24
+  percent of atomic format changes moved accuracy by at least 5 points;
+  under ranking, 11 percent. Ranking is the more forgiving score, which is
+  the OLMES RC and MC family.
+- Format noise is large enough to flip significant results. Pairs of models
+  reversed their ordering by at least 2 points under a different format
+  about 14 percent of the time, and in most of those cases both orderings
+  were significant by a paired test on 1,000 examples. A significant
+  difference between two prompts on one format is not evidence about the
+  prompts' content until format is varied or held equal across the
+  comparison.
+- Spread as a reported quantity. The paper's recommendation is to report
+  the interval of accuracy across sampled plausible formats. For an
+  optimizer that means the score of a candidate instruction has a
+  format-induced component of several points that no amount of repeated
+  sampling on one format will average out, which is a different noise term
+  from the response-sampling noise in Gao 2026's decomposition.
 
 ## 2022, Zhou: Large Language Models are Human-Level Prompt Engineers
 
