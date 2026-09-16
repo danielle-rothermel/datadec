@@ -8,8 +8,10 @@ saved full text.
 
 Summary across all six papers:
 
-- Only two papers start from a population rather than a single seed, and only
-  one of those (Guo 2023) ablates the population's composition. The others
+- Three papers start from a population rather than a single seed: Zhou 2022
+  samples it from a proposer, Guo 2023 mixes human prompts with paraphrases,
+  and Voronov 2024 samples from a factored grid of components. Only Guo 2023
+  ablates the population's composition. The others
   either start from one hand-written seed (Agrawal 2025, Agrawal 2026,
   Liu 2026) or sample a population purely as a measurement instrument
   (Gao 2026).
@@ -29,10 +31,12 @@ Summary across all six papers:
   seed to a population: the seed plus its single-segment ablations, each with
   a measured loss delta. Ablative rather than lexical variation, bounded by
   the seed's content.
-- Voronov 2024 shows that a population's ranking is specific to the
-  executor, the scoring rule, and the demonstrations: top-10 formats rarely
-  overlap even within a model family, and template components have no stable
-  individual effect. Populations do not transfer; re-derive per setting.
+- Voronov 2024 builds its population by a third route: factor the prompt
+  into slots, curate a small option pool per slot, and sample from the
+  Cartesian product. That gives enumerable, structured diversity and
+  component-level analysis for free. Its rankings are setting-specific
+  (top-10 formats rarely overlap even within a model family) and components
+  have no stable individual effect, so the space cannot be pruned by parts.
 
 ## 2022, Zhou: Large Language Models are Human-Level Prompt Engineers
 
@@ -122,6 +126,63 @@ Diversity beyond initialization:
 Caveat: the ablation is on a five-class sentiment task with a 2023-era model,
 effect sizes are small relative to variance, and diversity means paraphrases
 of a fixed set of human prompts rather than structurally different strategies.
+
+## 2024, Voronov: Mind Your Format: Towards Consistent Evaluation of In-Context Learning Improvements
+
+Saved as [2401.06766v3.md](../2401.06766v3.md). Not an optimizer, but its
+template construction is a population-generation method in its own right,
+and a different kind from the others here.
+
+How the population is built. A template is factored into four slots: input
+verbalizer, output verbalizer, intra-separator (between input and label), and
+inter-separator (between demonstrations). Each slot has a small pool of
+human-written options gathered from prior work (the LM-BFF verbalizers of
+Gao et al. 2021, minimal "{}" templates, and universal "input/output" style
+labels), listed in Table 2. Every combination is a valid template, giving 216
+formats for SST-2 and 168 for the other datasets. Experiments then draw 10
+templates uniformly at random per demonstration seed, and 30 for the transfer
+analysis. So the recipe is: curate option pools per component, take the
+Cartesian product, sample uniformly. Label words themselves were held fixed
+and are noted as an unexplored slot.
+
+What this recipe offers that sampling and paraphrase do not:
+
+- Structured, enumerable diversity. Members differ along known axes, the
+  whole space can be listed, and coverage is uniform by construction rather
+  than dependent on a proposer's temperature or a meta-prompt.
+- Component-level analysis for free. Because every member is a known
+  combination, the effect of each option can be measured marginally over the
+  others (Appendix D). That analysis is what produced the findings below.
+- Cheap extension. New options in any slot multiply the space without new
+  design work.
+
+What it costs: the axes and options are hand-chosen, so the population can
+only contain what the designer put in the pools, and the space grows
+multiplicatively, which is why they sample rather than enumerate. It also
+only covers format; content variation would need slots of its own.
+
+Findings about the resulting population:
+
+- The best members do not transfer. Intersection-over-union of the top-10
+  templates between models exceeded 0.5 for only a few pairs, including
+  models in the same family trained on the same data. Transfer between
+  prediction methods (Direct, Channel, Calibration) was similarly low, and
+  changing the demonstration set, even adding demonstrations chosen by the
+  same method, reordered the top templates. A population ranked for one
+  executor or scoring rule has to be re-ranked for another; Zhou 2022 reached
+  the same conclusion for instructions.
+- The top of the ranking is flat. The tenth-best of 30 templates averaged
+  about 90 percent of the best template's score, so a modest random draw
+  from the grid reliably contains a near-best member, the same
+  diminishing-return shape Zhou 2022 saw for instruction samples.
+- Components have no stable individual effect. No verbalizer or separator was
+  consistently bad, part rankings flipped between models, and good templates
+  were assembled from parts that were individually mediocre. The space
+  cannot be pruned by dropping options. This is also a caution for the
+  masking note under Zhao 2025 below: a single-segment loss delta is specific
+  to the executor and to the other segments present, so a masked
+  population's attribution labels are local to the setting they were
+  measured in, not properties of the segments.
 
 ## 2026, Gao: p1: Better Prompt Optimization with Fewer Prompts
 
@@ -262,34 +323,3 @@ contain anything the seed did not, and the segmenter's choice of units bounds
 the diversity. A natural combination is to use masked variants as the
 structured core of a population and sampled or paraphrased candidates for
 content the seed lacks.
-
-## 2024, Voronov: Mind Your Format: Towards Consistent Evaluation of In-Context Learning Improvements
-
-Saved as [2401.06766v3.md](../2401.06766v3.md). No optimizer, but the
-strongest evidence here that starting prompts are setting-specific.
-
-The template space is a small combinatorial grid (verbalizers and separators),
-so a random sample of 10 templates is a ready-made population and 30 give a
-near-complete ranking. Three results matter for population design:
-
-- The best templates do not transfer. Intersection-over-union of the top-10
-  templates between models exceeded 0.5 for only a few pairs, including
-  models in the same family trained on the same data. Transfer between
-  prediction methods (Direct, Channel, Calibration) was similarly low, and
-  changing the demonstration set, even adding demonstrations chosen by the
-  same method, reordered the top templates. A population tuned for one
-  executor or scoring rule has to be re-derived for another; this is the
-  same conclusion Zhou 2022 reached for instructions.
-- The top of the ranking is flat. The tenth-best of 30 templates averaged
-  about 90 percent of the best template's score, so a modest random sample
-  reliably contains a near-best member, which is the same diminishing-return
-  shape Zhou 2022 saw for instruction samples.
-- Components do not have stable individual effects. No verbalizer or
-  separator was consistently bad, part rankings flipped between models, and
-  good templates were assembled from parts that were individually mediocre.
-  This is a caution for the masking note under Zhao 2025 above: a
-  single-segment loss delta is specific to the executor and to the other
-  segments present, so a masked population's attribution labels should be
-  treated as local to the setting they were measured in, not as properties of
-  the segments.
-
