@@ -9,6 +9,10 @@ norm_correct_prob_uncond shares out the conditional/unconditional ratios (no Dat
 Each likelihood metric's argmax is the corresponding accuracy's winner. norm_margin_* is the gold
 share minus the best wrong share (DataDecide's `margin` is a raw-probability difference; not used).
 
+The generation formulations (gen_rc, gen_mc) reuse the RC / MC prompt, decode greedily and score the
+normalized prefix of the generation (fork metric PrefixMatch): text_match under RC prompts,
+label_match under MC prompts. They have accuracy only; primary_likelihood is None for them.
+
 The GEPA adapter in the OLMES fork (local/olmes_gepa_adapter.py) carries a copy of
 likelihood_metrics and the two maps because it runs in a different environment; keep them in sync.
 """
@@ -18,7 +22,13 @@ from __future__ import annotations
 import math
 
 PRIMARY_METRIC = {("arc_easy", "rc"): "acc_per_char", ("arc_easy", "mc"): "acc_raw",
-                  ("arc_challenge", "rc"): "acc_uncond", ("arc_challenge", "mc"): "acc_raw"}
+                  ("arc_challenge", "rc"): "acc_uncond", ("arc_challenge", "mc"): "acc_raw",
+                  # generation formulations (fork's PrefixMatch): no likelihood twin
+                  ("arc_easy", "gen_rc"): "text_match", ("arc_easy", "gen_mc"): "label_match",
+                  ("arc_challenge", "gen_rc"): "text_match", ("arc_challenge", "gen_mc"): "label_match"}
+GENERATION_FORMULATIONS = ("gen_rc", "gen_mc")
+GENERATION_METRICS = ("label_match", "text_match", "any_match", "no_answer", "pred_label", "pred_text",
+                      "num_tokens", "max_tokens_reached")
 
 # accuracy label -> likelihood label whose argmax is the same winner
 LIKELIHOOD_FOR_ACCURACY = {
@@ -36,8 +46,9 @@ MARGIN_FOR_LIKELIHOOD = {
 SCORE_METRIC_ALIASES = ("primary", "primary_likelihood")
 
 
-def primary_likelihood_metric(primary_metric: str) -> str:
-    return LIKELIHOOD_FOR_ACCURACY[primary_metric]
+def primary_likelihood_metric(primary_metric: str) -> str | None:
+    """The likelihood twin of an accuracy label; None for generation metrics, which have none."""
+    return LIKELIHOOD_FOR_ACCURACY.get(primary_metric)
 
 
 def resolve_score_metric(name: str, primary_metric: str) -> str:
@@ -45,7 +56,10 @@ def resolve_score_metric(name: str, primary_metric: str) -> str:
     if name == "primary":
         return primary_metric
     if name == "primary_likelihood":
-        return primary_likelihood_metric(primary_metric)
+        twin = primary_likelihood_metric(primary_metric)
+        if twin is None:
+            raise ValueError(f"{primary_metric} has no likelihood twin")
+        return twin
     return name
 
 

@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from datadec.po.formats import format_id, normalize, validate
-from datadec.po.metrics import PRIMARY_METRIC
+from datadec.po.metrics import GENERATION_FORMULATIONS, PRIMARY_METRIC
 from datadec.po.subsets import ItemSubset
 
 DEFAULT_ROOT = Path.home() / "drotherm" / "data" / "runs" / "po" / "sweeps"
@@ -20,6 +20,8 @@ FEWSHOT_SOURCE = {"arc_easy": "OLMES:ARC-Easy", "arc_challenge": "OLMES:ARC-Chal
 TASK_NAMES = {
     ("arc_easy", "rc"): "arc_easy:fmt", ("arc_easy", "mc"): "arc_easy:mc:fmt",
     ("arc_challenge", "rc"): "arc_challenge:fmt", ("arc_challenge", "mc"): "arc_challenge:mc:fmt",
+    ("arc_easy", "gen_rc"): "arc_easy:gen:fmt", ("arc_easy", "gen_mc"): "arc_easy:mc:gen:fmt",
+    ("arc_challenge", "gen_rc"): "arc_challenge:gen:fmt", ("arc_challenge", "gen_mc"): "arc_challenge:mc:gen:fmt",
 }
 
 
@@ -37,6 +39,7 @@ class SweepSpec:
     num_shots: int = 5
     device: str = "mps"
     batch_size: int = 16
+    use_cache: bool = True  # generation formulations only; False for hf_olmo (DataDecide) checkpoints, which cannot generate with a KV cache
 
 
 def _instruction_entries(spec: SweepSpec) -> list[dict]:
@@ -73,6 +76,9 @@ def build_tasks(spec: SweepSpec, subset: ItemSubset) -> list[dict]:
         context_kwargs: dict = {"prompt_format": dict(fmt)}
         if instr.get("text"):
             context_kwargs["description"] = instr["text"]
+        extra: dict = {}
+        if formulation in GENERATION_FORMULATIONS and not spec.use_cache:
+            extra["generation_kwargs"] = {"use_cache": False}
         tasks.append(
             {
                 "task_name": TASK_NAMES[(spec.task, formulation)],
@@ -82,6 +88,7 @@ def build_tasks(spec: SweepSpec, subset: ItemSubset) -> list[dict]:
                 "primary_metric": PRIMARY_METRIC[(spec.task, formulation)],
                 "limit": len(subset.ids),
                 "context_kwargs": context_kwargs,
+                **extra,
                 "custom_kwargs": {"native_ids": list(subset.ids)},
                 "metadata": {
                     "alias": f"{formulation}|{fid}|{instr['id']}" + (f"|k{num_shots}" if num_shots != 5 else ""),

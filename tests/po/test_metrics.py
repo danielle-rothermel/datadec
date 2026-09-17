@@ -57,7 +57,9 @@ def test_missing_gold_yields_nulls():
 
 def test_primary_pairing_is_pinned():
     assert PRIMARY_METRIC == {("arc_easy", "rc"): "acc_per_char", ("arc_easy", "mc"): "acc_raw",
-                              ("arc_challenge", "rc"): "acc_uncond", ("arc_challenge", "mc"): "acc_raw"}
+                              ("arc_challenge", "rc"): "acc_uncond", ("arc_challenge", "mc"): "acc_raw",
+                              ("arc_easy", "gen_rc"): "text_match", ("arc_easy", "gen_mc"): "label_match",
+                              ("arc_challenge", "gen_rc"): "text_match", ("arc_challenge", "gen_mc"): "label_match"}
     assert primary_likelihood_metric("acc_per_char") == "norm_correct_prob_per_char"
     assert primary_likelihood_metric("acc_uncond") == "norm_correct_prob_uncond"
     assert primary_likelihood_metric("acc_raw") == "norm_correct_prob"
@@ -65,3 +67,12 @@ def test_primary_pairing_is_pinned():
     assert resolve_score_metric("primary", "acc_uncond") == "acc_uncond"
     assert resolve_score_metric("primary_likelihood", "acc_uncond") == "norm_correct_prob_uncond"
     assert resolve_score_metric("acc_raw", "acc_uncond") == "acc_raw"
+
+
+def test_generation_formulations_have_no_likelihood_twin():
+    assert PRIMARY_METRIC[("arc_easy", "gen_rc")] == "text_match"
+    assert PRIMARY_METRIC[("arc_easy", "gen_mc")] == "label_match"
+    assert primary_likelihood_metric("text_match") is None
+    assert resolve_score_metric("primary", "label_match") == "label_match"
+    with pytest.raises(ValueError):
+        resolve_score_metric("primary_likelihood", "text_match")

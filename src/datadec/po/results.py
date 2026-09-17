@@ -8,7 +8,7 @@ from pathlib import Path
 import pandas as pd
 
 from datadec.po.formats import AXES
-from datadec.po.metrics import likelihood_metrics, primary_likelihood_metric
+from datadec.po.metrics import GENERATION_METRICS, likelihood_metrics, primary_likelihood_metric
 from datadec.po.sweep import baselines_dir
 
 ITEM_METRICS = (
@@ -70,11 +70,18 @@ def load_sweep(sweep_dir: Path) -> dict[str, pd.DataFrame]:
                 continue
             p = json.loads(line)
             key = {"task_idx": m["task_idx"], "native_id": p["native_id"], "doc_id": p["doc_id"], "label": p.get("label")}
-            lik = likelihood_metrics(p.get("model_output", []), p.get("label"))
+            outputs = p.get("model_output", [])
+            if base["primary_likelihood_metric"] is None:  # generation formulation: one generation, no choice scores
+                gen = {k: p["metrics"].get(k) for k in GENERATION_METRICS}
+                gen["continuation"] = outputs[0].get("continuation") if outputs else None
+                item_rows.append(base | key | {k: None for k in ITEM_METRICS} | likelihood_metrics([], None) | gen
+                                 | {"primary": p["metrics"].get(base["primary_metric"]), "primary_likelihood": None})
+                continue
+            lik = likelihood_metrics(outputs, p.get("label"))
             item_rows.append(base | key | {k: p["metrics"].get(k) for k in ITEM_METRICS} | lik
                              | {"primary": p["metrics"].get(base["primary_metric"]),
                                 "primary_likelihood": lik[base["primary_likelihood_metric"]]})
-            for ci, out in enumerate(p.get("model_output", [])):
+            for ci, out in enumerate(outputs):
                 choice_rows.append(base | key | {"choice_index": ci} | {k: out.get(k) for k in CHOICE_FIELDS})
     return {
         "tasks": pd.DataFrame(task_rows),

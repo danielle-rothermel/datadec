@@ -20,12 +20,13 @@ def main(
     revision: Annotated[str | None, typer.Option("--revision")] = None,
     task: Annotated[str, typer.Option("--task", help="arc_easy or arc_challenge")] = "arc_easy",
     pairs: Annotated[Path | None, typer.Option("--pairs", help="sampled (format, instruction) pairs JSON; overrides formats x instructions")] = None,
-    formulations: Annotated[str, typer.Option("--formulations")] = "rc,mc",
+    formulations: Annotated[str, typer.Option("--formulations", help="comma-separated from rc, mc, gen_rc, gen_mc")] = "rc,mc",
     formats: Annotated[Path | None, typer.Option("--formats", help="formats JSON; omit for canonical only")] = None,
     instructions: Annotated[Path | None, typer.Option("--instructions", help="APE candidates.jsonl or JSON list")] = None,
     num_shots: Annotated[int, typer.Option("--num-shots")] = 5,
     device: Annotated[str, typer.Option("--device")] = "mps",
     batch_size: Annotated[int, typer.Option("--batch-size")] = 16,
+    use_cache: Annotated[bool, typer.Option("--cache/--no-cache", help="KV cache for generation formulations; --no-cache for DataDecide (hf_olmo) checkpoints")] = True,
     root: Annotated[Path, typer.Option("--root")] = DEFAULT_ROOT,
     run: Annotated[bool, typer.Option("--run/--no-run")] = True,
     chunk_size: Annotated[int, typer.Option("--chunk-size", help="tasks per OLMES process; 0 = all in one")] = 10,
@@ -37,7 +38,7 @@ def main(
         formulations=tuple(f.strip() for f in formulations.split(",") if f.strip()),
         formats=tuple(load_formats(formats)) if formats else (dict(CANONICAL),),
         instructions=tuple(load_instructions(instructions)) if instructions else (),
-        num_shots=num_shots, device=device, batch_size=batch_size,
+        num_shots=num_shots, device=device, batch_size=batch_size, use_cache=use_cache,
     )
     sweep_dir = write_sweep(spec, root=root)
     typer.echo(f"wrote {sweep_dir} ({sum(1 for _ in open(sweep_dir / 'tasks.jsonl'))} tasks)")
