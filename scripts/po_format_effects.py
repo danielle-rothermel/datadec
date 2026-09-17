@@ -27,7 +27,12 @@ def main(
     pairs: Annotated[Path, typer.Option("--pairs")],
     out: Annotated[Path, typer.Option("--out")],
     subsets: Annotated[str, typer.Option("--subsets")] = "train,dev",
+    plot_subset: Annotated[str, typer.Option("--plot-subset", help="subset drawn in bars.png")] = "train",
+    resamples: Annotated[int, typer.Option("--resamples")] = 2000,
+    seed: Annotated[int, typer.Option("--seed")] = 0,
+    model_labels: Annotated[str | None, typer.Option("--model-labels", help="comma-separated display names, same order as --models")] = None,
 ) -> None:
+    rng = np.random.default_rng(seed)
     labels = {p["format_id"] + f"|k{p['num_shots']}": p["label"] for p in json.loads(pairs.read_text())["pairs"]}
     order = [p["label"] for p in json.loads(pairs.read_text())["pairs"]]
     rows = []
@@ -45,9 +50,11 @@ def main(
                 for label, h in g.groupby("label"):
                     h = h.set_index("native_id").reindex(base.index)
                     for metric in ("primary", "primary_likelihood"):
-                        diff = h[metric] - base[metric]
+                        diff = (h[metric] - base[metric]).to_numpy(float)
+                        boot = diff[rng.integers(0, len(diff), size=(resamples, len(diff)))].mean(axis=1)
                         rows.append({"model": model, "subset": sub, "formulation": form, "format": label, "metric": metric,
-                                     "mean": h[metric].mean(), "diff": diff.mean(), "se": diff.std(ddof=1) / np.sqrt(len(diff)), "n": int(len(diff))})
+                                     "mean": h[metric].mean(), "diff": diff.mean(), "se": diff.std(ddof=1) / np.sqrt(len(diff)),
+                                     "ci_lo": float(np.percentile(boot, 2.5)), "ci_hi": float(np.percentile(boot, 97.5)), "n": int(len(diff))})
     df = pd.DataFrame(rows)
     out.mkdir(parents=True, exist_ok=True)
     df.to_csv(out / "effects.csv", index=False)
@@ -73,6 +80,33 @@ def main(
             md.append("")
     (out / "effects.md").write_text("\n".join(md) + "\n")
     typer.echo("\n".join(md))
+
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    model_keys = models.split(",")
+    names = model_labels.split(",") if model_labels else model_keys
+    panels = [("rc", "primary", "RC accuracy Δ vs canonical"), ("rc", "primary_likelihood", "RC likelihood Δ vs canonical"),
+              ("mc", "primary", "MC accuracy Δ vs canonical"), ("mc", "primary_likelihood", "MC likelihood Δ vs canonical")]
+    fig, axes = plt.subplots(2, 2, figsize=(14, 8.5), constrained_layout=True)
+    width = 0.8 / len(model_keys)
+    for ax, (form, metric, title) in zip(axes.flat, panels, strict=True):
+        fmts = [f for f in order if f != "canonical" and not df[(df.formulation == form) & (df.format == f) & (df.subset == plot_subset)].empty]
+        x = np.arange(len(fmts))
+        for mi, (mk, nm) in enumerate(zip(model_keys, names, strict=True)):
+            t = df[(df.model == mk) & (df.subset == plot_subset) & (df.formulation == form) & (df.metric == metric)].set_index("format").reindex(fmts)
+            if t["diff"].isna().all():
+                continue
+            ax.bar(x + (mi - (len(model_keys) - 1) / 2) * width, t["diff"], width, color=f"C{mi}", label=nm,
+                   yerr=[t["diff"] - t["ci_lo"], t["ci_hi"] - t["diff"]], capsize=2, error_kw={"lw": 0.9})
+        ax.axhline(0, color="black", lw=0.8)
+        ax.set_xticks(x)
+        ax.set_xticklabels(fmts, rotation=35, ha="right")
+        ax.set_title(title)
+        ax.grid(axis="y", alpha=0.3)
+        ax.legend(fontsize=8)
+    fig.savefig(out / "bars.png", dpi=150)
+    typer.echo(f"wrote {out / 'bars.png'}")
 
 
 if __name__ == "__main__":
