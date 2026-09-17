@@ -2,6 +2,24 @@
 
 The prompt-format grid (seed formats) and how formats are chosen and scored. Log, most recent first.
 
+## 2026-09-17 16:45 — Outcome: one-factor run on four models; canonical stays the default
+
+The 13:25 run completed on DataDecide 300M and 1B and Qwen3-1.7B Base and Instruct (train
+and dev each). Results note `docs/results/2026-09-17-1350-fmt-ofat-dd300m.md`. Charts use
+paired bootstrap CIs on the pooled train+dev items (n=600); per-subset rows are kept as the
+replication check.
+
+- No non-canonical format beats canonical on the likelihood share on any model except dash on
+  1B (+0.0013 ± 0.0002), which costs both Qwen models 0.006 to 0.009. Every other resolved
+  effect is a loss. Canonical OLMES remains the query format for the instruction experiments.
+- Effects are model-specific in sign (Q/A, Input/Output, dash all flip between models), so
+  any later format selection is per model and per formulation, as SAMMO and Bozhenko found.
+- Shot count is the one shared effect: zero shots hurts all four models (300M −0.009, 1B
+  −0.008, Qwen-Base −0.037, Qwen −0.064 share); one shot hurts all four by less.
+- DD models stay at chance on MC under every format tried; only Qwen responds to MC format.
+- Deferred, unchanged: RC factorial (separator × descriptor × shots, 45 formats), option
+  wrapper and item style with surface-form scoring, padding.
+
 ## 2026-09-17 13:25 — Decision: first-pass format run (300M, one factor at a time, axes 1/2/5/6)
 
 Six axes chosen for the first pass out of the existing seven plus proposed additions: descriptor
@@ -78,10 +96,14 @@ normalized away at scoring time.
 
 ## 2026-09-17 10:20 — Record: provenance of the current grid
 
-The seven axes (descriptor pair, descriptor separator, descriptor case, answer break,
-example separator, choice label style, choices header) come from Sclar 2023's
-meaning-preserving grammar; the shape (few named options per axis, scored by
-likelihood) from Voronov 2024. The option pools (`rule`, `dash`, ...) are ours. Sclar
-found only the descriptor separator and enumeration style moved most tasks; several of
-our axes are coverage, not expected effects. Canonical format reproduces OLMES byte for
+Six of the seven axes (descriptor separator, descriptor case, answer break, example
+separator, choice label style, choices header) come from Sclar 2023's meaning-preserving
+grammar, which varies descriptor casing but never the descriptor words. Varying the
+descriptor words themselves (descriptor pair: Question/Answer, Q/A, Input/Output) comes from
+Voronov 2024's input and output verbalizer slots, as does the shape (few named options per
+axis, scored by likelihood). The option pools (`rule`, `dash`, ...) are ours. Sclar found only
+the descriptor separator and enumeration style moved most tasks, and casing never did;
+Voronov found verbalizer choice has high variance with the best option flipping between
+models. Several of our axes are coverage, not expected effects. (Attribution corrected
+2026-09-17 16:45; an earlier version credited descriptor pair to Sclar.) Canonical format reproduces OLMES byte for
 byte (`daa93775`).
