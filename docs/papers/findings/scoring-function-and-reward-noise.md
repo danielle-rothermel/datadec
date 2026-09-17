@@ -39,6 +39,24 @@ Summary:
   reversals in both directions, a noise term separate from response
   sampling.
 
+## 2025, Heineman: Signal and Noise: A Framework for Reducing Uncertainty in Language Model Evaluation
+
+Saved as [2508.13144v1.md](../2508.13144v1.md); full summary in
+[user-input-selection.md](user-input-selection.md). The relevant result here
+is the metric intervention: replacing the primary metric (accuracy, exact
+match, pass@1) with bits-per-byte of the gold continuation raises the
+signal-to-noise ratio on nearly every benchmark (ARC-Easy 21 to 65,
+ARC-Challenge 6.6 to 45, GSM8K 1.2 to 7.0) and improves small-to-large
+decision accuracy on 90 percent of 30 benchmarks, most dramatically on tasks
+where small models are at chance. Their BPB is the gold continuation's own
+likelihood, not normalized over the choices, so it is closer to OLMES's
+`bits_per_byte_corr` than to our `norm_correct_prob_*` family; both are
+continuous, and which one has the better signal for prompt comparison is an
+open question we can answer from the per-item outputs we already have.
+
+Era caveat: as in the input-selection file; current models and tasks, but
+the comparisons are between models, not prompts.
+
 ## 2026, Gao: p1: Better Prompt Optimization with Fewer Prompts
 
 Saved as [2604.08801v2.md](../2604.08801v2.md).

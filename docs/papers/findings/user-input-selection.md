@@ -16,10 +16,6 @@ from that, rather than from a fixed dev-set size.
 
 ## TODO
 
-- Pull the signal-versus-noise paper and add a section. Most likely
-  Heineman et al. 2025, "Signal and Noise: A Framework for Reducing
-  Uncertainty in Language Model Evaluation" (arXiv 2508.13144), the Ai2 paper
-  built on DataDecide, but confirm before pulling.
 - Look into which examples are always correct or always wrong across
   candidate system prompts. Those contribute nothing to discriminating
   candidates and are the first thing to drop, but check whether they carry
@@ -30,6 +26,46 @@ from that, rather than from a fixed dev-set size.
   which system prompts make inputs look different from each other, and whether
   a joint decomposition (input effect, system-prompt effect, interaction,
   response noise) gives a better selection rule than either marginal alone.
+
+## 2025, Heineman: Signal and Noise: A Framework for Reducing Uncertainty in Language Model Evaluation
+
+Saved as [2508.13144v1.md](../2508.13144v1.md). About choosing benchmarks and
+metrics for comparing *models* (data recipes at small scale predicting large
+scale), not prompts, but the framework transfers directly to choosing items
+and metrics for comparing prompts.
+
+Defines signal as relative dispersion of final-checkpoint scores across a
+population of comparable models (max pairwise gap over the mean) and noise as
+the relative standard deviation of a single model's score over its final n
+training checkpoints; the ratio predicts decision accuracy (whether a small
+scale ranking holds at large scale) better than either alone. Checkpoint
+noise correlates with seed and data-order noise (R^2 0.82 to 0.95), which is
+why they use the cheap one. Three interventions all improve decision
+accuracy: (1) keep only the sub-tasks with the highest SNR, greedily added in
+SNR order, which beat the full benchmark with 16 of 57 MMLU sub-tasks and 6
+AutoBencher sub-tasks; low-SNR sub-tasks overlap with the ones MMLU-Redux
+flagged as mislabeled; (2) average the last k checkpoints; (3) score with
+bits-per-byte of the gold continuation instead of accuracy, which raised SNR on
+almost every benchmark (ARC-Easy 21 to 65, ARC-Challenge 6.6 to 45) and
+decision accuracy on 90 percent of them. Appendix B.2: random item subsets
+reach diminishing returns around 1K items and a 300-item ARC-Easy subset is
+less noisy than 30K AutoBencher items, so quality of items beats count.
+
+Mapping to our setting: the population of "models" is our population of
+prompts; signal is the spread of prompt scores; the checkpoint-noise term has
+no direct analogue because our scoring is deterministic, so noise is item
+sampling (and, if we wanted a per-item stability measure, the score of the
+same item across the last n DataDecide checkpoints, which exist for every DD
+model). Their sub-task filter is p1's input filter at coarser granularity, and
+their BPB result is the same conclusion as DataDecide's and ours: continuous
+likelihood metrics have more signal than accuracy where small models are near
+chance.
+
+Era caveat: 375 open-weight models from 60M to 32B (OLMo, DataDecide,
+Qwen, Llama and others) on 30 current benchmarks, evaluated with OLMES in
+2025, so the models and tasks are current; the caveat is scope, since every
+result is about ranking models, and prompt effects are one to two orders of
+magnitude smaller than the model differences they study.
 
 ## 2026, Gao: p1: Better Prompt Optimization with Fewer Prompts
 
