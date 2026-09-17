@@ -4,7 +4,8 @@ Given OLMES run dirs holding an RC task and an MC task over the full test split 
 one dir each; tasks are found by name), draw random subsets of each size many times and record the spread of RC primary, MC primary, their paired
 difference, and the same for primary_likelihood. Also computes the percentile-bootstrap CI a single subset
 would have reported (averaged over subsets, and exactly for the given subset ids), and paired power figures.
-Writes plot.png, table.md, summary.json under --out.
+Writes plot.png, table.md, table.csv, summary.json, and items.csv (per-item values, consumed by
+po_subset_compare.py) under --out.
 """
 
 from __future__ import annotations
@@ -120,6 +121,7 @@ def main(
 
     out.mkdir(parents=True, exist_ok=True)
     table.to_csv(out / "table.csv", index=False)
+    pd.DataFrame({"native_id": ids, **{k: v for k, v in series.items() if not k.startswith("diff_")}}).to_csv(out / "items.csv", index=False)
     (out / "summary.json").write_text(json.dumps({
         "run_dirs": [str(d) for d in run_dir], "model": rc.attrs["model"], "revision": rc.attrs["revision"], "n_full": n_full,
         "subset": str(subset), "sizes": size_list, "draws": draws, "inner_subsets": inner_subsets, "resamples": resamples,
