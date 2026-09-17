@@ -2,6 +2,31 @@
 
 The prompt-format grid (seed formats) and how formats are chosen and scored. Log, most recent first.
 
+## 2026-09-17 13:25 — Decision: first-pass format run (300M, one factor at a time, axes 1/2/5/6)
+
+Six axes chosen for the first pass out of the existing seven plus proposed additions: descriptor
+separator, descriptor pair (with two random-string answer descriptors), option item style,
+option wrapper, text-to-option separator, demonstration count. Of those, the first run uses
+axes 1 (separator), 2 (descriptor pair), 5 (text-to-option separator, MC only) and 6 (shots),
+one factor at a time from canonical, instruction none: 9 RC/MC formats plus 2 MC-only, 20
+tasks per subset, on the SNR train and dev subsets (dev is the replicate for the winner's-curse
+check), DataDecide 300M only. Pairs file `configs/po/pairs/arc-fmt-ofat-1256.json`; sweeps under
+`~/drotherm/data/runs/po/clean-20260917/sweeps/fmt-ofat-1256-dd300m-{train,dev}`.
+
+- Random descriptors drawn once and fixed in the fork: `random_vocab` = "ceil Ai aggress"
+  (3 uniform tokens from the OLMo vocabulary, seed 0), `random_phrase` = "View Mobile Site"
+  (4 tokens sampled from DataDecide-300M with no context, seed 0). Question descriptor stays
+  "Question"; the RC unconditional context becomes the random string plus colon.
+- Shot count is an OLMES task parameter (first k of the curated five); it travels in the pair
+  and the task alias (`|k0`, `|k1`), not in the format id.
+- The new `choice_text_separator` axis enters a format id only when non-canonical, so earlier
+  ids (canonical `daa93775`) are unchanged.
+- Full grids costed: RC 45 formats ~1.5 h on 300M; MC over axes 1/2/5/6 135 formats ~2 h on
+  300M, all single-token; adding item style and wrapper makes the MC grid 1620 and infeasible.
+  Item style, wrapper and the surface-form scoring change are deferred to a second pass.
+- Whether DD models stay at chance on MC under other formats is an open question this run
+  starts to answer; MC is scored the current way (bare label for dot styles).
+
 ## 2026-09-17 13:10 — Decision: widen the answer-descriptor axis and add random-string descriptors
 
 Lu 2023: the string between the input and the scored label (our answer-descriptor slot)
