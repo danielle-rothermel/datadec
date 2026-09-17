@@ -2,7 +2,7 @@
 
 Inputs are items.csv files from po_subset_bootstrap.py (one per model, same items). Writes
 bars.png (full-set value per model per metric with a bootstrap 95% interval), diff_heatmap.png
-(paired column-minus-row differences), power_heatmap.png (items needed for 80% power on each
+(paired row-minus-column differences, full matrix), power_heatmap.png (items needed for 80% power on each
 paired difference), and summary.csv under --out.
 """
 
@@ -51,9 +51,9 @@ def main(
     for si, key in enumerate(SERIES):
         for i, fi in enumerate(frames):
             for j, fj in enumerate(frames):
-                if j >= i:
+                if i == j:
                     continue
-                d = fi[key].to_numpy(float) - fj[key].to_numpy(float)
+                d = fi[key].to_numpy(float) - fj[key].to_numpy(float)  # row minus column
                 diff[si, i, j] = d.mean()
                 sd = d.std(ddof=1)
                 power[si, i, j] = (Z80 * sd / abs(d.mean())) ** 2 if d.mean() != 0 else np.inf
@@ -80,37 +80,43 @@ def main(
     fig.savefig(out / "bars.png", dpi=150)
 
     def heat(mat: np.ndarray, fname: str, fmt, cmap: str, center: bool, log: bool) -> None:
-        fig, axes = plt.subplots(1, 4, figsize=(17, 4.0), constrained_layout=True)
-        for si, (ax, key) in enumerate(zip(axes, SERIES, strict=True)):
-            m = mat[si]
-            plot = np.log10(m) if log else m
-            vmax = np.nanmax(np.abs(plot)) if center else np.nanmax(plot)
-            vmin = -vmax if center else np.nanmin(plot)
-            im = ax.imshow(np.where(np.isnan(plot), np.nan, plot), cmap=cmap, vmin=vmin, vmax=vmax)
-            ax.set_xlim(-0.5, len(names) - 1.5)
-            ax.set_ylim(len(names) - 0.5, 0.5)
-            for i in range(len(names)):
-                for j in range(len(names)):
-                    if not np.isnan(m[i, j]):
-                        ax.text(j, i, fmt(m[i, j]), ha="center", va="center", fontsize=8)
-            ax.set_xticks(range(len(names) - 1))
-            ax.set_xticklabels(names[:-1], rotation=30, ha="right")
-            ax.set_yticks(range(1, len(names)))
-            ax.set_yticklabels(names[1:])
-            ax.set_title(TITLES[key])
-            ax.set_xticks(np.arange(-0.5, len(names), 1), minor=True)
-            ax.set_yticks(np.arange(-0.5, len(names), 1), minor=True)
-            ax.grid(which="minor", color="white", lw=1)
-            ax.tick_params(which="minor", length=0)
-            cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.03)
-            if log:
-                ticks = [t for t in range(int(np.floor(vmin)), int(np.ceil(vmax)) + 1)]
-                cb.set_ticks(ticks)
-                cb.set_ticklabels([f"{10 ** t:,.0f}" for t in ticks])
+        # 2x2 grid: rows = formulation (RC, MC), columns = accuracy, likelihood; full matrices, row minus column
+        order = [["rc_primary", "rc_primary_likelihood"], ["mc_primary", "mc_primary_likelihood"]]
+        k = len(names)
+        fig, axes = plt.subplots(2, 2, figsize=(2.4 * k + 4, 2.0 * k + 2), constrained_layout=True)
+        fig.get_layout_engine().set(w_pad=0.6, h_pad=0.3)
+        for row, keys in zip(axes, order, strict=True):
+            for ax, key in zip(row, keys, strict=True):
+                si = SERIES.index(key)
+                m = mat[si]
+                plot = np.log10(m) if log else m
+                vmax = np.nanmax(np.abs(plot)) if center else np.nanmax(plot)
+                vmin = -vmax if center else np.nanmin(plot)
+                cm = matplotlib.colormaps[cmap].copy()
+                cm.set_bad("#e6e6e6")
+                im = ax.imshow(np.ma.masked_invalid(plot), cmap=cm, vmin=vmin, vmax=vmax)
+                for i in range(k):
+                    for j in range(k):
+                        if not np.isnan(m[i, j]):
+                            ax.text(j, i, fmt(m[i, j]), ha="center", va="center", fontsize=10)
+                ax.set_xticks(range(k))
+                ax.set_xticklabels(names, rotation=30, ha="right")
+                ax.set_yticks(range(k))
+                ax.set_yticklabels(names)
+                ax.set_title(TITLES[key])
+                ax.set_xticks(np.arange(-0.5, k, 1), minor=True)
+                ax.set_yticks(np.arange(-0.5, k, 1), minor=True)
+                ax.grid(which="minor", color="white", lw=1.5)
+                ax.tick_params(which="minor", length=0)
+                cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.03)
+                if log:
+                    ticks = [t for t in range(int(np.ceil(vmin)), int(np.floor(vmax)) + 1)]
+                    cb.set_ticks(ticks)
+                    cb.set_ticklabels([f"{10 ** t:,.0f}" for t in ticks])
         fig.savefig(out / fname, dpi=150)
 
     heat(diff, "diff_heatmap.png", lambda x: f"{x:+.3f}", "RdBu_r", center=True, log=False)
-    heat(power, "power_heatmap.png", lambda x: "∞" if not np.isfinite(x) else (f"{x:.0f}" if x < 1e5 else f"{x:.0e}"), "viridis_r", center=False, log=True)
+    heat(power, "power_heatmap.png", lambda x: "∞" if not np.isfinite(x) else (f"{x:,.0f}" if x < 1e6 else f"{x:.0e}"), "viridis_r", center=False, log=True)
     typer.echo(f"wrote {out}")
 
 
