@@ -42,6 +42,21 @@ Summary across all six papers:
   single edits, so for format the sampled population is the search rather
   than a starting point for local mutation.
 
+## 2024, Lin: Prompt Optimization with Human Feedback (APOHF)
+
+Saved as [2405.17346v1.md](../2405.17346v1.md); full summary in
+[candidate-evaluation-and-budget-allocation.md](candidate-evaluation-and-budget-allocation.md).
+The candidate pool is fixed at the start and never extended: 200 instructions,
+each produced by APE-style induction from 5 exemplars drawn at random from a
+100-exemplar set (a different draw per candidate), so pool diversity comes
+entirely from which demonstrations the proposer saw. Everything after that is
+selection. This is the same one-shot pool design as our APE stage, and the
+paper's dependence on the pool being wide enough is why its exploration bonus
+matters: with a fixed pool, search quality is bounded by what the initial
+draw contained.
+
+Era caveat: as in [candidate-evaluation-and-budget-allocation.md](candidate-evaluation-and-budget-allocation.md).
+
 ## 2024, Opsahl-Ong: Optimizing Instructions and Demonstrations for Multi-Stage Language Model Programs (MIPRO)
 
 Saved as [2406.11695v2.md](../2406.11695v2.md). Instruction candidates are

@@ -29,6 +29,36 @@ Summary:
   best and worst of 320 formats within 1 point using about 5 percent of
   exhaustive cost, beating UCB and uniform allocation.
 
+## 2024, Lin: Prompt Optimization with Human Feedback (APOHF)
+
+Saved as [2405.17346v1.md](../2405.17346v1.md). Selection over a fixed
+candidate pool using only pairwise preferences: a domain of 200 instructions is
+generated up front, each embedded with a sentence encoder (MPNet), and an MLP
+on the embeddings is trained each round on the preference history under a
+Bradley-Terry model. The next pair is chosen dueling-bandit style: the first
+prompt is the surrogate's argmax, the second maximises predicted score plus a
+neural-tangent-style uncertainty bonus that rewards being far from everything
+queried so far; the reported best is the surrogate argmax over queried
+prompts. 150 rounds. Ablations: random pair selection is much worse than the
+bandit rule; no exploration (nu = 0) hurts, too much does not; the advantage
+over baselines shrinks as preference noise grows and vanishes when feedback is
+near coin-flip.
+
+For us the feedback is numeric, not preference, so the setting does not apply
+directly; but paired per-item differences between two prompts are exactly the
+duel this method models, and its surrogate-on-embeddings plus explicit
+exploration bonus is a third selection scheme for a fixed pool beside
+MIPRO's TPE and GEPA's Pareto front. The noise ablation is the paper's most
+useful result: with a validation set of 20 items the simulated preferences are
+close to random, and the method's gains disappear, which is the same regime
+our power analysis flags.
+
+Era caveat: ChatGPT (2024) as the executor on the 30 APE instruction-induction
+tasks (short single-step tasks that modern models solve near-perfectly),
+validation accuracy on 20 items as the latent score, plus text-to-image and
+response-refinement experiments outside our scope. The selection mechanism
+transfers; the effect sizes and the task difficulty do not.
+
 ## 2024, Opsahl-Ong: Optimizing Instructions and Demonstrations for Multi-Stage Language Model Programs (MIPRO)
 
 Saved as [2406.11695v2.md](../2406.11695v2.md). Candidate evaluation is
