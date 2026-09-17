@@ -46,7 +46,7 @@ def load_task(metrics_path: Path) -> pd.DataFrame:
         rows.append({"native_id": p["native_id"], "primary": p["metrics"][primary],
                      "primary_likelihood": likelihood_metrics(p["model_output"], p["label"])[lik]})
     df = pd.DataFrame(rows).set_index("native_id")
-    df.attrs.update({"task": m["task_config"]["task_name"], "primary_metric": primary, "primary_likelihood_metric": lik,
+    df.attrs.update({"task": m["task_config"]["task_name"], "task_family": m["task_config"]["task_name"].split(":")[0], "primary_metric": primary, "primary_likelihood_metric": lik,
                      "model": m["model_config"]["model"], "revision": m["model_config"].get("revision")})
     return df
 
@@ -123,10 +123,10 @@ def main(
     table.to_csv(out / "table.csv", index=False)
     pd.DataFrame({"native_id": ids, **{k: v for k, v in series.items() if not k.startswith("diff_")}}).to_csv(out / "items.csv", index=False)
     (out / "summary.json").write_text(json.dumps({
-        "run_dirs": [str(d) for d in run_dir], "model": rc.attrs["model"], "revision": rc.attrs["revision"], "n_full": n_full,
+        "run_dirs": [str(d) for d in run_dir], "task_family": rc.attrs["task_family"], "model": rc.attrs["model"], "revision": rc.attrs["revision"], "n_full": n_full,
         "subset": str(subset), "sizes": size_list, "draws": draws, "inner_subsets": inner_subsets, "resamples": resamples,
         "labels": labels, "our_subset": ours, "power": power}, indent=1) + "\n")
-    md = [f"# Subset size vs findings: {rc.attrs['model']} ({rc.attrs['revision']}), ARC-Easy test, n_full={n_full}", "",
+    md = [f"# Subset size vs findings: {rc.attrs['model']} ({rc.attrs['revision']}), {rc.attrs['task_family']} test, n_full={n_full}", "",
           "Subsampling interval = 2.5–97.5 percentile of the mean over random n-subsets (the true spread of what a subset shows).",
           "Bootstrap half-width = what a single n-subset's own percentile bootstrap CI would report (averaged over subsets).",
           "MDD = minimum detectable paired difference at 80% power, two-sided 5%, for that n.", ""]
@@ -164,7 +164,7 @@ def main(
     for ax in axes[1]:
         ax.set_xlabel("subset size n (log)")
     axes[0][0].legend(fontsize=8, loc="lower right")
-    fig.suptitle(f"{rc.attrs['model']} ({rc.attrs['revision']}) — ARC-Easy test (n_full={n_full}): what a random n-item subset shows")
+    fig.suptitle(f"{rc.attrs['model']} ({rc.attrs['revision']}) — {rc.attrs['task_family']} test (n_full={n_full}): what a random n-item subset shows")
     # the given subset's own values are reported in table.md / summary.json, not drawn
     fig.tight_layout()
     fig.savefig(out / "plot.png", dpi=130)

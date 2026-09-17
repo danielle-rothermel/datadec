@@ -37,6 +37,7 @@ def main(
     out: Annotated[Path, typer.Option("--out")],
     subset: Annotated[Path | None, typer.Option("--subset", help="ItemSubset JSON marking 'our' subset")] = None,
     reference: Annotated[int, typer.Option("--reference", help="index into --items used as the difference baseline")] = 0,
+    task_label: Annotated[str, typer.Option("--task-label")] = "ARC-Easy",
     sizes: Annotated[str, typer.Option("--sizes")] = "25,50,100,200,400,800,1600,full",
     draws: Annotated[int, typer.Option("--draws")] = 2000,
     seed: Annotated[int, typer.Option("--seed")] = 0,
@@ -81,7 +82,7 @@ def main(
     bands.to_csv(out / "bands.csv", index=False)
     diffs.to_csv(out / "differences.csv", index=False)
 
-    md = [f"# Model comparison on the full ARC-Easy test set (n_full={n_full}): {', '.join(names)}", "",
+    md = [f"# Model comparison on the full {task_label} test set (n_full={n_full}): {', '.join(names)}", "",
           "Bands are 2.5–97.5 percentiles of the mean over random n-item subsets. Differences are paired per item.", ""]
     for key in SERIES:
         md += [f"## {TITLES[key]}", "", "| model | full-set value | n=100 band | n=100 half-width | our subset |", "|---|---|---|---|---|"]
@@ -117,7 +118,7 @@ def main(
         ax.legend(fontsize=8)
     for ax in axes[1]:
         ax.set_xlabel("subset size n (log)")
-    fig.suptitle(f"Per-model subsampling bands on ARC-Easy test (n_full={n_full})")
+    fig.suptitle(f"Per-model subsampling bands on {task_label} test (n_full={n_full})")
     fig.tight_layout()
     fig.savefig(out / "overlay.png", dpi=130)
 
