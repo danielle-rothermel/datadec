@@ -16,6 +16,7 @@ DEFAULT_ROOT = Path.home() / "drotherm" / "data" / "runs" / "po" / "gepa"
 def rank_seeds(items: pd.DataFrame, *, metric: str = "correct_prob") -> pd.DataFrame:
     """Mean metric per (model, revision, formulation, format_id, instruction_id), ranked within (model, formulation)."""
     keys = ["model", "revision", "formulation", "format_id", "instruction_id"]
+    items = items.assign(revision=items["revision"].fillna("main"))  # pandas drops NaN group keys by default
     g = items.groupby(keys, dropna=False).agg(score=(metric, "mean"), acc_raw=("acc_raw", "mean"), n=("native_id", "size")).reset_index()
     g["rank"] = g.groupby(["model", "revision", "formulation"])["score"].rank(ascending=False, method="first")
     g["n_seeds"] = g.groupby(["model", "revision", "formulation"])["score"].transform("size")
@@ -69,7 +70,7 @@ def write_jobs(
         job_id = f"{_slug(row['model'])}--{row['formulation']}--{row['group']}-r{int(row['rank']):02d}--{row['format_id']}--{_slug(row['instruction_id'])}"
         job = {
             "job_id": job_id, "group": row["group"], "seed_rank": int(row["rank"]), "seed_score": float(row["score"]),
-            "model": row["model"], "revision": row["revision"] if isinstance(row["revision"], str) else None,
+            "model": row["model"], "revision": None if row["revision"] in (None, "main") else row["revision"],
             "device": device, "batch_size": batch_size, "task": sweep.get("task", "arc_easy"), "formulation": row["formulation"],
             "prompt_format": formats[row["format_id"]], "format_id": row["format_id"],
             "seed_instruction": {"id": row["instruction_id"], "text": text},
@@ -78,7 +79,7 @@ def write_jobs(
             "max_metric_calls": max_metric_calls, "reflection_minibatch_size": reflection_minibatch_size,
             "reflection_model": reflection_model,
             "reflection_reasoning": reflection_reasoning,
-            "model_card": model_card(row["model"], row["revision"] if isinstance(row["revision"], str) else None),
+            "model_card": model_card(row["model"], None if row["revision"] in (None, "main") else row["revision"]),
             "source_sweep": str(sweep_dir), "run_dir": str(out_root / "runs" / job_id), "seed": 0,
         }
         p = jobs_dir / f"{job_id}.json"
