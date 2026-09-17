@@ -19,6 +19,11 @@ Summary:
 - Explicit exploration knobs appear only in Liu 2026 (epsilon-greedy
   hypotheses, random restart) and matter less than the taxonomy they
   sample from.
+- Ferreira 2025 keeps diversity by construction: a MAP-Elites archive holds
+  the best prompt per structural cell (shots x length x reasoning depth), so
+  the population spans the structure axes regardless of which cell scores
+  best; random sampling from the same grammar filled far fewer cells with
+  competent prompts.
 - Two papers find that more parallel candidates per round eventually adds
   noise rather than diversity: Liu 2026 at K = 5, and Zhou 2022's iterative
   resampling that raises the distribution without changing the best.
@@ -32,6 +37,43 @@ Summary:
 - Voronov 2024 reframes the end of the search: averaging predictions over
   4 or 5 retained candidates beat picking one, with lower variance, at N
   times the inference cost.
+
+## 2025, Ferreira: Diverse Prompts: Illuminating the Prompt Space of Large Language Models with MAP-Elites
+
+Saved as [2504.14367v1.md](../2504.14367v1.md). Quality-diversity search over
+prompt *structure*: a context-free grammar generates prompts from a genotype
+(rule choices for role-context, number of shots, reasoning-depth instruction,
+task request, task entry, answer instruction), and MAP-Elites keeps an archive
+binned by phenotype (number of examples, prompt length in words, reasoning
+depth; bin sizes 2 / 25 / 2), replacing a bin's occupant only when a new
+prompt scores higher there. Population 50, 10 iterations, mutation only (40%
+of individuals, 40% per-property chance), fitness = accuracy on 50 task
+instances. Baseline is random sampling from the same grammar.
+
+Findings: MAP-Elites covered more than 60% of the phenotype bins with
+high-performing prompts (accuracy above 0.55) in 21 of 28 runs versus 6 for
+random, with statistical significance on 2 of 7 tasks. The structural
+features correlate only weakly with accuracy (|r| about 0.2 at best);
+role-context and reasoning depth had no measurable effect, which the authors
+attribute to the ten generic, task-agnostic role and thought templates.
+Which structure wins is task-specific: zero-shot dominates for LD3, KU and
+StrategyQA (every high performer on LD3 was zero-shot), while few- and
+many-shot dominate for Winowhy, PDSD and SSB.
+
+For us the useful part is the archive discipline, not the grammar: keep the
+best prompt per structural cell rather than the best prompt overall, so the
+seed population spans the structural axes by construction. Their evidence
+that structure matters more than the generic text slots is the same
+conclusion as our seed round (format effect sd equal to instruction effect
+sd) seen from the search side.
+
+Era caveat: four 3.5B-8B instruction-tuned models (Starling-7B, Llama 3.1 8B
+Instruct, Phi-3.5 Mini, Qwen2.5 7B Instruct) accessed through inference
+endpoints, temperature 0, output capped at three tokens, seven BigBench Lite
+tasks that are mostly binary and evaluated on 50 instances per fitness call.
+Effects are small and the 50-instance fitness has a binomial sd of about 0.07,
+so most of the "high performer" archive is within noise of the rest; treat the
+coverage result and the task dependence as the transferable content.
 
 ## 2025, Agrawal: GEPA: Reflective Prompt Evolution Can Outperform Reinforcement Learning
 

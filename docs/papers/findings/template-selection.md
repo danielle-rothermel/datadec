@@ -98,6 +98,21 @@ Instructions classification and MC with 2 to 4 options, and the accuracy
 reported is over generated or ranked labels, not likelihood. All methods are
 inference- or training-time robustness fixes rather than optimizers.
 
+## 2025, Ferreira: Diverse Prompts: Illuminating the Prompt Space of Large Language Models with MAP-Elites
+
+Saved as [2504.14367v1.md](../2504.14367v1.md); full summary in
+[population-maintenance-and-search-diversity.md](population-maintenance-and-search-diversity.md).
+Relevant here for the axes it treats as template structure: number of
+demonstrations (0, 1-2, 3+), presence of a role-context preamble, and a
+reasoning-depth instruction, all above a fixed task request and answer
+instruction. Number of shots was the one axis with a task-dependent effect
+(zero-shot best on three tasks, few/many-shot best on three others); the
+preamble and reasoning slots, filled from generic templates, did nothing. It
+is a structural counterpart to our surface-level grid, with the same lesson
+as SAMMO: demonstration count is a live axis and generic preambles are not.
+
+Era caveat: as in the population-maintenance file.
+
 ## 2024, Schnabel: Symbolic Prompt Program Search (SAMMO): A Structure-Aware Approach to Efficient Compile-Time Prompt Optimization
 
 Saved as [2404.02319v2.md](../2404.02319v2.md). Treats the whole prompt as a

@@ -152,6 +152,22 @@ points) and the population-size curve should not be assumed to carry over.
 The relative findings (bad-only seeds hurt, differing-parts mutation beats
 whole-prompt mutation) are the part worth keeping.
 
+## 2025, Ferreira: Diverse Prompts: Illuminating the Prompt Space of Large Language Models with MAP-Elites
+
+Saved as [2504.14367v1.md](../2504.14367v1.md); full summary in
+[population-maintenance-and-search-diversity.md](population-maintenance-and-search-diversity.md).
+Initial population is 50 random expansions of a structural grammar
+(role-context yes/no, 0/few/many shots, reasoning-depth instruction yes/no
+with depth 1-10, plus task-specific request and answer instruction). The
+MAP-Elites archive then converts that into a population stratified by
+structure (shots x length x reasoning depth), which is the paper's actual
+contribution to initialization: a seed set is judged by how many structural
+cells it fills with a competent prompt, not by its best member. Random
+sampling from the same grammar filled far fewer cells with competent prompts.
+
+Era caveat: as in the population-maintenance file; 2024-2025 small instruct
+models, binary BigBench Lite tasks, 50-instance fitness.
+
 ## 2024, Schnabel: Symbolic Prompt Program Search (SAMMO): A Structure-Aware Approach to Efficient Compile-Time Prompt Optimization
 
 Saved as [2404.02319v2.md](../2404.02319v2.md). The initial population is
