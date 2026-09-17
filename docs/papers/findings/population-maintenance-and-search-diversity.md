@@ -38,6 +38,21 @@ Summary:
   4 or 5 retained candidates beat picking one, with lower variance, at N
   times the inference cost.
 
+## 2023, Fernando: Promptbreeder: Self-Referential Self-Improvement via Prompt Evolution
+
+Saved as [2309.16797v1.md](../2309.16797v1.md). Population of 50 units under
+a binary tournament: sample two, mutate the fitter, overwrite the loser, for
+20-30 generations; no elitism beyond the tournament and no Pareto tracking.
+Diversity comes from three places: the two-list initialization (see the
+initial-population file), the EDA operators' similarity filter (drop any
+prompt within BERT cosine 0.95 of another before showing the population to
+the proposer), and evolving the mutation-prompts alongside the task-prompts
+so the operator distribution itself drifts. Fitness continued to rise through
+the run where iterative APE plateaued (Appendix B), which they attribute to
+the self-referential operators rather than to the retention rule.
+
+Era caveat: as in [initial-population-generation-and-impact.md](initial-population-generation-and-impact.md).
+
 ## 2025, Ferreira: Diverse Prompts: Illuminating the Prompt Space of Large Language Models with MAP-Elites
 
 Saved as [2504.14367v1.md](../2504.14367v1.md). Quality-diversity search over

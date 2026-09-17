@@ -188,6 +188,34 @@ reasoning-style instruction, whereas GEPA's on the same data contained
 question-specific guidance that the authors read as memorization of the
 training set.
 
+## 2023, Fernando: Promptbreeder: Self-Referential Self-Improvement via Prompt Evolution
+
+Saved as [2309.16797v1.md](../2309.16797v1.md). Nine operators, one drawn
+uniformly per replication, all implemented as an LLM continuation of
+(mutation-prompt + parent): zero-order generation from the description ("A
+list of 100 hints:"), first-order mutation-prompt-guided rewrite, EDA (list
+the population, diversity-filtered at BERT cosine 0.95, unordered, and ask
+for more; fitness values were withheld because the LLM copied entries when
+shown them), EDA rank-and-index (population listed in ascending fitness but
+labelled descending, which they report improves diversity via a recency
+effect), lineage (the chronological elite history as context), zero- and
+first-order hyper-mutation (rewrite the mutation-prompt itself), Lamarckian
+(induce a task-prompt from a correct worked solution, i.e. APE's reverse
+engineering used mid-run), plus 10% crossover and few-shot context shuffling.
+Success rates on GSM8K (fraction of applications that beat the parent):
+zero-order hyper-mutation 42%, lineage 26%, first-order hyper-mutation 23%,
+EDA variants 11-13%, direct mutation 12%, Lamarckian 6%. Removing any
+self-referential operator hurt on nearly every dataset; with an
+under-specified task description the Lamarckian operator became the most
+important (81.6% to 64.6% on ETHOS without it).
+
+Two transferable points: the proposer should not be shown raw fitness values
+(it copies the top entries), and description-only regeneration and
+demonstration-based induction are complementary operators whose relative
+value depends on how informative the task description is.
+
+Era caveat: as in [initial-population-generation-and-impact.md](initial-population-generation-and-impact.md).
+
 ## 2025, Yang: What Prompts Don't Say: Understanding and Managing Underspecification in LLM Prompts
 
 Saved as [2505.13360v3.md](../2505.13360v3.md). Two operators over an
