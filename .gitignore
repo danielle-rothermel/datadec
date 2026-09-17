@@ -10,3 +10,4 @@ outputs/
 **/__pycache__/
 wandb_data/
 node_modules/
+.claude/launch.json
