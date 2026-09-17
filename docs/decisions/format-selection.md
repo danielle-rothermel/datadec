@@ -2,6 +2,19 @@
 
 The prompt-format grid (seed formats) and how formats are chosen and scored. Log, most recent first.
 
+## 2026-09-17 10:50 — Decision: stratified seed formats and a demonstration-count axis
+
+- Add a demonstration-count axis to the format grid, including zero shots (the fixed
+  five is OLMES's choice, not ours). Ferreira 2025 and SAMMO both found shot count the
+  structural axis that moves results; keep the curated OLMES demonstrations as the
+  source and take the first k.
+- Build the seed format set by stratification rather than uniform sampling: define
+  structural cells (demonstration count x demonstration grouping x a coarse surface
+  class) and keep the best-scoring format per cell (MAP-Elites archive rule), so the
+  seed set spans structure by construction. Cells and the surface classes are still to
+  be defined; the enumerative first pass at a fixed instruction (10:25 direction) is
+  how each cell's best member is found.
+
 ## 2026-09-17 10:35 — Decision: wrapper axis scoring (see evaluation-setup 10:35)
 
 If the option wrapper becomes its own axis, the scored continuation must not change
