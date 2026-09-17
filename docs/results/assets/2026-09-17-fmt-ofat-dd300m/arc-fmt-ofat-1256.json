@@ -1,0 +1,221 @@
+{
+ "seed": null,
+ "n": 11,
+ "sources": {
+  "design": "one-factor-at-a-time from canonical over axes 1 (descriptor separator), 2 (descriptor pair incl. random strings), 5 (choice text separator, MC only), 6 (shots); instruction none",
+  "decided": "2026-09-17"
+ },
+ "pairs": [
+  {
+   "label": "canonical",
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none",
+    "choice_text_separator": "space"
+   },
+   "format_id": "daa93775",
+   "instruction": {
+    "id": "none",
+    "text": null
+   },
+   "num_shots": 5
+  },
+  {
+   "label": "sep=colon_newline",
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none",
+    "choice_text_separator": "space"
+   },
+   "format_id": "bb8c9d8d",
+   "instruction": {
+    "id": "none",
+    "text": null
+   },
+   "num_shots": 5
+  },
+  {
+   "label": "sep=dash",
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "dash",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none",
+    "choice_text_separator": "space"
+   },
+   "format_id": "efeb61d8",
+   "instruction": {
+    "id": "none",
+    "text": null
+   },
+   "num_shots": 5
+  },
+  {
+   "label": "desc=q_a",
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none",
+    "choice_text_separator": "space"
+   },
+   "format_id": "5ac73978",
+   "instruction": {
+    "id": "none",
+    "text": null
+   },
+   "num_shots": 5
+  },
+  {
+   "label": "desc=input_output",
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none",
+    "choice_text_separator": "space"
+   },
+   "format_id": "27d6af94",
+   "instruction": {
+    "id": "none",
+    "text": null
+   },
+   "num_shots": 5
+  },
+  {
+   "label": "desc=random_vocab",
+   "format": {
+    "descriptor_pair": "random_vocab",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none",
+    "choice_text_separator": "space"
+   },
+   "format_id": "fc87b907",
+   "instruction": {
+    "id": "none",
+    "text": null
+   },
+   "num_shots": 5
+  },
+  {
+   "label": "desc=random_phrase",
+   "format": {
+    "descriptor_pair": "random_phrase",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none",
+    "choice_text_separator": "space"
+   },
+   "format_id": "5f9ef534",
+   "instruction": {
+    "id": "none",
+    "text": null
+   },
+   "num_shots": 5
+  },
+  {
+   "label": "shots=1",
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none",
+    "choice_text_separator": "space"
+   },
+   "format_id": "daa93775",
+   "instruction": {
+    "id": "none",
+    "text": null
+   },
+   "num_shots": 1
+  },
+  {
+   "label": "shots=0",
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none",
+    "choice_text_separator": "space"
+   },
+   "format_id": "daa93775",
+   "instruction": {
+    "id": "none",
+    "text": null
+   },
+   "num_shots": 0
+  },
+  {
+   "label": "choice_sep=tab",
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none",
+    "choice_text_separator": "tab"
+   },
+   "format_id": "06facda7",
+   "instruction": {
+    "id": "none",
+    "text": null
+   },
+   "num_shots": 5,
+   "formulation": "mc"
+  },
+  {
+   "label": "choice_sep=none",
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none",
+    "choice_text_separator": "none"
+   },
+   "format_id": "455c29db",
+   "instruction": {
+    "id": "none",
+    "text": null
+   },
+   "num_shots": 5,
+   "formulation": "mc"
+  }
+ ]
+}
