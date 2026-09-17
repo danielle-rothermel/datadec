@@ -11,6 +11,10 @@ from datadec.po.report import pipeline_report
 app = typer.Typer()
 
 
+def _f(x: float | None, spec: str) -> str:
+    return "n/a" if x is None else format(x, spec)
+
+
 @app.command()
 def main(root: Annotated[Path, typer.Argument()], out: Annotated[Path | None, typer.Option("--out")] = None) -> None:
     """Summarize a pipeline root (sweep spreads, baselines, GEPA deltas) as JSON and a short table."""
@@ -22,9 +26,9 @@ def main(root: Annotated[Path, typer.Argument()], out: Annotated[Path | None, ty
             continue
         for form, e in s["formulations"].items():
             cp, ar = e["correct_prob"], e["acc_raw"]
-            typer.echo(f"{s['sweep']:34s} {form}  pairs={e['n_pairs']:3d}  correct_prob base={cp.get('baseline', float('nan')):.3f} "
-                       f"mean={cp['mean']:.3f} [{cp['min']:.3f},{cp['max']:.3f}] sd={cp['std']:.3f}  acc base={ar.get('baseline', float('nan')):.2f} "
-                       f"mean={ar['mean']:.2f}  fmt_sd={e['format_effect_std']:.3f} instr_sd={e['instruction_effect_std']:.3f}")
+            typer.echo(f"{s['sweep']:34s} {form}  pairs={e['n_pairs']:3d}  correct_prob base={_f(cp.get('baseline'), '.3f')} "
+                       f"mean={cp['mean']:.3f} [{cp['min']:.3f},{cp['max']:.3f}] sd={_f(cp['std'], '.3f')}  acc base={_f(ar.get('baseline'), '.2f')} "
+                       f"mean={ar['mean']:.2f}  fmt_sd={_f(e['format_effect_std'], '.3f')} instr_sd={_f(e['instruction_effect_std'], '.3f')}")
     for name, rows in rep["gepa"].items():
         done = [r for r in rows if r["completed"]]
         typer.echo(f"gepa {name}: {len(done)}/{len(rows)} jobs complete")

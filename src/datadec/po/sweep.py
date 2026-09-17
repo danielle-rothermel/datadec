@@ -13,6 +13,7 @@ from datadec.po.formats import format_id, validate
 from datadec.po.subsets import ItemSubset
 
 DEFAULT_ROOT = Path.home() / "drotherm" / "data" / "runs" / "po" / "sweeps"
+BASELINES_DIRNAME = "baselines"
 OLMES_REPO = Path.home() / "drotherm" / "repos" / "olmes"
 FEWSHOT_SOURCE = {"arc_easy": "OLMES:ARC-Easy", "arc_challenge": "OLMES:ARC-Challenge"}
 TASK_NAMES = {
@@ -147,13 +148,41 @@ def write_sweep(spec: SweepSpec, *, root: Path = DEFAULT_ROOT) -> Path:
     return sweep_dir
 
 
+def baselines_dir(sweep_dir: Path) -> Path:
+    """Where a sweep's OLMES-default (canonical format, no instruction) task files live once moved out.
+
+    Sweeps sit at <root>/sweeps/<name>; their baselines sit beside them at <root>/baselines/<name>/<rc|mc>/,
+    each with the task files plus a source.json whose source_run_dir (relative to <root>) names the run dir
+    they were taken from.
+    """
+    sweep_dir = Path(sweep_dir)
+    return sweep_dir.parent.parent / BASELINES_DIRNAME / sweep_dir.name
+
+
+def _moved_baseline_count(sweep_dir: Path, run_dir: Path) -> int:
+    """Number of task files moved from run_dir into the sweep's baselines dir."""
+    root = Path(sweep_dir).parent.parent
+    n = 0
+    for src in baselines_dir(sweep_dir).glob("*/source.json"):
+        if (root / json.loads(src.read_text())["source_run_dir"]).resolve() == Path(run_dir).resolve():
+            n += 1
+    return n
+
+
+def chunk_complete(sweep_dir: Path, run_dir: Path, chunk_len: int) -> bool:
+    """A chunk run dir is complete when its metrics files, plus any moved to baselines, cover every task."""
+    present = len(list(Path(run_dir).glob("task-*-metrics.json")))
+    return present + _moved_baseline_count(sweep_dir, run_dir) == chunk_len
+
+
 def run_sweep(sweep_dir: Path, *, olmes_repo: Path = OLMES_REPO, chunk_size: int | None = 10) -> int:
     """Run every task in tasks.jsonl through the fork's runner.
 
     Tasks are split into chunks of chunk_size, one runner process per chunk (each reloads the
     model, ~15 s), because OLMES scoring slows down markedly as many tasks accumulate in a single
     process. Chunk run dirs land side by side under <sweep_dir>/olmes; the results loader globs
-    them all. A chunk whose olmes run dir already holds metrics for every task is skipped.
+    them all. A chunk whose olmes run dir already holds metrics for every task (counting task files
+    moved out to the baselines dir) is skipped.
     """
     spec = json.loads((sweep_dir / "sweep.json").read_text())
     tasks = [json.loads(l) for l in (sweep_dir / "tasks.jsonl").read_text().splitlines() if l.strip()]
@@ -166,7 +195,7 @@ def run_sweep(sweep_dir: Path, *, olmes_repo: Path = OLMES_REPO, chunk_size: int
         name = f"tasks-chunk{ci:03d}"
         path = chunk_dir / f"{name}.jsonl"
         path.write_text("".join(json.dumps(t) + "\n" for t in chunk))
-        done = [d for d in (sweep_dir / "olmes").rglob(f"*-{name}") if len(list(d.glob("task-*-metrics.json"))) == len(chunk)]
+        done = [d for d in (sweep_dir / "olmes").rglob(f"*-{name}") if chunk_complete(sweep_dir, d, len(chunk))]
         if done:
             continue
         cmd = [

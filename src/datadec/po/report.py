@@ -13,7 +13,8 @@ METRICS = ("acc_raw", "acc_per_char", "acc_uncond", "correct_prob", "margin")
 
 
 def sweep_summary(sweep_dir: Path) -> dict:
-    """Per-formulation spread across (format, instruction) pairs, baseline pair, format/instruction attribution."""
+    """Per-formulation spread across (format, instruction) pairs, baseline pair (read from the baselines dir
+    beside the sweeps, or from the sweep itself if it was never moved), and format/instruction attribution."""
     tables = load_sweep(sweep_dir)
     items = tables["items"]
     if items.empty:
@@ -23,7 +24,6 @@ def sweep_summary(sweep_dir: Path) -> dict:
            "n_items": int(items["native_id"].nunique()), "formulations": {}}
     per_pair = items.groupby(["formulation", "format_id", "instruction_id"])[list(METRICS)].mean().reset_index()
     for form, g in per_pair.groupby("formulation"):
-        base = g[(g["instruction_id"] == "none") & (g["fmt_descriptor_pair"] == "question_answer")] if "fmt_descriptor_pair" in g else None
         canon = items[(items["formulation"] == form) & (items["instruction_id"] == "none") & (items["format_id"] == "daa93775")]
         entry = {"n_pairs": int(len(g))}
         for m in METRICS:

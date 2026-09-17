@@ -9,6 +9,7 @@ from pathlib import Path
 import pandas as pd
 
 from datadec.po.formats import AXES
+from datadec.po.sweep import baselines_dir
 
 ITEM_METRICS = (
     "acc_raw", "acc_per_token", "acc_per_char", "acc_per_byte", "acc_uncond", "correct_choice",
@@ -55,10 +56,26 @@ def _po_columns(task_config: dict, model_config: dict) -> dict:
     return cols
 
 
+def _metrics_paths(sweep_dir: Path) -> list[Path]:
+    """Task metrics files of a sweep plus its moved-out baselines, one per (task_hash, model_hash)."""
+    seen: set[tuple[str, str]] = set()
+    paths = []
+    for root in (baselines_dir(sweep_dir), sweep_dir):
+        for metrics_path in sorted(root.rglob("task-*-metrics.json")) if root.exists() else []:
+            m = json.loads(metrics_path.read_text())
+            key = (m["task_hash"], m["model_hash"])
+            if key in seen:
+                continue
+            seen.add(key)
+            paths.append(metrics_path)
+    return paths
+
+
 def load_sweep(sweep_dir: Path) -> dict[str, pd.DataFrame]:
+    """Flatten a sweep (and the baselines moved out of it) into task, item, and choice tables."""
     sweep_dir = Path(sweep_dir)
     task_rows, item_rows, choice_rows = [], [], []
-    for metrics_path in sorted(sweep_dir.rglob("task-*-metrics.json")):
+    for metrics_path in _metrics_paths(sweep_dir):
         m = json.loads(metrics_path.read_text())
         base = _po_columns(m["task_config"], m["model_config"]) | {
             "task_idx": m["task_idx"], "task_hash": m["task_hash"], "model_hash": m["model_hash"],
