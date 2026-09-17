@@ -13,7 +13,11 @@ Recorded as an alternative to GEPA's strict-improvement-on-minibatch acceptance 
 noise regime: the surrogate pools evidence across trials instead of deciding on one
 minibatch, and the confirmation step is a built-in guard against the winner's curse. Not
 adopted yet; would apply to selecting among a fixed candidate pool (seed formats and
-instructions) rather than to reflective rewriting. Demonstration selection is not an
+instructions) rather than to reflective rewriting. A second variant for the same role: an
+embedding surrogate with a dueling-bandit exploration bonus (APOHF, Lin 2024; EASE, Wu 2024
+uses the same NeuralUCB machinery over exemplar sequences), the only schemes in the
+collection with an explicit exploration term; APOHF's own ablation shows every such scheme
+fails once the feedback is near coin-flip, which is the power regime to avoid. Demonstration selection is not an
 axis for us: the fixed OLMES demonstrations are part of the evaluation design.
 
 ## 2026-09-17 11:00 — Decision: what the reflection model is shown

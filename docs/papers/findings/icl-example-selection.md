@@ -46,6 +46,43 @@ Summary:
   Lu et al. 2022 (order sensitivity), Min et al. 2022 (what demonstrations
   actually convey), Liu et al. 2021 (KATE, similarity-based retrieval).
 
+## 2024, Wu: Prompt Optimization with EASE? Efficient Ordering-aware Automated Selection of Exemplars
+
+Saved as [2405.16122v2.md](../2405.16122v2.md). Selects one fixed, ordered
+exemplar sequence for a whole task (no per-query retrieval) by black-box
+optimisation: the sequence is embedded with a sentence encoder (order changes
+the embedding), an MLP predicts validation score from the embedding, and a
+NeuralUCB acquisition (predicted score plus uncertainty) picks the next
+sequence to evaluate, with an optimal-transport pre-filter that keeps only
+candidate sequences whose exemplars are distributionally close to the
+validation set so a large sampled candidate space stays tractable. Budget 165
+evaluations (500 in an ablation, which helps further). Beat best-of-N random
+sequences and every subset-selection or retrieval baseline on 17 of 19
+instruction-induction tasks with GPT-3.5, and on the harder rule-based and
+label-remapped tasks by wide margins; ordering matters (the ordering-aware
+embedding beats an order-blind one). Jointly selecting an instruction from a
+fixed APE/Promptbreeder pool alongside the exemplars helped on most tasks and
+hurt on a few.
+
+The result that matters for us is Section 4.2 and Appendix D.2: the gain from
+exemplar selection is largest when the model can do in-context learning but
+has not been trained on the task, and shrinks to zero as the model is
+fine-tuned on it (Vicuna) or as pretraining converges (OLMo-7B checkpoints at
+41k / 130k / 410k steps: no ICL yet, peak gain, gain gone). So how much
+demonstration choice matters is a property of where the model sits relative to
+the task, which for ARC and DataDecide-scale models is an open question.
+
+Local note: demonstration selection is not an axis for us (the fixed OLMES
+demonstrations are part of the evaluation design), so this paper is recorded
+for the capability-window result and for its selection machinery, not as a
+plan item.
+
+Era caveat: GPT-3.5 as the main executor (Llama-3.1-8B-Instruct in an
+appendix) on the APE instruction-induction tasks plus synthetic rule-based
+and label-remapped variants; validation sets are small and reported over 3
+trials. The capability-window finding is on Vicuna fine-tuning and OLMo-7B
+checkpoints, which are the most transferable parts.
+
 ## 2024, Opsahl-Ong: Optimizing Instructions and Demonstrations for Multi-Stage Language Model Programs (MIPRO)
 
 Saved as [2406.11695v2.md](../2406.11695v2.md). Demonstrations are

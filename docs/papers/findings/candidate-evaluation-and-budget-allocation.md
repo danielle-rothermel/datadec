@@ -29,6 +29,21 @@ Summary:
   best and worst of 320 formats within 1 point using about 5 percent of
   exhaustive cost, beating UCB and uniform allocation.
 
+## 2024, Wu: Prompt Optimization with EASE? Efficient Ordering-aware Automated Selection of Exemplars
+
+Saved as [2405.16122v2.md](../2405.16122v2.md); full summary in
+[icl-example-selection.md](icl-example-selection.md). Same selection engine
+as APOHF (embedding surrogate plus NeuralUCB exploration) applied to a
+combinatorial space, with two budget devices: an optimal-transport pre-filter
+that scores thousands of sampled candidates cheaply from precomputed exemplar
+embeddings before the surrogate sees any, and a fixed evaluation budget of 165
+full-validation-set scores. More budget (500) improved results further, and
+uniform sampling of a small candidate set instead of the OT-filtered large one
+degraded them. The joint instruction-plus-exemplar search treats the
+instruction as one more categorical slot in the same surrogate.
+
+Era caveat: as in [icl-example-selection.md](icl-example-selection.md).
+
 ## 2024, Lin: Prompt Optimization with Human Feedback (APOHF)
 
 Saved as [2405.17346v1.md](../2405.17346v1.md). Selection over a fixed
