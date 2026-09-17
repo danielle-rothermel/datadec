@@ -9,7 +9,7 @@ import subprocess
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-from datadec.po.formats import format_id, validate
+from datadec.po.formats import format_id, normalize, validate
 from datadec.po.metrics import PRIMARY_METRIC
 from datadec.po.subsets import ItemSubset
 
@@ -43,27 +43,31 @@ def _instruction_entries(spec: SweepSpec) -> list[dict]:
     return list(spec.instructions) or [{"id": "none", "text": None}]
 
 
-def _combos(spec: SweepSpec) -> list[tuple[str, dict, dict]]:
-    """(formulation, format, instruction) triples: sampled pairs if given, else the full cross."""
+def _combos(spec: SweepSpec) -> list[tuple[str, dict, dict, int]]:
+    """(formulation, format, instruction, num_shots) tuples: sampled pairs if given, else the full cross.
+
+    A pair may carry its own num_shots; otherwise the spec's applies.
+    """
     out = []
     if spec.pairs:
         for pair in spec.pairs:
             forms = (pair["formulation"],) if pair.get("formulation") else spec.formulations
             for formulation in forms:
-                out.append((formulation, pair["format"], pair["instruction"]))
+                out.append((formulation, pair["format"], pair["instruction"], int(pair.get("num_shots", spec.num_shots))))
         return out
     for formulation in spec.formulations:
         for fmt in spec.formats:
             for instr in _instruction_entries(spec):
-                out.append((formulation, fmt, instr))
+                out.append((formulation, fmt, instr, spec.num_shots))
     return out
 
 
 def build_tasks(spec: SweepSpec, subset: ItemSubset) -> list[dict]:
     tasks = []
-    for formulation, fmt, instr in _combos(spec):
+    for formulation, fmt, instr, num_shots in _combos(spec):
         if (spec.task, formulation) not in TASK_NAMES:
             raise ValueError(f"unknown task/formulation {(spec.task, formulation)}")
+        fmt = normalize(fmt)
         validate(fmt)
         fid = format_id(fmt)
         context_kwargs: dict = {"prompt_format": dict(fmt)}
@@ -73,14 +77,14 @@ def build_tasks(spec: SweepSpec, subset: ItemSubset) -> list[dict]:
             {
                 "task_name": TASK_NAMES[(spec.task, formulation)],
                 "split": subset.split,
-                "num_shots": spec.num_shots,
+                "num_shots": num_shots,
                 "fewshot_source": FEWSHOT_SOURCE[spec.task],
                 "primary_metric": PRIMARY_METRIC[(spec.task, formulation)],
                 "limit": len(subset.ids),
                 "context_kwargs": context_kwargs,
                 "custom_kwargs": {"native_ids": list(subset.ids)},
                 "metadata": {
-                    "alias": f"{formulation}|{fid}|{instr['id']}",
+                    "alias": f"{formulation}|{fid}|{instr['id']}" + (f"|k{num_shots}" if num_shots != 5 else ""),
                     "po": {
                         "sweep": spec.name,
                         "task": spec.task,
@@ -88,6 +92,7 @@ def build_tasks(spec: SweepSpec, subset: ItemSubset) -> list[dict]:
                         "format_id": fid,
                         "format": dict(fmt),
                         "instruction_id": instr["id"],
+                        "num_shots": num_shots,
                         "subset_seed": subset.seed,
                         "subset_n": len(subset.ids),
                     },
@@ -116,6 +121,7 @@ def write_pairs(path: Path, pairs: list[dict], *, seed: int | None, sources: dic
 def load_pairs(path: Path) -> list[dict]:
     raw = json.loads(Path(path).read_text())
     for pair in raw["pairs"]:
+        pair["format"] = normalize(pair["format"])
         validate(pair["format"])
     return raw["pairs"]
 

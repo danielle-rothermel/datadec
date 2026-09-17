@@ -7,7 +7,10 @@ from pathlib import Path
 
 import pandas as pd
 
+from datadec.po.formats import CANONICAL, format_id
 from datadec.po.results import load_sweep
+
+CANONICAL_ID = format_id(CANONICAL)
 
 METRICS = ("primary", "primary_likelihood", "acc_raw", "acc_per_char", "acc_uncond",
            "norm_correct_prob", "norm_correct_prob_per_char", "norm_correct_prob_uncond", "norm_margin")
@@ -24,10 +27,10 @@ def sweep_summary(sweep_dir: Path) -> dict:
     spec = json.loads((sweep_dir / "sweep.json").read_text())
     out = {"sweep": sweep_dir.name, "task": spec.get("task"), "model": spec["model"], "revision": spec.get("revision"),
            "n_items": int(items["native_id"].nunique()), "formulations": {}}
-    per_pair = items.groupby(["formulation", "format_id", "instruction_id"])[list(METRICS)].mean().reset_index()
+    per_pair = items.groupby(["formulation", "format_id", "instruction_id", "num_shots"])[list(METRICS)].mean().reset_index()
     for form, g in per_pair.groupby("formulation"):
         form_items = items[items["formulation"] == form]
-        canon = form_items[(form_items["instruction_id"] == "none") & (form_items["format_id"] == "daa93775")]
+        canon = form_items[(form_items["instruction_id"] == "none") & (form_items["format_id"] == CANONICAL_ID) & (form_items["num_shots"] == 5)]
         entry = {"n_pairs": int(len(g)),
                  "primary_metric": form_items["primary_metric"].iloc[0],
                  "primary_likelihood_metric": form_items["primary_likelihood_metric"].iloc[0]}
@@ -39,8 +42,8 @@ def sweep_summary(sweep_dir: Path) -> dict:
         for key, label in (("format_id", "format"), ("instruction_id", "instruction")):
             means = g.groupby(key)[HEADLINE].mean()
             entry[f"{label}_effect_std"] = float(means.std()) if len(means) > 1 else None
-        top = g.nlargest(3, HEADLINE)[["format_id", "instruction_id", "primary_likelihood", "primary"]]
-        bot = g.nsmallest(3, HEADLINE)[["format_id", "instruction_id", "primary_likelihood", "primary"]]
+        top = g.nlargest(3, HEADLINE)[["format_id", "instruction_id", "num_shots", "primary_likelihood", "primary"]]
+        bot = g.nsmallest(3, HEADLINE)[["format_id", "instruction_id", "num_shots", "primary_likelihood", "primary"]]
         entry["best_pairs"] = top.to_dict("records")
         entry["worst_pairs"] = bot.to_dict("records")
         out["formulations"][form] = entry
