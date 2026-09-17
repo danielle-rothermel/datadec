@@ -53,6 +53,24 @@ Summary:
 - Pull Zhao et al. 2021 ("Calibrate Before Use") for the calibration
   scoring rule.
 
+## 2026, Romanou: Brittlebench: Quantifying LLM Robustness via Prompt Sensitivity
+
+Saved as [2603.13285v2.md](../2603.13285v2.md); full summary in
+[scoring-function-and-reward-noise.md](scoring-function-and-reward-noise.md).
+For the format grid: the perturbation families that moved log-prob-scored MC
+accuracy most on current models were prompt padding (leading/trailing spaces,
+quotation marks, newlines; up to 12.8% in few-shot, and the most
+ranking-changing) and word-level noise; LLM paraphrases of the query were
+benign or slightly helpful. Our grid varies separators, breaks and casing
+between fields but never pads the whole prompt or the query; if we want a
+"nuisance" format axis to measure sensitivity rather than to optimise, padding
+is the one with the largest effect on record. Few-shot prompts were more
+sensitive to structural perturbations than zero-shot, which bears on the
+demonstration-count axis: a count of zero is not only a different prompt but
+a differently brittle one.
+
+Era caveat: as in [scoring-function-and-reward-noise.md](scoring-function-and-reward-noise.md).
+
 ## 2025, Bozhenko: When Punctuation Matters: A Large-Scale Comparison of Prompt Robustness Methods for LLMs
 
 Saved as [2508.11383v1.md](../2508.11383v1.md). Benchmarks five format-robustness

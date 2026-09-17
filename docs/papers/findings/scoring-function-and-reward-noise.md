@@ -39,6 +39,48 @@ Summary:
   reversals in both directions, a noise term separate from response
   sampling.
 
+## 2026, Romanou: Brittlebench: Quantifying LLM Robustness via Prompt Sensitivity
+
+Saved as [2603.13285v2.md](../2603.13285v2.md). Closest setting to ours in the
+collection: lm-evaluation-harness log-probability scoring over answer options
+(deterministic, so the inference-variance term vanishes) on six MC benchmarks
+including ARC, with Qwen3 4B/8B/32B, Llama 3.1/3.3 8B/70B, GPT-5 and Claude 4.5
+Opus, zero- and few-shot. Fifteen semantics-preserving input perturbations in
+four families: word-level (typos, splits, merges, extra spaces), prompt
+padding (spaces, quotes, newlines at the ends), context augmentation
+(personas, emotional phrases, explanatory rewording) and paraphrasing.
+
+The framework is a two-way variance decomposition of the item x perturbation
+correctness matrix: V_data = variance across items of the item's mean over
+perturbations (difficulty) and V_brittleness = mean across items of the
+within-item variance over perturbations; equivalent to a random-effects ANOVA
+with perturbations nested in items. Brittleness score = share of total
+variance that is perturbation-driven. Results: roughly half of the variance
+of open-weight models is perturbation-driven, above 25% even for frontier
+APIs; MMLU and GPQA are brittleness-dominated (models have converged on the
+content, so surface robustness is what separates them) while ARC, TruthfulQA,
+LogiQA and MathQA are difficulty-dominated. A single perturbation changes the
+ranking of the six open models in 63% of cases; padding with quotes or
+newlines is the worst (rank correlation 0.63-0.73), word splits and spacing
+the mildest (0.87-0.91). Few-shot raises accuracy but increases sensitivity to
+structural perturbations (up to 12.8% drop); typos degrade monotonically with
+count while padding is irregular; pairs of perturbations compound to drops of
+up to 45% and are order-dependent. Chain-of-thought (Claude) reduces the
+perturbation drop only from 2.79 to 2.38 points.
+
+Mapping to our numbers: their decomposition is the item / prompt / interaction
+split we ran on the seed round, without a prompt main-effect term (their
+perturbations are meant to be null). Their "brittleness" is our interaction
+share; on the contaminated seed sweep it was 4-5% of variance for the RC
+per-char share and 15-18% for accuracy on 51 formats x instructions, far below
+their ~50% under adversarial perturbations, which is the expected ordering
+since our formats are meaning-preserving layouts, not noise. ARC being
+difficulty-dominated for 4B-70B models is consistent with what we see.
+
+Era caveat: none needed for the models (2025-2026) or the harness; the caveat
+is scope: perturbations are applied to the query, not to the demonstrations
+or the answer descriptor, and the paper studies robustness, not optimisation.
+
 ## 2023, Lu: Strings from the Library of Babel: Random Sampling as a Strong Baseline for Prompt Optimisation
 
 Saved as [2311.09569v2.md](../2311.09569v2.md); full summary in

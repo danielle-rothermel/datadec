@@ -27,6 +27,22 @@ from that, rather than from a fixed dev-set size.
   a joint decomposition (input effect, system-prompt effect, interaction,
   response noise) gives a better selection rule than either marginal alone.
 
+## 2026, Romanou: Brittlebench: Quantifying LLM Robustness via Prompt Sensitivity
+
+Saved as [2603.13285v2.md](../2603.13285v2.md); full summary in
+[scoring-function-and-reward-noise.md](scoring-function-and-reward-noise.md).
+Relevant here for its per-item quantity: V_brittleness is the mean over items
+of each item's variance across prompt variants, which is exactly the
+between-prompt variance per item that p1 selects on (with response noise
+zero, as here). Brittlebench uses it as a benchmark-level diagnostic (is the
+benchmark separating models by difficulty or by surface sensitivity), which
+is the aggregate form of our per-item SNR ranking; its finding that ARC is
+difficulty-dominated for current 4B-70B models means the prompt-sensitive
+band of items is a minority there, and a selection rule that targets it has
+something specific to find.
+
+Era caveat: as in [scoring-function-and-reward-noise.md](scoring-function-and-reward-noise.md).
+
 ## 2025, Heineman: Signal and Noise: A Framework for Reducing Uncertainty in Language Model Evaluation
 
 Saved as [2508.13144v1.md](../2508.13144v1.md). About choosing benchmarks and
