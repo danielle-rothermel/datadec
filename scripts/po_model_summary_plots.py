@@ -2,7 +2,7 @@
 
 Inputs are items.csv files from po_subset_bootstrap.py (one per model, same items). Writes
 bars.png (full-set value per model per metric with a bootstrap 95% interval), diff_heatmap.png
-(paired row-minus-column differences, full matrix), power_heatmap.png (items needed for 80% power on each
+(paired row-minus-column differences, lower triangle), power_heatmap.png (items needed for 80% power on each
 paired difference), and summary.csv under --out.
 """
 
@@ -80,35 +80,41 @@ def main(
     fig.savefig(out / "bars.png", dpi=150)
 
     def heat(mat: np.ndarray, fname: str, fmt, cmap: str, center: bool, log: bool) -> None:
-        # 2x2 grid: rows = formulation (RC, MC), columns = accuracy, likelihood; full matrices, row minus column
+        # 2x2 grid: rows = formulation (RC, MC), columns = accuracy, likelihood. Lower triangle only
+        # (row minus column, rows names[1:], columns names[:-1]); cells are drawn individually so
+        # the unused triangle is plain background rather than empty grid cells.
+        from matplotlib.patches import Rectangle
         order = [["rc_primary", "rc_primary_likelihood"], ["mc_primary", "mc_primary_likelihood"]]
         k = len(names)
-        fig, axes = plt.subplots(2, 2, figsize=(2.4 * k + 4, 2.0 * k + 2), constrained_layout=True)
+        fig, axes = plt.subplots(2, 2, figsize=(2.4 * k + 3, 2.0 * k + 1), constrained_layout=True)
         fig.get_layout_engine().set(w_pad=0.6, h_pad=0.3)
         for row, keys in zip(axes, order, strict=True):
             for ax, key in zip(row, keys, strict=True):
                 si = SERIES.index(key)
                 m = mat[si]
                 plot = np.log10(m) if log else m
-                vmax = np.nanmax(np.abs(plot)) if center else np.nanmax(plot)
-                vmin = -vmax if center else np.nanmin(plot)
-                cm = matplotlib.colormaps[cmap].copy()
-                cm.set_bad("#e6e6e6")
-                im = ax.imshow(np.ma.masked_invalid(plot), cmap=cm, vmin=vmin, vmax=vmax)
-                for i in range(k):
-                    for j in range(k):
-                        if not np.isnan(m[i, j]):
-                            ax.text(j, i, fmt(m[i, j]), ha="center", va="center", fontsize=10)
-                ax.set_xticks(range(k))
-                ax.set_xticklabels(names, rotation=30, ha="right")
-                ax.set_yticks(range(k))
-                ax.set_yticklabels(names)
+                tri = [plot[i, j] for i in range(k) for j in range(k) if i > j]
+                vmax = max(abs(v) for v in tri) if center else max(tri)
+                vmin = -vmax if center else min(tri)
+                norm = matplotlib.colors.Normalize(vmin=vmin, vmax=vmax)
+                cm = matplotlib.colormaps[cmap]
+                for i in range(1, k):
+                    for j in range(i):
+                        ax.add_patch(Rectangle((j, i - 1), 1, 1, facecolor=cm(norm(plot[i, j])), edgecolor="white", lw=1.5))
+                        ax.text(j + 0.5, i - 0.5, fmt(m[i, j]), ha="center", va="center", fontsize=10)
+                ax.set_xlim(0, k - 1)
+                ax.set_ylim(k - 1, 0)
+                ax.set_aspect("equal")
+                ax.set_xticks(np.arange(k - 1) + 0.5)
+                ax.set_xticklabels(names[:-1], rotation=30, ha="right")
+                ax.set_yticks(np.arange(k - 1) + 0.5)
+                ax.set_yticklabels(names[1:])
+                ax.tick_params(length=0)
+                for sp in ax.spines.values():
+                    sp.set_visible(False)
                 ax.set_title(TITLES[key])
-                ax.set_xticks(np.arange(-0.5, k, 1), minor=True)
-                ax.set_yticks(np.arange(-0.5, k, 1), minor=True)
-                ax.grid(which="minor", color="white", lw=1.5)
-                ax.tick_params(which="minor", length=0)
-                cb = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.03)
+                sm = matplotlib.cm.ScalarMappable(norm=norm, cmap=cm)
+                cb = fig.colorbar(sm, ax=ax, fraction=0.046, pad=0.03)
                 if log:
                     ticks = [t for t in range(int(np.ceil(vmin)), int(np.floor(vmax)) + 1)]
                     cb.set_ticks(ticks)
