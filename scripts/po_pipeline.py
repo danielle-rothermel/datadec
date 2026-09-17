@@ -27,6 +27,9 @@ MODELS: dict[str, tuple[str, str | None]] = {
     "qwen4b-base": ("Qwen/Qwen3-4B-Base", None),
     "qwen4b": ("Qwen/Qwen3-4B", None),
 }
+# Qwen's 152k vocabulary makes the per-batch log-softmax tensor several GB at batch 16, which
+# pushed the machine into swap; batch 4 keeps it in memory at similar throughput.
+BATCH_SIZE = {k: (4 if k.startswith("qwen") else 16) for k in MODELS}
 SUBSETS = {
     "arc_easy": {"test": CFG / "subsets/arc_easy-test-n100-seed0.json",
                  "train": CFG / "subsets/arc_easy-train-n60-seed1.json", "val": CFG / "subsets/arc_easy-train-n40-seed2.json"},
@@ -89,7 +92,8 @@ class Pipeline:
             shutil.move(str(sweep_dir), str(failed))
             self.log(f"  sweep {name}: incomplete dir moved to {failed.name}; rerunning")
         args = [sys.executable, "scripts/po_sweep.py", "--name", name, "--subset", str(subset), "--model", model,
-                "--task", task, "--pairs", str(pairs), "--root", str(self.root / "sweeps")]
+                "--task", task, "--pairs", str(pairs), "--root", str(self.root / "sweeps"),
+                "--batch-size", str(BATCH_SIZE[model_key])]
         if revision:
             args += ["--revision", revision]
         rc = self._run(args, name)
@@ -114,6 +118,7 @@ class Pipeline:
             shutil.rmtree(gepa_root / name)  # a failed selection left an empty jobs dir; redo selection
         if not jobs_dir.exists():
             args = [sys.executable, "scripts/po_select_seeds.py", "--name", name, "--sweep-dir", str(seed_sweep),
+                    "--batch-size", str(BATCH_SIZE[model_key]),
                     "--train-subset", str(SUBSETS[task]["train"]), "--val-subset", str(SUBSETS[task]["val"]),
                     "--n", str(GEPA_N), "--max-metric-calls", str(GEPA_BUDGET), "--root", str(gepa_root)]
             if opts.get("formulations"):

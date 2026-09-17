@@ -39,6 +39,7 @@ def write_jobs(
     reflection_model: str = "openai/gpt-5.1",
     reflection_reasoning: str = "medium",
     device: str = "mps",
+    batch_size: int = 4,
     formulations: tuple[str, ...] | None = None,
     max_group_score: float | None = None,
     root: Path = DEFAULT_ROOT,
@@ -70,7 +71,7 @@ def write_jobs(
         job = {
             "job_id": job_id, "group": row["group"], "seed_rank": int(row["rank"]), "seed_score": float(row["score"]),
             "model": row["model"], "revision": row["revision"] if isinstance(row["revision"], str) else None,
-            "device": device, "task": sweep.get("task", "arc_easy"), "formulation": row["formulation"],
+            "device": device, "batch_size": batch_size, "task": sweep.get("task", "arc_easy"), "formulation": row["formulation"],
             "prompt_format": formats[row["format_id"]], "format_id": row["format_id"],
             "seed_instruction": {"id": row["instruction_id"], "text": text},
             "split": train_subset.split, "train_ids": list(train_subset.ids), "val_ids": list(val_subset.ids),
