@@ -2,6 +2,23 @@
 
 Which items we evaluate on, how many, and how they are chosen. Log, most recent first.
 
+## 2026-09-17 12:55 — Decision: SNR-filtered 300/300/300 train/dev/test subsets for ARC-Easy
+
+Select on RC, evaluate on both RC and MC (MC carries no DD signal, so an MC-based selection
+would fit noise; Qwen contrasts on MC are resolvable on any subset). Per item: signal =
+dispersion of the RC per-char share across the DataDecide finals only (150M, 300M, 1B;
+including Qwen makes the filter inert because Qwen-vs-DD dominates, 1 item excluded vs
+84), noise = checkpoint sd from the 300M trailing checkpoints (1B to be added when its
+checkpoints land). Exclude SNR < 2 (84 items, 3.5%) and the OLMES few-shot ids (none in the
+test split). Shuffle the 2292 eligible items with seed 0 and take three disjoint 300-item
+draws: train, dev, test (test untouched for now). Files:
+`configs/po/subsets/arc_easy-test-snr-{train,dev,test}-n300-seed0.json`, pool ranking in
+`arc_easy-test-snr-pool-seed0.csv`; copies under
+`../results/assets/2026-09-17-arc-easy-snr-subsets/`. Script: `scripts/po_select_items.py`.
+Power at n=300 on the per-char share (paired sd ~0.03): minimum detectable paired
+difference ~0.005. Prompt-discriminative selection (p1) is a later second pass over the
+same pool. ARC-Challenge subsets wait for its full-set runs.
+
 ## 2026-09-17 11:25 — Result-backed decision: item noise floors and the SNR criterion
 
 From `../results/2026-09-17-1125-arc-easy-item-noise-dd300m.md`: per-item checkpoint sd

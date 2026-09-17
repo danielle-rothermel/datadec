@@ -1,0 +1,24 @@
+{
+ "task": "arc_easy",
+ "n_items": 2376,
+ "excluded_fewshot": 0,
+ "excluded_low_snr": 84,
+ "min_snr": 2.0,
+ "eligible": 2292,
+ "subsets": {
+  "train": 300,
+  "dev": 300,
+  "test": 300
+ },
+ "signal_median": 0.02984131466083359,
+ "noise_median": 0.00264627490376995,
+ "snr_median": 11.609124285959172,
+ "model_items": [
+  "/Users/daniellerothermel/drotherm/data/.claude/datadec/2026-09-17/0949-arc-easy-subset-size/dd150m/items.csv",
+  "/Users/daniellerothermel/drotherm/data/.claude/datadec/2026-09-17/0949-arc-easy-subset-size/dd300m/items.csv",
+  "/Users/daniellerothermel/drotherm/data/.claude/datadec/2026-09-17/0949-arc-easy-subset-size/dd1b/items.csv"
+ ],
+ "noise_items": [
+  "/Users/daniellerothermel/drotherm/data/.claude/datadec/2026-09-17/0949-arc-easy-subset-size/noise-dd300m/items.csv"
+ ]
+}
