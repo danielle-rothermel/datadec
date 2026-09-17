@@ -152,6 +152,22 @@ points) and the population-size curve should not be assumed to carry over.
 The relative findings (bad-only seeds hurt, differing-parts mutation beats
 whole-prompt mutation) are the part worth keeping.
 
+## 2024, Schnabel: Symbolic Prompt Program Search (SAMMO): A Structure-Aware Approach to Efficient Compile-Time Prompt Optimization
+
+Saved as [2404.02319v2.md](../2404.02319v2.md). The initial population is
+not the focus, but two things bear on it. First, InitCandidates is an
+explicit step in the search skeleton, and APE's few-shot induction is one
+instantiation of it (InduceInstructions is a mutator, so an initial
+population can be regenerated from examples at any point in the search, not
+only at the start). Second, the enumerative mode is itself a way to build a
+seed population over format: a small explicit grid of structural choices,
+evaluated exhaustively with 24 calls, before any text mutation. Because
+candidate scores correlate weakly across backends (Figure 5), a seed
+population built for one model is a poor prior for another.
+
+Era caveat: as in [template-selection.md](template-selection.md); 2023-era
+black-box backends, generation-scored tasks.
+
 ## 2024, Voronov: Mind Your Format: Towards Consistent Evaluation of In-Context Learning Improvements
 
 Saved as [2401.06766v3.md](../2401.06766v3.md). Not an optimizer, but its

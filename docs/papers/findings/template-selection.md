@@ -18,6 +18,10 @@ Summary:
   of template luck.
 - Templates are a factored space and can be enumerated and sampled; no
   component is safely prunable because components interact (Voronov 2024).
+  SAMMO (Schnabel 2024) searches the structural end of that space
+  (serialization, grouping, section markup, example count) as an explicit
+  grid or through mutators, and finds format winners transfer weakly
+  between models.
 - A template defect can silently cap an optimizer: a wrong output-field
   order disabled chain-of-thought and reflective rewriting never diagnosed
   it (Liu 2026). Optimizers that only edit instruction text inherit the
@@ -45,6 +49,43 @@ Summary:
   curated few-shot sets, and its per-format normalization choices.
 - Pull Zhao et al. 2021 ("Calibrate Before Use") for the calibration
   scoring rule.
+
+## 2024, Schnabel: Symbolic Prompt Program Search (SAMMO): A Structure-Aware Approach to Efficient Compile-Time Prompt Optimization
+
+Saved as [2404.02319v2.md](../2404.02319v2.md). Treats the whole prompt as a
+symbolic program (a graph of sections, data renderers, and example lists)
+so that format is a first-class search variable alongside instruction text.
+
+Format choices are searched two ways. Enumerative search when the choices
+are known a priori: on retrieval-augmented semantic parsing the grid was
+in-context example format (JSON, plaintext, XML) x grouping (by item vs by
+input/output) x number of examples (5, 10) x DSL spec (full vs signatures),
+24 evaluations total, and it gave 30 to 133 percent relative gains
+depending on the backend. Iterative (beam) search when the space is implicit:
+structural mutators such as ChangeSectionFormat (markdown vs XML section
+rendering), ChangeDataFormat, DecreaseInContextExamples, DropSection and
+RepeatSection sit next to text mutators (Paraphrase, InduceInstructions,
+ShortenText, TextToBulletPoints, RemoveStopwords), sampled uniformly at
+random per round. Two findings matter for us: which mutators help depends on
+the backend model (Figure 7), and the training scores of the same 24 format
+candidates correlate only weakly across backends (Figure 5), so a format
+found for one model should not be assumed to transfer. Their evaluation and
+training sets are 100 examples each, chosen as the practical ceiling for
+hand labeling, with a budget of 24 to 48 candidate evaluations.
+
+Relation to our grid: SAMMO's format axes are coarser and more structural
+than Sclar's (data serialization, grouping, section markup, example count)
+where ours are surface-level (descriptor words, separators, casing, label
+style). The two are complementary rather than alternatives; our grid has no
+structural axis at all.
+
+Era caveat: backends are GPT-3.5 (0613), GPT-4 (0613), Llama-2-70B-chat and a
+Mixtral 8x7B fine-tune, all black-box text generation with no
+probabilities; tasks are BigBench zero-shot classification with headroom
+below 0.9, semantic parsing to DSLs, and Super-NaturalInstructions
+compression. The instruction-tuning gains shrink as the backend gets
+stronger (2x for Llama-2, 10 percent for GPT-3.5), which is the same trend
+we see between DataDecide and Qwen. Nothing is scored by likelihood.
 
 ## 2024, Voronov: Mind Your Format: Towards Consistent Evaluation of In-Context Learning Improvements
 

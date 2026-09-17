@@ -188,6 +188,25 @@ reasoning-style instruction, whereas GEPA's on the same data contained
 question-specific guidance that the authors read as memorization of the
 training set.
 
+## 2024, Schnabel: Symbolic Prompt Program Search (SAMMO): A Structure-Aware Approach to Efficient Compile-Time Prompt Optimization
+
+Saved as [2404.02319v2.md](../2404.02319v2.md). Widest operator set in this
+collection because the prompt is a symbolic program. Text operators:
+Paraphrase, InduceInstructions (regenerate instructions from examples),
+ShortenText, TextToBulletPoints, RemoveStopwords. Attribute operators:
+ChangeSectionFormat (markdown vs XML), ChangeDataFormat (JSON, XML,
+plaintext), DecreaseInContextExamples. Structural operators: DropSection,
+RepeatSection. Search is beam search with mutators drawn uniformly at random
+per candidate; budget 24 to 48 evaluations on 100 training examples. In the
+compression experiment, the operators that most often improved the objective
+were rewriting and dropping in-context examples, and the useful set differed
+by backend (Figure 7); GPT-4 tolerated fewer examples and a dropped
+introduction better than the others. Reframes APE as InitCandidates +
+Paraphrase under beam search and GrIPS as constituent-level
+Add/Delete/Swap/Paraphrase.
+
+Era caveat: as in [template-selection.md](template-selection.md).
+
 ## 2024, Voronov: Mind Your Format: Towards Consistent Evaluation of In-Context Learning Improvements
 
 Saved as [2401.06766v3.md](../2401.06766v3.md). Not an operator paper, but
