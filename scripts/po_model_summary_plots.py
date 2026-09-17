@@ -30,6 +30,7 @@ def main(
     resamples: Annotated[int, typer.Option("--resamples")] = 2000,
     seed: Annotated[int, typer.Option("--seed")] = 0,
     chance: Annotated[float, typer.Option("--chance", help="reference line on MC panels")] = 0.25,
+    formulations: Annotated[str, typer.Option("--formulations", help="comma-separated subset of rc,mc")] = "rc,mc",
 ) -> None:
     names = labels.split(",")
     frames = [pd.read_csv(p).set_index("native_id") for p in items]
@@ -64,8 +65,9 @@ def main(
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
     colors = [f"C{i}" for i in range(len(names))]
-    fig, axes = plt.subplots(1, 4, figsize=(16, 4.2))
-    for ax, key in zip(axes, SERIES, strict=True):
+    bar_keys = [k for k in SERIES if k.split("_")[0] in formulations.split(",")]
+    fig, axes = plt.subplots(1, len(bar_keys), figsize=(4 * len(bar_keys), 4.2), squeeze=False)
+    for ax, key in zip(axes[0], bar_keys, strict=True):
         t = summary[summary.series == key].set_index("model").loc[names]
         ax.bar(range(len(names)), t["mean"], color=colors, yerr=[t["mean"] - t["lo"], t["hi"] - t["mean"]], capsize=3)
         if key.startswith("mc_"):
@@ -84,9 +86,10 @@ def main(
         # (row minus column, rows names[1:], columns names[:-1]); cells are drawn individually so
         # the unused triangle is plain background rather than empty grid cells.
         from matplotlib.patches import Rectangle
-        order = [["rc_primary", "rc_primary_likelihood"], ["mc_primary", "mc_primary_likelihood"]]
+        forms = formulations.split(",")
+        order = [[f"{f}_primary", f"{f}_primary_likelihood"] for f in forms]
         k = len(names)
-        fig, axes = plt.subplots(2, 2, figsize=(2.4 * k + 3, 2.0 * k + 1), constrained_layout=True)
+        fig, axes = plt.subplots(len(order), 2, figsize=(2.4 * k + 3, (2.0 * k + 1) * len(order) / 2), constrained_layout=True, squeeze=False)
         fig.get_layout_engine().set(w_pad=0.6, h_pad=0.3)
         for row, keys in zip(axes, order, strict=True):
             for ax, key in zip(row, keys, strict=True):
