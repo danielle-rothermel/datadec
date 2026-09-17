@@ -39,6 +39,24 @@ Summary:
   reversals in both directions, a noise term separate from response
   sampling.
 
+## 2025, Bozhenko: When Punctuation Matters: A Large-Scale Comparison of Prompt Robustness Methods for LLMs
+
+Saved as [2508.11383v1.md](../2508.11383v1.md); full summary in
+[template-selection.md](template-selection.md). Two scoring-rule results.
+Ranking answer options by probability is uniformly more robust to format
+than greedy decoding and exact match, so a likelihood-scored comparison
+between prompts has less format noise than a generation-scored one. Batch
+Calibration, subtracting each option's mean log-probability over a batch of
+inputs before the argmax, both raised accuracy and cut format spread on most
+of 8 models at zero cost; it is the same family of correction as OLMES's
+unconditional normalization (`acc_uncond`) but estimates the option prior
+from the batch under the actual prompt rather than from a bare answer
+prefix, so it also absorbs format-induced bias toward particular labels.
+That makes it a candidate scoring rule for MC on small models, where the
+label prior is what pins them at chance.
+
+Era caveat: as in [template-selection.md](template-selection.md).
+
 ## 2025, Heineman: Signal and Noise: A Framework for Reducing Uncertainty in Language Model Evaluation
 
 Saved as [2508.13144v1.md](../2508.13144v1.md); full summary in

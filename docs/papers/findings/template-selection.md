@@ -29,7 +29,10 @@ Summary:
 - The meta-prompt used to elicit candidates is itself a template with large
   effects on what gets proposed (Zhou 2022).
 - Ensembling predictions over 4 or 5 templates is a cheap way to remove
-  format variance at inference time (Voronov 2024).
+  format variance at inference time (Voronov 2024); Bozhenko 2025 finds
+  probability-averaged ensembles cost accuracy while majority voting does
+  not, and that Batch Calibration removes more format spread than either
+  at zero cost. Likelihood ranking is more format-robust than generation.
 - Local: the OLMES RC and MC formulations are two templates for the same
   items. For the 150M DataDecide model MC is at chance (0.26) while RC is
   0.51, so at small scale the template decides whether the score carries any
@@ -49,6 +52,51 @@ Summary:
   curated few-shot sets, and its per-format normalization choices.
 - Pull Zhao et al. 2021 ("Calibrate Before Use") for the calibration
   scoring rule.
+
+## 2025, Bozhenko: When Punctuation Matters: A Large-Scale Comparison of Prompt Robustness Methods for LLMs
+
+Saved as [2508.11383v1.md](../2508.11383v1.md). Benchmarks five format-robustness
+methods on 8 open models (Llama 3.x 1B/3B/8B, Qwen 2.5 1.5B/3B/7B, Gemma 2
+2B/9B) across 52 Natural Instructions classification and multiple-choice
+tasks (1000 items each), 2-shot with demonstrations rendered in the same
+format as the query, 10 formats per task drawn from a Sclar-style component
+grammar (descriptor case, descriptor separator, inter-field space,
+text-to-option separator, option item style, option item wrapper; 4 to 16
+values per component, Appendix G), plus GPT-4.1 and DeepSeek V3 on 10 tasks.
+Robustness is spread (max minus min accuracy over formats) and the std over
+formats; method wins are decided by a paired t-test over tasks.
+
+Findings that bear on format selection:
+
+- Probability ranking over the answer options is always more format-robust
+  than greedy generation of the answer (Section 4.3); Gemma is the extreme
+  case. Our likelihood scoring is already the robust choice.
+- Batch Calibration, which subtracts the batch-mean log-probability of each
+  option before the argmax (Zhou et al. 2024), raises accuracy on all 8 models
+  and significantly reduces spread on 6 of 8, with no training and no extra
+  forward passes. It is the single most effective intervention they test.
+- Template Ensembles (probability averaging over 5 formats) reduce spread
+  on 4 of 8 models but lower accuracy, because one bad format in the
+  ensemble drags the mean; majority voting over formats does not have that
+  failure and slightly improves frontier-model accuracy.
+- LoRA with format augmentations raises accuracy but improves spread on
+  only 1 of 8 models; robustness is not learned from exposure alone.
+- Spread grows with format complexity (number of components in the format,
+  Appendix E), and frontier models are far more robust (spread 0.03 to
+  0.05 vs 0.16 to 0.19 for 7B-8B open models) but still show 8 to 10 point
+  spreads on individual tasks.
+
+Relation to our grid: the component grammar is the same family as ours and
+Sclar's, with two components we lack (text-to-option separator, option
+wrapper as a separate axis from item style) and larger value pools. The
+paper does not select formats; it samples 10 at random per task and treats
+the spread across them as the quantity to minimize.
+
+Era caveat: models are 2024-2025 open instruction-tuned models from 1B to 9B
+plus two frontier APIs, so the executors are current; tasks are Natural
+Instructions classification and MC with 2 to 4 options, and the accuracy
+reported is over generated or ranked labels, not likelihood. All methods are
+inference- or training-time robustness fixes rather than optimizers.
 
 ## 2024, Schnabel: Symbolic Prompt Program Search (SAMMO): A Structure-Aware Approach to Efficient Compile-Time Prompt Optimization
 
