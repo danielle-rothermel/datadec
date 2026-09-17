@@ -19,10 +19,14 @@ as formulations `gen_rc` / `gen_mc` (primary `text_match` / `label_match`, no li
 `primary_likelihood` None). Same prompt bytes as RC / MC, greedy, cap 96, stop at newline; the raw
 generation is kept in the predictions file and on the items table (`continuation`).
 
-- DataDecide checkpoints run with `use_cache=false` (`po_sweep.py --no-cache`), as decided; the
-  fork's generate override also pins the mps autocast dtype to float32 because hf_olmo casts its
-  attention bias to that dtype whenever an attention mask is passed (HF generate always passes
-  one; the likelihood path never does), which otherwise fails with a Half/float mismatch.
+- DataDecide checkpoints generate with the KV cache after all (17:00 revision): HF generate
+  hands hf_olmo a `DynamicCache` where it expects a list of (k, v) tuples, so the fork's generate
+  override runs a short greedy loop with the model's own cache format for hf_olmo models; its
+  output is byte-identical to the no-cache path on the smoke items. `po_sweep.py --no-cache`
+  remains as an escape hatch. The override also pins the mps autocast dtype to float32 because
+  hf_olmo casts its attention bias to that dtype whenever an attention mask is passed (generate
+  always passes one; the likelihood path never does), which otherwise fails with a Half/float
+  mismatch.
 - Five-item smoke test on 300M: RC generations are answer text (`the earth's gravity`), MC
   generations a bare letter; 300M answers `B` on every MC item. Runtime without cache is small at
   this answer length (under a second for five RC items).
