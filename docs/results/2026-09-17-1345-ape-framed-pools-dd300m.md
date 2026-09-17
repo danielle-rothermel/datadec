@@ -61,10 +61,41 @@ stance-carrying instructions (elimination or common-sense), (c) rule-phrased ins
 (a) vs the empty instruction and the random-string controls is the test of whether any
 instruction does.
 
+## Second proposer: GPT-5.6 Terra (added 14:10)
+
+The same 36 cells (same seeds, framings, demonstrations, aware text) with
+`openai/gpt-5.6-terra`, reasoning high. Pools `...180641Z-framed-rc-dd300m-terra` and
+`...180730Z-framed-mc-dd300m-terra`; candidates copied beside the GPT-5.1 ones.
+
+| | GPT-5.1 RC | Terra RC | GPT-5.1 MC | Terra MC |
+|---|---|---|---|---|
+| words per instruction (plain / rule / short) | 26 / 34 / 14 | 10 / 10 / 5 | 28 / 30 / 15 | 12 / 13 / 7 |
+| distinct after near-duplicate grouping (of 18) | 17 | 10 | 18 | 14 |
+| largest duplicate group | 2 | 5 ("Answer each question with the most common-sense answer" x5) | 1 | 3 |
+| answer-form guidance (text / letter) | 15 / 1 | 0 / 0 | 0 / 18 | 0 / 14 |
+| no-explanation clause | 13 | 3 | 16 | 4 |
+| mentions science | 8 | 1 | 6 | 0 |
+| lists the letters A-D | 0 | 0 | 10 | 0 |
+| total tokens for 18 calls | 20.8k | 9.2k | 15.7k | 10.7k |
+
+- Terra reads the framing literally and adds nothing: its instructions are the stance
+  sentence itself ("Use common sense.", "Eliminate wrong options first.", "Answer the
+  question."). Half the RC grid collapses into three groups, and the aware cells are often
+  byte-identical to their non-aware twins, so on Terra the model-aware slot had no effect at
+  all.
+- GPT-5.1 elaborates: answer form, no-explanation clauses, science framing, A-D lists.
+  Almost all of that is content the demonstrations already convey.
+- For a likelihood-scored small model the two proposers therefore span the length axis
+  Yang 2025 says matters: Terra gives the minimal instruction per framing, GPT-5.1 the
+  elaborated one. Evaluating both pools makes proposer (and with it instruction length) a
+  measured factor rather than a choice.
+- Practical: Terra's RC pool is effectively 10 instructions and its MC pool 14, so the
+  dedup step matters for it even at 18 cells; GPT-5.1 stays distinct at this size.
+
 ## Cost and settings
 
-36 calls, 36.5k total tokens (reasoning included), under a minute of wall time per grid at
-concurrency 6. Seeds 5000-5017 (RC) and 6000-6017 (MC).
+GPT-5.1: 36 calls, 36.5k total tokens (reasoning included). Terra: 36 calls, 19.9k tokens. Under a
+minute of wall time per grid at concurrency 6. Seeds 5000-5017 (RC) and 6000-6017 (MC) for both proposers.
 
 ## Next
 

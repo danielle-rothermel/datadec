@@ -1,6 +1,6 @@
-# Instruction pool report (36 candidates, 2 formulations; near-duplicate threshold 0.8)
+# Instruction pool report (72 candidates, 2 formulations; near-duplicate threshold 0.8)
 
-## MC (18 candidates; 0 near-duplicate groups absorbing 0 candidates; 18 distinct)
+## MC / openai/gpt-5.1 (18 candidates; 0 near-duplicate groups absorbing 0 candidates; 18 distinct)
 
 Pairwise similarity: median ratio 0.44, max 0.78; median Jaccard 0.32.
 
@@ -49,7 +49,59 @@ medium=12 long=3 short=3
 - **c016** [short/none/plain, 8 words]: Write only the letter of the correct answer.
 - **c017** [short/none/aware, 12 words]: Answer each question with only the letter (A–D) of the correct option.
 
-## RC (18 candidates; 1 near-duplicate groups absorbing 1 candidates; 17 distinct)
+## MC / openai/gpt-5.6-terra (18 candidates; 3 near-duplicate groups absorbing 4 candidates; 14 distinct)
+
+Pairwise similarity: median ratio 0.45, max 0.84; median Jaccard 0.25.
+
+### Tag counts by factor
+
+| tag | all | op=plain | op=rule | op=short | st=commonsense | st=eliminate | st=none | aware | not aware |
+|---|---|---|---|---|---|---|---|---|---|
+| answer_form_letter | 14 | 6 | 4 | 4 | 4 | 4 | 6 | 5 | 9 |
+| answer_form_text | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| elimination | 6 | 2 | 2 | 2 | 0 | 6 | 0 | 3 | 3 |
+| commonsense | 6 | 2 | 2 | 2 | 6 | 0 | 0 | 3 | 3 |
+| no_explanation | 4 | 2 | 2 | 0 | 1 | 1 | 2 | 1 | 3 |
+| mentions_science | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| descriptor_anchor | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| letters_listed | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| modal_or_rule | 1 | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 0 |
+| mentions_multiple_choice | 11 | 4 | 4 | 3 | 1 | 6 | 4 | 4 | 7 |
+
+Words per instruction: op=plain: 12, op=rule: 13, op=short: 7; st=commonsense: 10, st=eliminate: 12, st=none: 10; aware: 10, not aware: 11.
+
+### Length buckets
+
+short=16 medium=2
+
+### Near-duplicate groups
+
+- mc-gpt-5.6-terra-g57: c003, c014
+- mc-gpt-5.6-terra-g58: c004, c016
+- mc-gpt-5.6-terra-g59: c005, c008, c010
+
+### Candidates
+
+- **c000** [plain/eliminate/plain, 13 words]: Eliminate the incorrect choices, then write only the letter of the correct answer.
+- **c001** [plain/eliminate/aware, 15 words]: First rule out the incorrect options, then choose the letter of the best remaining answer.
+- **c002** [plain/commonsense/plain, 12 words]: Choose the most common-sense correct answer and reply with only its letter.
+- **c003** [plain/commonsense/aware, 11 words]: Answer each question with the letter of the most common-sense answer.
+- **c004** [plain/none/plain, 8 words]: Write the letter of the correct answer choice.
+- **c005** [plain/none/aware, 11 words]: For each multiple-choice question, write the letter of the correct answer.
+- **c006** [rule/eliminate/plain, 16 words]: Rule out the wrong options first, then answer with the letter of the remaining correct choice.
+- **c007** [rule/eliminate/aware, 13 words]: First, rule out the wrong answer choices, then choose the best remaining answer.
+- **c008** [rule/commonsense/plain, 14 words] (dup of mc-gpt-5.6-terra-g59): For each multiple-choice question, reply with the letter of the most common-sense correct answer.
+- **c009** [rule/commonsense/aware, 10 words]: Always choose the answer that makes the most common sense.
+- **c010** [rule/none/plain, 12 words] (dup of mc-gpt-5.6-terra-g59): For each question, write only the letter of the correct answer choice.
+- **c011** [rule/none/aware, 13 words]: For each question, choose the correct answer and respond with only its letter.
+- **c012** [short/eliminate/plain, 10 words]: Rule out wrong options first, then give the correct letter.
+- **c013** [short/eliminate/aware, 5 words]: Rule out wrong options first.
+- **c014** [short/commonsense/plain, 9 words] (dup of mc-gpt-5.6-terra-g57): Reply with the letter of the most common-sense answer.
+- **c015** [short/commonsense/aware, 5 words]: Choose the most common-sense answer.
+- **c016** [short/none/plain, 8 words] (dup of mc-gpt-5.6-terra-g58): Answer with the letter of the correct choice.
+- **c017** [short/none/aware, 5 words]: Answer with the correct letter.
+
+## RC / openai/gpt-5.1 (18 candidates; 1 near-duplicate groups absorbing 1 candidates; 17 distinct)
 
 Pairwise similarity: median ratio 0.42, max 0.84; median Jaccard 0.24.
 
@@ -76,7 +128,7 @@ long=6 medium=8 short=4
 
 ### Near-duplicate groups
 
-- rc-g4: c004, c016
+- rc-gpt-5.1-g4: c004, c016
 
 ### Candidates
 
@@ -96,6 +148,58 @@ long=6 medium=8 short=4
 - **c013** [short/eliminate/aware, 21 words]: For each question, first rule out the wrong options, then answer with the single best remaining option as a brief phrase.
 - **c014** [short/commonsense/plain, 13 words]: For each question, give the most common-sense correct answer in a few words.
 - **c015** [short/commonsense/aware, 15 words]: Answer each science question with a short, direct phrase giving the most common-sense correct answer.
-- **c016** [short/none/plain, 11 words] (dup of rc-g4): Answer each question with a brief, direct answer only, without explanation.
+- **c016** [short/none/plain, 11 words] (dup of rc-gpt-5.1-g4): Answer each question with a brief, direct answer only, without explanation.
 - **c017** [short/none/aware, 8 words]: Write only the correct answer, with no explanation.
+
+## RC / openai/gpt-5.6-terra (18 candidates; 3 near-duplicate groups absorbing 8 candidates; 10 distinct)
+
+Pairwise similarity: median ratio 0.50, max 1.00; median Jaccard 0.23.
+
+### Tag counts by factor
+
+| tag | all | op=plain | op=rule | op=short | st=commonsense | st=eliminate | st=none | aware | not aware |
+|---|---|---|---|---|---|---|---|---|---|
+| answer_form_letter | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| answer_form_text | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| elimination | 6 | 2 | 2 | 2 | 0 | 6 | 0 | 3 | 3 |
+| commonsense | 6 | 2 | 2 | 2 | 6 | 0 | 0 | 3 | 3 |
+| no_explanation | 3 | 0 | 3 | 0 | 0 | 1 | 2 | 1 | 2 |
+| mentions_science | 1 | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 |
+| descriptor_anchor | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| letters_listed | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| modal_or_rule | 2 | 0 | 2 | 0 | 1 | 1 | 0 | 1 | 1 |
+| mentions_multiple_choice | 6 | 2 | 2 | 2 | 0 | 6 | 0 | 3 | 3 |
+
+Words per instruction: op=plain: 10, op=rule: 10, op=short: 5; st=commonsense: 7, st=eliminate: 11, st=none: 6; aware: 7, not aware: 9.
+
+### Length buckets
+
+medium=1 short=17
+
+### Near-duplicate groups
+
+- rc-gpt-5.6-terra-g38: c002, c003, c008, c009, c014
+- rc-gpt-5.6-terra-g40: c004, c005, c010, c011
+- rc-gpt-5.6-terra-g52: c016, c017
+
+### Candidates
+
+- **c000** [plain/eliminate/plain, 16 words]: For each question, rule out the incorrect answer choices first, then choose the best remaining answer.
+- **c001** [plain/eliminate/aware, 11 words]: Eliminate the wrong answer choices first, then select the best answer.
+- **c002** [plain/commonsense/plain, 8 words]: Answer each question with the most common-sense answer.
+- **c003** [plain/commonsense/aware, 8 words] (dup of rc-gpt-5.6-terra-g38): Answer each question with the most common-sense answer.
+- **c004** [plain/none/plain, 8 words]: Answer each question with the correct answer only.
+- **c005** [plain/none/aware, 8 words] (dup of rc-gpt-5.6-terra-g40): Answer each science question with the correct answer.
+- **c006** [rule/eliminate/plain, 14 words]: Rule: First rule out the incorrect answer choices, then write only the correct answer.
+- **c007** [rule/eliminate/aware, 12 words]: Rule out the wrong answer choices first, then give the correct answer.
+- **c008** [rule/commonsense/plain, 8 words] (dup of rc-gpt-5.6-terra-g38): Answer each question with the most common-sense answer.
+- **c009** [rule/commonsense/aware, 9 words] (dup of rc-gpt-5.6-terra-g38): Always answer each question with the most common-sense answer.
+- **c010** [rule/none/plain, 8 words] (dup of rc-gpt-5.6-terra-g40): Answer each question with only the correct answer.
+- **c011** [rule/none/aware, 8 words] (dup of rc-gpt-5.6-terra-g40): Answer each question with only the correct answer.
+- **c012** [short/eliminate/plain, 9 words]: Rule out wrong options, then give the correct answer.
+- **c013** [short/eliminate/aware, 4 words]: Eliminate wrong options first.
+- **c014** [short/commonsense/plain, 6 words] (dup of rc-gpt-5.6-terra-g38): Answer with the most common-sense answer.
+- **c015** [short/commonsense/aware, 3 words]: Use common sense.
+- **c016** [short/none/plain, 3 words]: Answer the question.
+- **c017** [short/none/aware, 3 words] (dup of rc-gpt-5.6-terra-g52): Answer the question.
 

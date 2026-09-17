@@ -62,19 +62,22 @@ def main(
             if line.strip():
                 c = json.loads(line)
                 if c.get("accepted") and c.get("text"):
+                    usage = c.get("usage") or {}
                     rows.append({"pool": p.parent.name, "formulation": c.get("formulation") or run.get("formulation"),
+                                 "proposer": (run.get("settings") or {}).get("model"),
                                  "uid": f"{p.parent.name}/{c['id']}", **{k: c.get(k) for k in ("id", "operator", "stance", "aware", "seed")},
                                  "text": c["text"], "words": len(c["text"].split()),
-                                 "output_tokens": (c.get("usage") or {}).get("output_tokens")})
+                                 "output_tokens": usage.get("output_tokens") or usage.get("completion_tokens"),
+                                 "reasoning_tokens": usage.get("reasoning_tokens")})
     df = pd.DataFrame(rows)
     for tag, pat in TAGS.items():
-        df[tag] = df["text"].str.contains(pat, regex=True, flags=re.I if tag != "descriptor_anchor" else 0)
+        df[tag] = df["text"].str.contains(pat, regex=True, flags=re.I if tag != "descriptor_anchor" else 0).astype(bool)
     df["length_bucket"] = pd.cut(df["words"], [0, 14, 30, 10_000], labels=["short", "medium", "long"]).astype(str)
     # near-duplicate groups within each formulation
     df["dup_group"] = None
     df["representative"] = True
     pairs = []
-    for form, g in df.groupby("formulation"):
+    for (form, prop), g in df.groupby(["formulation", "proposer"]):
         idx = list(g.index)
         group_of = {}
         for a_i, a in enumerate(idx):
@@ -91,7 +94,7 @@ def main(
                     group_of[a] = gid
                     group_of[b] = gid
         for k, gid in group_of.items():
-            df.at[k, "dup_group"] = f"{form}-g{gid}"
+            df.at[k, "dup_group"] = f"{form}-{prop.split('/')[-1]}-g{gid}"
             df.at[k, "representative"] = k == gid
     out.mkdir(parents=True, exist_ok=True)
     df.to_csv(out / "pool.csv", index=False)
@@ -100,12 +103,12 @@ def main(
     (out / "groups.json").write_text(json.dumps(groups, indent=1) + "\n")
 
     md = [f"# Instruction pool report ({len(df)} candidates, {df.formulation.nunique()} formulations; near-duplicate threshold {threshold})", ""]
-    for form, g in df.groupby("formulation"):
+    for (form, prop), g in df.groupby(["formulation", "proposer"]):
         n_groups = g.dup_group.nunique()
         n_dups = int((~g.representative).sum())
-        md += [f"## {form.upper()} ({len(g)} candidates; {n_groups} near-duplicate groups absorbing {n_dups} candidates; {len(g) - n_dups} distinct)", ""]
+        md += [f"## {form.upper()} / {prop} ({len(g)} candidates; {n_groups} near-duplicate groups absorbing {n_dups} candidates; {len(g) - n_dups} distinct)", ""]
         pr = pd.DataFrame(pairs)
-        pr = pr[pr.formulation == form]
+        pr = pr[(pr.formulation == form) & pr.a.isin(g.uid)]
         md += [f"Pairwise similarity: median ratio {pr.ratio.median():.2f}, max {pr.ratio.max():.2f}; median Jaccard {pr.jaccard.median():.2f}.", ""]
         md += ["### Tag counts by factor", "", "| tag | all | " + " | ".join(f"op={o}" for o in sorted(g.operator.unique())) + " | " + " | ".join(f"st={s}" for s in sorted(g.stance.unique())) + " | aware | not aware |",
                "|---|---|" + "---|" * (g.operator.nunique() + g.stance.nunique() + 2)]
@@ -124,7 +127,7 @@ def main(
         if groups:
             md += ["### Near-duplicate groups", ""]
             for gid, members in groups.items():
-                if gid.startswith(form):
+                if gid.startswith(f"{form}-{prop.split('/')[-1]}-"):
                     md.append(f"- {gid}: " + ", ".join(m.split('/')[-1] for m in members))
             md.append("")
         md += ["### Candidates", ""]

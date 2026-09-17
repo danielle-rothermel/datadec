@@ -3,6 +3,16 @@
 How candidate instructions are generated, what the proposer sees, and how pools are
 organized. Log, most recent first.
 
+## 2026-09-17 14:10 — Decision: proposer is a recorded factor; Terra pools added
+
+The same 36 cells were regenerated with `openai/gpt-5.6-terra` (reasoning high). Terra returns
+the framing almost verbatim (5-13 words; half the RC grid collapses to three near-duplicate
+groups; aware cells often identical to non-aware), GPT-5.1 elaborates (14-34 words with
+answer-form and no-explanation clauses). Keep both pools and treat proposer as a factor
+crossed with the framings, since the two proposers span the instruction-length axis. The
+near-duplicate filter is required for Terra pools even at 18 cells. Results:
+`../results/2026-09-17-1345-ape-framed-pools-dd300m.md` (Terra section).
+
 ## 2026-09-17 13:45 — Executed: first framed round (3 x 3 x aware, canonical format, RC and MC)
 
 Run as decided: GPT-5.1 reasoning high, output limit unset; demonstrations = the five OLMES
