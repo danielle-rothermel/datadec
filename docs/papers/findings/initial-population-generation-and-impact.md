@@ -42,6 +42,29 @@ Summary across all six papers:
   single edits, so for format the sampled population is the search rather
   than a starting point for local mutation.
 
+## 2024, Opsahl-Ong: Optimizing Instructions and Demonstrations for Multi-Stage Language Model Programs (MIPRO)
+
+Saved as [2406.11695v2.md](../2406.11695v2.md). Instruction candidates are
+proposed once, up front, by a "grounded" proposer: the meta-prompt can include
+an LM-written summary of the dataset, a summary of the program, a set of
+bootstrapped demonstrations, previously scored instructions, and one of six
+short "tips" (none / creative / simple / descriptive / high-stakes / persona),
+with the proposer temperature as a further knob. MIPRO++ then learns, with a
+Bayesian model over trials, which of these to use for a given task; the
+learned importances put the choice of demonstrations shown to the proposer and
+the tip at the top across tasks, the dataset summary high for one task and
+near the bottom for two others (Lesson 4). Grounding helped on two of three
+tasks and hurt on the third.
+
+Two points for our seed generation: the tip is the same device as
+Promptbreeder's thinking-style draw (a framing factor recorded per candidate),
+here with evidence that it is one of the two most important proposal knobs;
+and which demonstrations the proposer sees matters more than the data summary,
+which supports rendering the demonstrations exactly as scored (our per-format
+rule) over describing the task in prose.
+
+Era caveat: as in [candidate-evaluation-and-budget-allocation.md](candidate-evaluation-and-budget-allocation.md).
+
 ## 2022, Zhou: Large Language Models are Human-Level Prompt Engineers
 
 Saved as [2211.01910v2.md](../2211.01910v2.md). APE is the canonical

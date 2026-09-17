@@ -33,6 +33,22 @@ Summary:
   (chance-level monotonicity along edit chains), so edit operators should
   act on instruction content and treat format as a sampled variable.
 
+## 2024, Opsahl-Ong: Optimizing Instructions and Demonstrations for Multi-Stage Language Model Programs (MIPRO)
+
+Saved as [2406.11695v2.md](../2406.11695v2.md). Separates proposal from credit
+assignment: the proposer LM only proposes (grounded, see the initial-population
+file), and a TPE surrogate over the discrete candidate set does the selecting
+from mini-batch scores. MIPRO++ moves the surrogate one level up, optimising
+the proposal hyperparameters (use the data summary, use the program summary,
+temperature, tip, which demonstrations to show) instead of the candidates.
+Module-level OPRO, which asks the LM to read a history of instructions and
+scores and propose the next one, was competitive on two tasks and worse on
+one; the authors' reading is that a strong LM can do credit assignment from
+history sometimes, but a surrogate is more reliable. Results across the three
+instruction-only variants were mixed and the paper says so (Lesson 5).
+
+Era caveat: as in [candidate-evaluation-and-budget-allocation.md](candidate-evaluation-and-budget-allocation.md).
+
 ## 2025, Agrawal: GEPA: Reflective Prompt Evolution Can Outperform Reinforcement Learning
 
 Saved as [2507.19457v2.md](../2507.19457v2.md).

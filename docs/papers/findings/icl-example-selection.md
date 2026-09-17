@@ -46,6 +46,28 @@ Summary:
   Lu et al. 2022 (order sensitivity), Min et al. 2022 (what demonstrations
   actually convey), Liu et al. 2021 (KATE, similarity-based retrieval).
 
+## 2024, Opsahl-Ong: Optimizing Instructions and Demonstrations for Multi-Stage Language Model Programs (MIPRO)
+
+Saved as [2406.11695v2.md](../2406.11695v2.md). Demonstrations are
+bootstrapped: training inputs are run through the program and any trace whose
+final output passes the metric becomes a candidate few-shot example; N sets of
+K such examples are then searched over (random search, or the TPE surrogate).
+Lesson 1 of the paper: optimising bootstrapped demonstrations alone beat the
+best instruction-only optimiser on every task but one (Wilcoxon p < .05), and
+different demonstration sets vary a lot in outcome, so which examples are shown
+carries information about successful reasoning rather than just format. Lesson
+3: instruction optimisation only wins when the task has conditional rules the
+model does not know and that a few examples cannot convey; on those tasks a
+seed instruction stating the rules is necessary because the optimiser cannot
+infer them.
+
+For us: OLMES fixes five curated demonstrations; this paper is the strongest
+argument in the collection that demonstration choice is a larger lever than
+instruction text, and that a demonstration-count-and-selection axis belongs in
+the format grid (see [template-selection.md](template-selection.md)).
+
+Era caveat: as in [candidate-evaluation-and-budget-allocation.md](candidate-evaluation-and-budget-allocation.md); demonstrations here are full reasoning traces, not question-answer pairs.
+
 ## 2024, Voronov: Mind Your Format: Towards Consistent Evaluation of In-Context Learning Improvements
 
 Saved as [2401.06766v3.md](../2401.06766v3.md). The only paper here that

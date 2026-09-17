@@ -29,6 +29,28 @@ Summary:
   best and worst of 320 formats within 1 point using about 5 percent of
   exhaustive cost, beating UCB and uniform allocation.
 
+## 2024, Opsahl-Ong: Optimizing Instructions and Demonstrations for Multi-Stage Language Model Programs (MIPRO)
+
+Saved as [2406.11695v2.md](../2406.11695v2.md). Candidate evaluation is
+mini-batched and modelled: MIPRO proposes N instruction candidates and N
+bootstrapped demonstration sets per module up front, then a Tree-structured
+Parzen Estimator over the categorical choices picks configurations to score on
+random mini-batches of B training items; every S trials the best-by-mean
+configuration is scored on the full training set, and the best fully-scored
+one is returned. Budgets: 50 full evaluations (about 300 mini-batch trials)
+for the main tasks, 20-30 for the rest; rule of thumb N < T / v, with T the
+trial budget and v the number of variables. Splits 500 train / 500 dev / 2000
+test. Reported means over 5 runs with Wilcoxon tests against the runner-up,
+which is rare in this collection and worth copying. Greedy one-change-at-a-time
+credit assignment was no better than the surrogate and much slower; OPRO-style
+history-in-the-prompt credit assignment (the LM reads past instructions and
+scores) was competitive on some tasks and worse on others.
+
+Era caveat: executor Llama-3-8B-Instruct (2024) on generative multi-stage
+programs (multi-hop QA, claim verification, NLI, classification via chain of
+thought) scored by exact match or accuracy; the mini-batch surrogate design is
+the transferable part, the absolute gains are not.
+
 ## 2025, Agrawal: GEPA: Reflective Prompt Evolution Can Outperform Reinforcement Learning
 
 Saved as [2507.19457v2.md](../2507.19457v2.md).
