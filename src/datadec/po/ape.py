@@ -48,6 +48,22 @@ META_PROMPTS: dict[str, str] = {
         "should say how to answer this kind of question in general. Reply with the "
         "instruction only."
     ),
+    # Same as ape_forward but demonstrations are shown as lettered choices with a letter answer,
+    # so candidates suit the MC formulation (scored continuation is the letter).
+    "ape_forward_mc": (
+        "I gave a friend an instruction and {k} multiple-choice science questions. The friend read the "
+        "instruction and wrote the letter of the correct choice for each question. Here are the "
+        "question-answer pairs:\n\n{demos}\n\n"
+        "Write the instruction I gave my friend. It will be placed once at the top of a prompt, "
+        "before several worked examples and then a new question, so it should say how to answer this "
+        "kind of question in general. Reply with the instruction only."
+    ),
+    "p1_description_mc": (
+        "Directly generate an effective system prompt for a language model that answers "
+        "grade-school science multiple-choice questions by giving the letter of the correct choice. "
+        "The prompt will be placed once above several worked examples and then a new question. "
+        "Instruct the model on how to think about and answer such questions. Generate the system prompt only."
+    ),
     # Task-description only, after Gao et al. 2026 (no demonstrations shown).
     "p1_description": (
         "Directly generate an effective system prompt for a language model that answers "
@@ -80,13 +96,19 @@ def build_meta_prompt(style: str, demos: list[dict]) -> str:
     if "{demos}" not in template:
         return template
     lines = []
+    mc = style.endswith("_mc")
     for d in demos:
         labels = list(d["choices"]["label"])
         key = d["answerKey"]
         if key not in labels:  # ARC mixes letter and numeric label sets
             key = {"1": "A", "2": "B", "3": "C", "4": "D", "5": "E", "A": "1", "B": "2", "C": "3", "D": "4", "E": "5"}[key]
-        answer = d["choices"]["text"][labels.index(key)]
-        lines.append(f"Question: {d['question']}\nAnswer: {answer}")
+        idx = labels.index(key)
+        if mc:
+            letters = "ABCDE"
+            choices = "\n".join(f" {letters[i]}. {t}" for i, t in enumerate(d["choices"]["text"]))
+            lines.append(f"Question: {d['question']}\n{choices}\nAnswer: {letters[idx]}")
+        else:
+            lines.append(f"Question: {d['question']}\nAnswer: {d['choices']['text'][idx]}")
     return template.format(k=len(demos), demos="\n\n".join(lines))
 
 

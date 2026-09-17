@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import datetime as dt
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -36,23 +37,25 @@ SUBSETS = {
     "arc_challenge": {"test": CFG / "subsets/arc_challenge-test-n100-seed0.json",
                       "train": CFG / "subsets/arc_challenge-train-n60-seed1.json", "val": CFG / "subsets/arc_challenge-train-n40-seed2.json"},
 }
-PAIRS = CFG / "pairs/arc-pairs-n50-seed0.json"
 GEPA_N = 3
 GEPA_BUDGET = 600
 HEADROOM = None  # no headroom cutoff (Danielle, 2026-09-17)
 DD = ("dd150m", "dd300m", "dd530m")
 
 # (kind, task, model, options) in the order Danielle specified.
+PAIRS_BY_FORM = {"rc": CFG / "pairs/arc-pairs-n50-seed0.json", "mc": CFG / "pairs/arc-pairs-mc-n50-seed0.json"}
+POWERED = {"n": 2, "budget": 1500, "minibatch": 16, "val_subset": CFG / "subsets/arc_easy-test-n100-seed3.json"}
+
+# RC only until the MC-conditioned pool is validated (2026-09-17). Order: powered GEPA on the model
+# with real seed spread first (meeting deadline), then the remaining ARC-Challenge RC sweeps, then
+# GEPA on the rest.
 STEPS: list[tuple[str, str, str, dict]] = [
-    ("sweep", "arc_easy", "dd150m", {}), ("gepa", "arc_easy", "dd150m", {"formulations": "rc"}),
-    ("sweep", "arc_easy", "dd300m", {}), ("gepa", "arc_easy", "dd300m", {"formulations": "rc"}),
-    ("sweep", "arc_easy", "dd530m", {}),
-    ("sweep", "arc_easy", "qwen1.7b-base", {}), ("sweep", "arc_easy", "qwen1.7b", {}),
-    *[("sweep", "arc_challenge", m, {}) for m in ("dd150m", "dd300m", "dd530m", "qwen1.7b-base", "qwen1.7b")],
-    ("gepa", "arc_easy", "dd530m", {"formulations": "rc"}),
-    ("gepa", "arc_easy", "qwen1.7b-base", {"max_group_score": HEADROOM}), ("gepa", "arc_easy", "qwen1.7b", {"max_group_score": HEADROOM}),
-    ("gepa", "arc_challenge", "dd300m", {"formulations": "rc"}), ("gepa", "arc_challenge", "dd530m", {"formulations": "rc"}),
-    *[("gepa", "arc_challenge", m, {"max_group_score": HEADROOM}) for m in ("qwen1.7b-base", "qwen1.7b")],
+    ("gepa", "arc_easy", "qwen1.7b-base", {"formulations": "rc", **POWERED}),
+    *[("sweep", "arc_challenge", m, {"formulations": "rc"}) for m in ("dd300m", "dd530m", "qwen1.7b-base", "qwen1.7b")],
+    ("gepa", "arc_easy", "qwen1.7b", {"formulations": "rc", **POWERED}),
+    ("gepa", "arc_easy", "dd530m", {"formulations": "rc", **POWERED}),
+    ("gepa", "arc_challenge", "qwen1.7b-base", {"formulations": "rc", **POWERED}),
+    ("gepa", "arc_challenge", "qwen1.7b", {"formulations": "rc", **POWERED}),
 ]
 
 
@@ -81,7 +84,7 @@ class Pipeline:
 
     # ---- steps ---------------------------------------------------------
 
-    def sweep(self, task: str, model_key: str, *, pairs: Path, name: str, subset: Path) -> Path | None:
+    def sweep(self, task: str, model_key: str, *, pairs: Path, name: str, subset: Path, formulations: str = "rc") -> Path | None:
         model, revision = MODELS[model_key]
         sweep_dir = self.root / "sweeps" / name
         if (sweep_dir / "analysis" / "tasks.parquet").exists():
@@ -93,7 +96,7 @@ class Pipeline:
             self.log(f"  sweep {name}: incomplete dir moved to {failed.name}; rerunning")
         args = [sys.executable, "scripts/po_sweep.py", "--name", name, "--subset", str(subset), "--model", model,
                 "--task", task, "--pairs", str(pairs), "--root", str(self.root / "sweeps"),
-                "--batch-size", str(BATCH_SIZE[model_key])]
+                "--batch-size", str(BATCH_SIZE[model_key]), "--formulations", formulations]
         if revision:
             args += ["--revision", revision]
         rc = self._run(args, name)
@@ -107,8 +110,8 @@ class Pipeline:
         return sweep_dir
 
     def gepa(self, task: str, model_key: str, opts: dict) -> bool:
-        name = f"{task}-{model_key}"
-        seed_sweep = self.root / "sweeps" / name
+        seed_sweep = self.root / "sweeps" / f"{task}-{model_key}"
+        name = f"{task}-{model_key}" + ("-powered" if "minibatch" in opts else "")
         if not (seed_sweep / "analysis" / "tasks.parquet").exists():
             self.log(f"  gepa {name}: seed sweep missing or incomplete; skipping")
             return False
@@ -121,16 +124,17 @@ class Pipeline:
                     "--batch-size", str(BATCH_SIZE[model_key]),
                     "--train-subset", str(SUBSETS[task]["train"]), "--val-subset", str(SUBSETS[task]["val"]),
                     "--n", str(GEPA_N), "--max-metric-calls", str(GEPA_BUDGET), "--root", str(gepa_root)]
-            if "val_subset" in opts:  # override the default val subset (e.g. a test-split draw disjoint from the held-out set)
-                args[args.index("--val-subset") + 1] = str(opts["val_subset"])
             if opts.get("formulations"):
                 args += ["--formulations", opts["formulations"]]
             if opts.get("max_group_score") is not None:
                 args += ["--max-group-score", str(opts["max_group_score"])]
             for key, flag in (("n", "--n"), ("budget", "--max-metric-calls"), ("minibatch", "--reflection-minibatch-size"),
-                              ("val_subset", "--val-subset"), ("formulations", "--formulations")):
-                if key in opts and key != "formulations":
-                    args += [flag, str(opts[key])]
+                              ("val_subset", "--val-subset")):
+                if key in opts:
+                    if flag in args:
+                        args[args.index(flag) + 1] = str(opts[key])
+                    else:
+                        args += [flag, str(opts[key])]
             if self._run(args, f"{name}-gepa") != 0:
                 self.log(f"  gepa {name}: seed selection FAILED")
                 return False
@@ -146,13 +150,14 @@ class Pipeline:
         if not pairs.exists() or json.loads(pairs.read_text())["n"] == 0:
             self.log(f"  gepa {name}: no optimized instructions to evaluate")
             return False
-        out = self.sweep(task, model_key, pairs=pairs, name=f"{name}-gepa-eval", subset=SUBSETS[task]["test"])
+        out = self.sweep(task, model_key, pairs=pairs, name=f"{name}-gepa-eval", subset=SUBSETS[task]["test"], formulations=opts.get("formulations", "rc"))
         return out is not None
 
     def _kill_stale_scorers(self) -> None:
         """The orchestrator owns every OLMES scorer; anything alive at startup is a leftover from a
         previous run and would compete for the GPU and memory."""
-        out = subprocess.run(["pgrep", "-f", "oe_eval.run_eval|local/run_eval.py|local/gepa_arc.py"], capture_output=True, text=True).stdout.split()
+        out = subprocess.run(["pgrep", "-f", "oe_eval.run_eval|local/run_eval.py|local/gepa_arc.py|scripts/po_sweep.py|scripts/po_gepa.py"], capture_output=True, text=True).stdout.split()
+        out = [pid for pid in out if int(pid) != os.getpid()]
         for pid in out:
             subprocess.run(["kill", pid], capture_output=True)
         if out:
@@ -163,14 +168,16 @@ class Pipeline:
         self._kill_stale_scorers()
         self.log(f"pipeline {self.root.name}: {len(STEPS)} steps")
         for i, (kind, task, model_key, opts) in enumerate(STEPS, 1):
-            key = f"{i:02d}-{kind}-{task}-{model_key}"
+            key = f"{i:02d}-{kind}-{task}-{model_key}" + ("-powered" if kind == "gepa" and "minibatch" in opts else "")
             if self.state["steps"].get(key) == "done":
                 self.log(f"STEP {i}/{len(STEPS)} {key}: done earlier, skipping")
                 continue
             self.log(f"STEP {i}/{len(STEPS)} {key}: start")
             t0 = dt.datetime.now()
             if kind == "sweep":
-                ok = self.sweep(task, model_key, pairs=PAIRS, name=f"{task}-{model_key}", subset=SUBSETS[task]["test"]) is not None
+                forms = opts.get("formulations", "rc")
+                ok = self.sweep(task, model_key, pairs=PAIRS_BY_FORM[forms], name=f"{task}-{model_key}",
+                                subset=SUBSETS[task]["test"], formulations=forms) is not None
             else:
                 ok = self.gepa(task, model_key, opts)
             elapsed = dt.datetime.now() - t0
