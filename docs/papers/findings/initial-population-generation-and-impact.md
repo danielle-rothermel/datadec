@@ -152,6 +152,33 @@ points) and the population-size curve should not be assumed to carry over.
 The relative findings (bad-only seeds hurt, differing-parts mutation beats
 whole-prompt mutation) are the part worth keeping.
 
+## 2025, Yang: What Prompts Don't Say: Understanding and Managing Underspecification in LLM Prompts
+
+Saved as [2505.13360v3.md](../2505.13360v3.md). Treats a prompt as a set of
+atomic requirements (20 per task, curated from existing prompts, brainstorming
+and error analysis) and builds the prompt population combinatorially: each
+prompt states N of the 20 requirements, chosen by a cyclic design so every
+prompt has the same N and every requirement is specified equally often. That
+is a balanced, structured seed population, and it is the same idea as
+building seeds by masking parts of one long prompt (our earlier note), with
+the mask chosen for balance rather than at random.
+
+Findings that matter for seeding: models follow many requirements without
+being told (41% of unspecified requirements at above 98% accuracy; format
+requirements 71%), but which ones is model-specific and unstable across
+prompts (2x the std of specified ones) and across model versions (2x the
+regression rate). Specifying everything is an anti-pattern: accuracy on
+specified requirements falls from 98.7% in isolation to 85% (GPT-4o) and 80%
+(Llama-3.3-70B) at 19 requirements. So the seed population should span how
+much is specified, not only what, and smaller models should get shorter
+prompts.
+
+Era caveat: Llama-3.3-70B-Instruct, three GPT-4o versions and o3-mini on
+open-ended generation tasks (code explanation, trip advice, product
+descriptions) with LLM-judge validators; nothing is likelihood-scored, and
+the models are far stronger instruction followers than ours. The
+combinatorial construction transfers; the guess rates do not.
+
 ## 2025, Ferreira: Diverse Prompts: Illuminating the Prompt Space of Large Language Models with MAP-Elites
 
 Saved as [2504.14367v1.md](../2504.14367v1.md); full summary in

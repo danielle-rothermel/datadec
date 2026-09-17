@@ -188,6 +188,30 @@ reasoning-style instruction, whereas GEPA's on the same data contained
 question-specific guidance that the authors read as memorization of the
 training set.
 
+## 2025, Yang: What Prompts Don't Say: Understanding and Managing Underspecification in LLM Prompts
+
+Saved as [2505.13360v3.md](../2505.13360v3.md). Two operators over an
+explicit requirement list rather than over free text. (1) Bayesian selection
+of which requirements to state: each of n requirements is a binary
+hyperparameter and a Tree-structured Parzen Estimator searches the 2^n
+inclusion patterns on the training split; gains of +3.8% average accuracy
+with 41-45% fewer prompt tokens, dropping mostly global, format and
+developer-written requirements (the ones models follow by default).
+Selections were stable across training subsets (Jaccard 0.75). (2) COPRO
+with requirement-specific validators as the metric instead of a generic
+1-10 LLM judge (+5.8%); the rewrites reorder and merge requirements. Off-the-
+shelf optimizers with a generic judge gave inconsistent results (+2.8% on two
+tasks, -1.1% on one). Budget: 9 candidate prompts, 30 training examples.
+
+For us: the inclusion-pattern search is a cheap, structured proposal
+operator for an instruction that has been decomposed into parts, and it is
+the natural way to test whether our small models are hurt by longer
+instructions. The validator result is the requirements-level version of the
+feedback finding elsewhere in this file: a metric that says which part
+failed beats a scalar.
+
+Era caveat: as in [initial-population-generation-and-impact.md](initial-population-generation-and-impact.md).
+
 ## 2024, Schnabel: Symbolic Prompt Program Search (SAMMO): A Structure-Aware Approach to Efficient Compile-Time Prompt Optimization
 
 Saved as [2404.02319v2.md](../2404.02319v2.md). Widest operator set in this

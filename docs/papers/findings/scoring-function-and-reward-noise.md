@@ -39,6 +39,23 @@ Summary:
   reversals in both directions, a noise term separate from response
   sampling.
 
+## 2025, Yang: What Prompts Don't Say: Understanding and Managing Underspecification in LLM Prompts
+
+Saved as [2505.13360v3.md](../2505.13360v3.md); full summary in
+[initial-population-generation-and-impact.md](initial-population-generation-and-impact.md).
+Scores prompts by per-requirement satisfaction from Python or LLM validators
+(95.6% agreement with humans on a checked subset), aggregated over all
+requirements whether or not the prompt states them. A generic 1-10
+adherence judge as the optimizer metric gave inconsistent improvements;
+the per-requirement metric gave consistent ones. Also documents that prompt
+scores move by more than 20 points across model versions on unspecified
+requirements, i.e. a score under one model version is not a property of the
+prompt.
+
+Era caveat: generation tasks on 70B-and-up instruction followers; the
+validator machinery does not apply to likelihood scoring, but the point
+that decomposed feedback beats a scalar does.
+
 ## 2025, Bozhenko: When Punctuation Matters: A Large-Scale Comparison of Prompt Robustness Methods for LLMs
 
 Saved as [2508.11383v1.md](../2508.11383v1.md); full summary in
