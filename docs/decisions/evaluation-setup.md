@@ -11,6 +11,22 @@ DataDecide (OLMo tokenizer) and Qwen. Anything normalized per token
 never a headline metric. Residual caveat: canonical-tokenization-only scoring leaves a
 little mass unaccounted for, differently per tokenizer; second order.
 
+## 2026-09-17 17:35 — Fixes to the generation path; Pythia ladder queued
+
+- **sdpa attention returns NaN logits for left-padded rows on mps** (GPT-NeoX and Qwen3 both;
+  batch 1 and cpu are fine), so batched HF generate emitted EOS immediately for every padded
+  row. The fork's generate override now switches the model to eager attention for the generate
+  call and restores sdpa afterwards; the likelihood path (right-padded, no mask) is untouched.
+  DataDecide was unaffected (OLMo's own attention with `ensure_finite_`; zero empty generations).
+- **Qwen3's generation_config sets max_new_tokens=2048, which overrides HF generate's
+  max_length**, so the first Qwen generation run decoded up to 2048 tokens per row (54 s per
+  batch). The override now passes an explicit `max_new_tokens = cap`. Qwen tasks take under a
+  second of model time on the smoke items.
+- Pythia (EleutherAI, Pile, GPT-NeoX tokenizer) runs through the stack with no code changes.
+  Queued in `driver-pythia.sh`: for 160M, 410M, 1B (`step143000`, non-deduped, seed 1234):
+  full ARC-Easy RC+MC baseline, one-factor format sweep and generation baseline on the SNR train
+  and dev subsets; then the four remaining Qwen generation baselines; then Pythia 2.8B (batch 8).
+
 ## 2026-09-17 16:50 — Implemented: generation formulation (gen_rc, gen_mc); baseline runs launched
 
 The 10:38 spec is implemented as fork tasks `arc_easy:gen:fmt` / `arc_easy:mc:gen:fmt` (and the
