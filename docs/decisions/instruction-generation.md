@@ -3,6 +3,26 @@
 How candidate instructions are generated, what the proposer sees, and how pools are
 organized. Log, most recent first.
 
+## 2026-09-17 11:00 — Decision: framing-pair generation and near-duplicate filtering
+
+- Generate description-style seeds by crossing two short hand-written lists
+  (Promptbreeder initialization): a rewrite operator (state plainly / as a rule / as
+  expert advice / as short as possible / explicit about answer form / silent about
+  answer form / ...) and a stance suited to likelihood-scored small models (prefer the
+  common-sense option / eliminate wrong options first / answer as a science teacher /
+  treat as recall / ...), about ten each. Each candidate records its (operator, stance)
+  pair. Sample 16-24 pairs per pool. This is a third factor beside the per-format
+  demonstrations and the model-aware slot; all three are recorded per candidate.
+- Filter near-duplicates before a pool is used for selection or as GEPA seeds. Now: an
+  embedding cosine threshold (Promptbreeder used 0.95 with BERT; pick the threshold by
+  inspecting the pool). Later: an LLM-as-judge definition of "same instruction" (same
+  requirements stated, same answer-form guidance), which catches paraphrase collapse
+  that embeddings miss and separates instructions that embed close but say different
+  things. Record which filter produced a pool.
+- Keep both generation styles (demonstration-induced and description-based) in every
+  per-format pool; their relative value depends on how informative the task description
+  is (Promptbreeder's under-specified-description ablation).
+
 ## 2026-09-17 10:50 — Decision: one APE pool per format, demonstrations matched to the target setting
 
 - The demonstrations shown in the APE meta-prompt must be rendered exactly as they

@@ -5,4 +5,4 @@ One file per topic; entries are a timestamped log, most recent first, local time
 whether it is a **decision** (settled) or a **direction** (recorded for later,
 not settled). Results that decisions rest on live in `../results/`.
 
-Files: dataset-sample-selection, evaluation-setup, format-selection, instruction-generation.
+Files: dataset-sample-selection, evaluation-setup, format-selection, instruction-generation, gepa-runs.
