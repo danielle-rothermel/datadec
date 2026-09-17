@@ -1,0 +1,62 @@
+{
+ "rc_primary": {
+  "aggregate_ckpt_mean": 0.5876262626262626,
+  "aggregate_ckpt_sd": 0.0008095700362656,
+  "item_ckpt_sd_median": 0.0,
+  "item_ckpt_sd_p90": 0.0,
+  "items_constant_across_ckpts": 0.9120370370370371,
+  "items_flipping_at_least_once": 0.08796296296296297,
+  "aggregate_seed_sd": 0.0028023266491916795,
+  "item_seed_sd_median": 0.0,
+  "item_seed_sd_p90": 0.5773502691896258,
+  "item_model_dispersion_median": 0.0,
+  "items_with_snr_below_1": 0.022727272727272728,
+  "items_with_snr_above_3": 0.0,
+  "subset_items_with_snr_below_1": 0.03
+ },
+ "rc_primary_likelihood": {
+  "aggregate_ckpt_mean": 0.289765484914103,
+  "aggregate_ckpt_sd": 0.00018244420291541782,
+  "item_ckpt_sd_median": 0.002646274903770005,
+  "item_ckpt_sd_p90": 0.006498108661606662,
+  "items_constant_across_ckpts": 0.0,
+  "items_flipping_at_least_once": 0.0,
+  "aggregate_seed_sd": 0.0010277988611228487,
+  "item_seed_sd_median": 0.009731635860194897,
+  "item_seed_sd_p90": 0.02674744138200743,
+  "item_model_dispersion_median": 0.02984131466083359,
+  "items_with_snr_below_1": 0.007575757575757576,
+  "items_with_snr_above_3": 0.9330808080808081,
+  "subset_items_with_snr_below_1": 0.01
+ },
+ "mc_primary": {
+  "aggregate_ckpt_mean": 0.2529461279461279,
+  "aggregate_ckpt_sd": 0.008018753738744791,
+  "item_ckpt_sd_median": 0.0,
+  "item_ckpt_sd_p90": 0.5477225575051662,
+  "items_constant_across_ckpts": 0.5176767676767676,
+  "items_flipping_at_least_once": 0.4823232323232323,
+  "aggregate_seed_sd": 0.0031589029879903834,
+  "item_seed_sd_median": 0.0,
+  "item_seed_sd_p90": 0.5773502691896258,
+  "item_model_dispersion_median": 1.0,
+  "items_with_snr_below_1": 0.21001683501683502,
+  "items_with_snr_above_3": 0.0,
+  "subset_items_with_snr_below_1": 0.26
+ },
+ "mc_primary_likelihood": {
+  "aggregate_ckpt_mean": 0.2503246125735734,
+  "aggregate_ckpt_sd": 0.0008058019527472179,
+  "item_ckpt_sd_median": 0.02044240269436332,
+  "item_ckpt_sd_p90": 0.032230952667687066,
+  "items_constant_across_ckpts": 0.0,
+  "items_flipping_at_least_once": 0.0,
+  "aggregate_seed_sd": 0.0008713425316066502,
+  "item_seed_sd_median": 0.04762835278976631,
+  "item_seed_sd_p90": 0.08306572060777001,
+  "item_model_dispersion_median": 0.06859433996159085,
+  "items_with_snr_below_1": 0.08796296296296297,
+  "items_with_snr_above_3": 0.577020202020202,
+  "subset_items_with_snr_below_1": 0.06
+ }
+}

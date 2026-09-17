@@ -2,6 +2,16 @@
 
 Which items we evaluate on, how many, and how they are chosen. Log, most recent first.
 
+## 2026-09-17 11:25 — Result-backed decision: item noise floors and the SNR criterion
+
+From `../results/2026-09-17-1125-arc-easy-item-noise-dd300m.md`: per-item checkpoint sd
+on the RC per-char share is 0.0026 (median), seed sd 0.010, cross-model dispersion
+0.030; 93% of items have SNR above 3 and under 1% below 1, so on RC nearly every
+ARC-Easy item is usable and the exclusion set is small. On MC half the items flip
+between adjacent checkpoints; MC item selection is moot for DD models. Because
+cross-model dispersion correlates 0.53 with seed noise, rank items by signal-to-noise,
+not by signal alone. Per-item noise for 1B (checkpoints only) is queued.
+
 ## 2026-09-17 10:15 — Decision: 300M noise checkpoints run before the Qwen full passes
 
 Insert six extra 300M full-set runs (canonical prompt, RC+MC) into the queue ahead of
