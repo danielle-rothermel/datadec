@@ -110,6 +110,8 @@ class Pipeline:
             return False
         gepa_root = self.root / "gepa"
         jobs_dir = gepa_root / name / "jobs"
+        if jobs_dir.exists() and not any(jobs_dir.glob("*.json")):
+            shutil.rmtree(gepa_root / name)  # a failed selection left an empty jobs dir; redo selection
         if not jobs_dir.exists():
             args = [sys.executable, "scripts/po_select_seeds.py", "--name", name, "--sweep-dir", str(seed_sweep),
                     "--train-subset", str(SUBSETS[task]["train"]), "--val-subset", str(SUBSETS[task]["val"]),
