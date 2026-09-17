@@ -3,6 +3,18 @@
 How candidate instructions are generated, what the proposer sees, and how pools are
 organized. Log, most recent first.
 
+## 2026-09-17 13:45 — Executed: first framed round (3 x 3 x aware, canonical format, RC and MC)
+
+Run as decided: GPT-5.1 reasoning high, output limit unset; demonstrations = the five OLMES
+items rendered exactly as scored; framings in `configs/po/framings.json` (operators plain /
+rule / short; stances eliminate / commonsense / none); aware cells describe DataDecide-300M
+and likelihood scoring. 18 calls per formulation, all accepted. Findings and grouping in
+`../results/2026-09-17-1345-ape-framed-pools-dd300m.md`. Two observations for the next round:
+the aware slot barely changed the proposals (no candidate adapts to likelihood scoring), so a
+stronger phrasing of the reader description is worth one more cell; and the eliminate stance
+is MC-flavoured, so RC needs its own stance list. Sameness filter: difflib ratio >= 0.8 for
+now (`scripts/po_pool_report.py`), one RC pair caught.
+
 ## 2026-09-17 13:10 — Decision: random-string controls in every instruction pool
 
 Every per-format pool includes a small set of random-string instructions (random

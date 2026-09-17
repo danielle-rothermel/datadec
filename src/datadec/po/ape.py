@@ -33,7 +33,8 @@ from dr_providers import (
     run_local_provider_call_async,
 )
 
-from datadec.po.subsets import ARC_EASY
+from datadec.po.model_cards import model_card
+from datadec.po.subsets import ARC_EASY, OLMES_ARC_EASY_FEWSHOT_IDS
 
 DEFAULT_ROOT = Path.home() / "drotherm" / "data" / "runs" / "po" / "ape"
 
@@ -74,12 +75,39 @@ META_PROMPTS: dict[str, str] = {
 }
 
 
+# Framed generation (2026-09-17): demonstrations exactly as the scored prompt renders them, a rewrite
+# operator x stance framing pair, and an optional description of the reader model.
+FRAMED_META_PROMPTS: dict[str, str] = {
+    "rc": (
+        "I gave a friend an instruction and {k} science questions. The friend read the instruction and "
+        "wrote the correct answer to each question. Here are the question-answer pairs, exactly as the "
+        "friend saw them:\n\n{demos}\n\n{reader}"
+        "Write the instruction I gave my friend. It will be placed once at the top of a prompt, before "
+        "these examples and then a new question, so it should say how to answer this kind of question in "
+        "general. {operator} {stance}Reply with the instruction only."
+    ),
+    "mc": (
+        "I gave a friend an instruction and {k} multiple-choice science questions. The friend read the "
+        "instruction and wrote the letter of the correct choice for each question. Here are the "
+        "question-answer pairs, exactly as the friend saw them:\n\n{demos}\n\n{reader}"
+        "Write the instruction I gave my friend. It will be placed once at the top of a prompt, before "
+        "these examples and then a new question, so it should say how to answer this kind of question in "
+        "general. {operator} {stance}Reply with the instruction only."
+    ),
+}
+READER_TEMPLATE = (
+    "The friend is a language model, not a person: {card}. It never writes anything; it is scored by "
+    "the likelihood it assigns to each candidate answer after the prompt, so the instruction can only help "
+    "by changing which answer it finds most likely.\n\n"
+)
+
+
 @dataclass(frozen=True, slots=True)
 class ProposerSettings:
     model: str = "openai/gpt-5.1"
     temperature: float = 1.0
     reasoning: str = "low"
-    token_limit: int = 400
+    token_limit: int | None = 400  # None leaves the provider's output limit unset
     concurrency: int = 8
     timeout_seconds: float = 180.0
 
@@ -89,6 +117,48 @@ def sample_demos(k: int, seed: int) -> list[dict]:
     ds = load_dataset(ARC_EASY[0], ARC_EASY[1], split="train")
     rows = list(ds)
     return random.Random(seed).sample(rows, k)
+
+
+def olmes_demos(k: int = 5) -> list[dict]:
+    """The first k curated OLMES ARC-Easy demonstrations (train split), in OLMES order."""
+    want = list(OLMES_ARC_EASY_FEWSHOT_IDS[:k])
+    ds = load_dataset(ARC_EASY[0], ARC_EASY[1], split="train")
+    by_id = {r["id"]: r for r in ds if r["id"] in set(want)}
+    missing = [i for i in want if i not in by_id]
+    if missing:
+        raise RuntimeError(f"OLMES demonstration ids not in ARC-Easy train: {missing}")
+    return [by_id[i] for i in want]
+
+
+def render_demos(demos: list[dict], formulation: str) -> str:
+    """Canonical-format rendering, byte for byte what the scored prompt shows."""
+    lines = []
+    for d in demos:
+        labels = list(d["choices"]["label"])
+        key = d["answerKey"]
+        if key not in labels:
+            key = {"1": "A", "2": "B", "3": "C", "4": "D", "5": "E", "A": "1", "B": "2", "C": "3", "D": "4", "E": "5"}[key]
+        idx = labels.index(key)
+        if formulation == "mc":
+            letters = "ABCDE"
+            choices = "\n".join(f" {letters[i]}. {t}" for i, t in enumerate(d["choices"]["text"]))
+            lines.append(f"Question: {d['question']}\n{choices}\nAnswer: {letters[idx]}")
+        else:
+            lines.append(f"Question: {d['question']}\nAnswer: {d['choices']['text'][idx]}")
+    return "\n\n".join(lines)
+
+
+def render_reader(card: dict[str, str]) -> str:
+    parts = [f"{k.replace('_', ' ')}: {v}" for k, v in card.items() if k != "notes"]
+    return READER_TEMPLATE.format(card="; ".join(parts))
+
+
+def build_framed_meta_prompt(formulation: str, demos: list[dict], operator: str, stance: str, card: dict[str, str] | None) -> str:
+    return FRAMED_META_PROMPTS[formulation].format(
+        k=len(demos), demos=render_demos(demos, formulation),
+        reader=render_reader(card) if card else "",
+        operator=operator, stance=(stance + " ") if stance else "",
+    )
 
 
 def build_meta_prompt(style: str, demos: list[dict]) -> str:
@@ -222,6 +292,68 @@ def run_ape(
     }
     (out_dir / "run.json").write_text(json.dumps(manifest, indent=1) + "\n")
     candidates = sample_candidates(meta_prompt=meta_prompt, n=n, settings=settings, seed_base=seed_base, out_dir=out_dir)
+    with open(out_dir / "candidates.jsonl", "w") as f:
+        for c in candidates:
+            f.write(json.dumps(c) + "\n")
+    manifest["ended_utc"] = dt.datetime.now(dt.timezone.utc).isoformat()
+    manifest["accepted"] = sum(c["accepted"] for c in candidates)
+    manifest["total_tokens"] = sum((c["usage"] or {}).get("total_tokens") or 0 for c in candidates)
+    (out_dir / "run.json").write_text(json.dumps(manifest, indent=1) + "\n")
+    return out_dir
+
+
+def run_ape_grid(
+    *,
+    formulation: str,
+    framings: dict,
+    aware_model: str | None,
+    aware_revision: str | None,
+    settings: ProposerSettings,
+    seed_base: int,
+    root: Path = DEFAULT_ROOT,
+    slug: str | None = None,
+) -> Path:
+    """One call per (operator, stance, aware) cell; every candidate records its factors."""
+    started = dt.datetime.now(dt.timezone.utc)
+    out_dir = root / f"{started:%Y%m%dT%H%M%SZ}-{slug or f'framed-{formulation}'}"
+    out_dir.mkdir(parents=True)
+    demos = olmes_demos(5)
+    card = model_card(aware_model, aware_revision) if aware_model else None
+    cells = []
+    for op in framings["operators"]:
+        for st in framings["stances"]:
+            for aware in (False, True) if card else (False,):
+                cells.append((op, st, aware))
+    prompts = [build_framed_meta_prompt(formulation, demos, op["text"], st["text"], card if aware else None) for op, st, aware in cells]
+    (out_dir / "meta_prompts.jsonl").write_text("".join(json.dumps({"cell": i, "operator": op["id"], "stance": st["id"], "aware": aware, "meta_prompt": pr}) + "\n"
+                                                        for i, ((op, st, aware), pr) in enumerate(zip(cells, prompts, strict=True))))
+    manifest = {"formulation": formulation, "framings": framings, "aware_model": aware_model, "aware_revision": aware_revision,
+                "model_card": card, "settings": asdict(settings), "seed_base": seed_base, "demo_ids": [d["id"] for d in demos],
+                "n_cells": len(cells), "started_utc": started.isoformat()}
+    (out_dir / "run.json").write_text(json.dumps(manifest, indent=1) + "\n")
+    classifier = AcceptAllSemanticResponseClassifier()
+    states = [_state(pr, settings, seed_base + i, classifier.identifier) for i, pr in enumerate(prompts)]
+    evidence_dir = out_dir / "evidence"
+    evidence_dir.mkdir(exist_ok=True)
+    with HttpProvider(policy=policy_for(ProviderKind.OPENROUTER, timeout_seconds=settings.timeout_seconds, connect_timeout_seconds=30.0,
+                                        idle_timeout_seconds=120.0, max_connections=settings.concurrency, max_keepalive_connections=settings.concurrency,
+                                        max_request_bytes=1024 * 1024, max_response_bytes=8 * 1024 * 1024)) as provider:
+        results = asyncio.run(_gather(provider, states, classifier, settings.concurrency))
+    candidates = []
+    for i, ((op, st, aware), result) in enumerate(zip(cells, results, strict=True)):
+        cid = f"c{i:03d}"
+        (evidence_dir / f"{cid}.json").write_text(json.dumps(result.model_dump(mode="json"), indent=1))
+        accepted = result.outcome.kind is ProviderCallOutcomeKind.ACCEPTED
+        evidence = result.completed_invocations[-1].observation.evidence if result.completed_invocations else None
+        response = evidence.response if evidence is not None else None
+        candidates.append({
+            "id": cid, "seed": seed_base + i, "formulation": formulation, "style": "framed_forward",
+            "operator": op["id"], "stance": st["id"], "aware": aware, "aware_model": aware_model if aware else None,
+            "accepted": accepted, "text": _clean(response.text) if (accepted and response is not None) else None,
+            "stop_reason": getattr(response, "stop_reason", None) if response is not None else None,
+            "usage": response.usage.model_dump() if (response is not None and getattr(response, "usage", None)) else None,
+            "outcome": str(result.outcome.kind),
+        })
     with open(out_dir / "candidates.jsonl", "w") as f:
         for c in candidates:
             f.write(json.dumps(c) + "\n")
