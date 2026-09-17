@@ -34,6 +34,8 @@ def main(
     plot_formulations: Annotated[str, typer.Option("--plot-formulations", help="comma-separated subset of rc,mc to draw")] = "rc,mc",
     plot_models: Annotated[str | None, typer.Option("--plot-models", help="comma-separated model keys to draw; default all")] = None,
     plot_name: Annotated[str, typer.Option("--plot-name")] = "bars.png",
+    plot_formats: Annotated[str | None, typer.Option("--plot-formats", help="comma-separated format labels to draw; default all but canonical")] = None,
+    plot_title: Annotated[str | None, typer.Option("--plot-title")] = None,
 ) -> None:
     rng = np.random.default_rng(seed)
     labels = {p["format_id"] + f"|k{p['num_shots']}": p["label"] for p in json.loads(pairs.read_text())["pairs"]}
@@ -94,10 +96,13 @@ def main(
     names = [n for k, n in zip(all_keys, all_names, strict=True) if k in keep]
     forms = plot_formulations.split(",")
     panels = [(f, m, f"{f.upper()} {'accuracy' if m == 'primary' else 'likelihood'} Δ vs canonical") for f in forms for m in ("primary", "primary_likelihood")]
-    fig, axes = plt.subplots(len(forms), 2, figsize=(14, 4.5 * len(forms)), constrained_layout=True, squeeze=False)
+    wanted = plot_formats.split(",") if plot_formats else None
+    n_fmt = len(wanted) if wanted else len(order)
+    fig, axes = plt.subplots(len(forms), 2, figsize=(max(7, 2.2 * n_fmt + 3), 4.5 * len(forms)), constrained_layout=True, squeeze=False)
     width = 0.8 / len(model_keys)
     for ax, (form, metric, title) in zip(axes.flat, panels, strict=True):
-        fmts = [f for f in order if f != "canonical" and not df[(df.formulation == form) & (df.format == f) & (df.subset == plot_subset)].empty]
+        fmts = [f for f in order if f != "canonical" and (wanted is None or f in wanted)
+                and not df[(df.formulation == form) & (df.format == f) & (df.subset == plot_subset)].empty]
         x = np.arange(len(fmts))
         for mi, (mk, nm) in enumerate(zip(model_keys, names, strict=True)):
             t = df[(df.model == mk) & (df.subset == plot_subset) & (df.formulation == form) & (df.metric == metric)].set_index("format").reindex(fmts)
@@ -111,6 +116,8 @@ def main(
         ax.set_title(title)
         ax.grid(axis="y", alpha=0.3)
         ax.legend(fontsize=8)
+    if plot_title:
+        fig.suptitle(plot_title)
     fig.savefig(out / plot_name, dpi=150)
     typer.echo(f"wrote {out / plot_name}")
 
