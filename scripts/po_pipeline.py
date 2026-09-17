@@ -143,8 +143,18 @@ class Pipeline:
         out = self.sweep(task, model_key, pairs=pairs, name=f"{name}-gepa-eval", subset=SUBSETS[task]["test"])
         return out is not None
 
+    def _kill_stale_scorers(self) -> None:
+        """The orchestrator owns every OLMES scorer; anything alive at startup is a leftover from a
+        previous run and would compete for the GPU and memory."""
+        out = subprocess.run(["pgrep", "-f", "oe_eval.run_eval|local/run_eval.py|local/gepa_arc.py"], capture_output=True, text=True).stdout.split()
+        for pid in out:
+            subprocess.run(["kill", pid], capture_output=True)
+        if out:
+            self.log(f"killed {len(out)} stale scorer process(es): {' '.join(out)}")
+
     def run(self) -> None:
         (self.root / "logs").mkdir(exist_ok=True)
+        self._kill_stale_scorers()
         self.log(f"pipeline {self.root.name}: {len(STEPS)} steps")
         for i, (kind, task, model_key, opts) in enumerate(STEPS, 1):
             key = f"{i:02d}-{kind}-{task}-{model_key}"
