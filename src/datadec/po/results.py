@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import json
-import math
 from pathlib import Path
 
 import pandas as pd
 
 from datadec.po.formats import AXES
+from datadec.po.metrics import likelihood_metrics, primary_likelihood_metric
 from datadec.po.sweep import baselines_dir
 
 ITEM_METRICS = (
@@ -20,36 +20,16 @@ ITEM_METRICS = (
 CHOICE_FIELDS = ("sum_logits", "sum_logits_uncond", "num_tokens", "num_tokens_all", "num_chars", "is_greedy")
 
 
-def likelihood_metrics(model_output: list[dict], gold: int) -> dict:
-    """DataDecide-style continuous metrics from per-choice summed log-likelihoods.
-
-    correct_prob is the softmax over choices of sum_logits at the gold index (chance 1/k);
-    margin is correct_prob minus the best wrong choice's probability.
-    """
-    ll = [o["sum_logits"] for o in model_output]
-    if not ll or gold is None:
-        return {"n_choices": len(ll), "correct_prob": None, "margin": None, "correct_logprob": None}
-    m = max(ll)
-    weights = [math.exp(x - m) for x in ll]
-    z = sum(weights)
-    probs = [w / z for w in weights]
-    others = [p for i, p in enumerate(probs) if i != gold]
-    return {
-        "n_choices": len(ll),
-        "correct_prob": probs[gold],
-        "margin": probs[gold] - (max(others) if others else 0.0),
-        "correct_logprob": ll[gold],
-    }
-
-
 def _po_columns(task_config: dict, model_config: dict) -> dict:
     po = task_config.get("metadata", {}).get("po", {})
+    primary = task_config["primary_metric"]
     cols = {
         "sweep": po.get("sweep"), "formulation": po.get("formulation"),
         "format_id": po.get("format_id"), "instruction_id": po.get("instruction_id"),
         "subset_seed": po.get("subset_seed"), "subset_n": po.get("subset_n"),
         "model": model_config.get("model"), "revision": model_config.get("revision"),
         "num_shots": task_config.get("num_shots"),
+        "primary_metric": primary, "primary_likelihood_metric": primary_likelihood_metric(primary),
     }
     for axis in AXES:
         cols[f"fmt_{axis}"] = (po.get("format") or {}).get(axis)
@@ -82,15 +62,18 @@ def load_sweep(sweep_dir: Path) -> dict[str, pd.DataFrame]:
             "run_dir": str(metrics_path.parent),
         }
         task_rows.append(base | {"num_instances": m["num_instances"], "processing_time": m["processing_time"]}
-                         | {k: v for k, v in m["metrics"].items() if isinstance(v, (int, float))})
+                         | {k: v for k, v in m["metrics"].items() if isinstance(v, (int, float))}
+                         | {"primary": m["metrics"]["primary_score"]})
         pred_path = metrics_path.with_name(metrics_path.name.replace("-metrics.json", "-predictions.jsonl"))
         for line in pred_path.read_text().splitlines():
             if not line.strip():
                 continue
             p = json.loads(line)
             key = {"task_idx": m["task_idx"], "native_id": p["native_id"], "doc_id": p["doc_id"], "label": p.get("label")}
-            item_rows.append(base | key | {k: p["metrics"].get(k) for k in ITEM_METRICS}
-                             | likelihood_metrics(p.get("model_output", []), p.get("label")))
+            lik = likelihood_metrics(p.get("model_output", []), p.get("label"))
+            item_rows.append(base | key | {k: p["metrics"].get(k) for k in ITEM_METRICS} | lik
+                             | {"primary": p["metrics"].get(base["primary_metric"]),
+                                "primary_likelihood": lik[base["primary_likelihood_metric"]]})
             for ci, out in enumerate(p.get("model_output", [])):
                 choice_rows.append(base | key | {"choice_index": ci} | {k: out.get(k) for k in CHOICE_FIELDS})
     return {

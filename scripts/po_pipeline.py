@@ -39,6 +39,7 @@ SUBSETS = {
 }
 GEPA_N = 3
 GEPA_BUDGET = 600
+GEPA_SCORE_METRIC = "primary_likelihood"  # what seeds are ranked on and what GEPA optimizes; 'primary' is the accuracy alternative
 HEADROOM = None  # no headroom cutoff (Danielle, 2026-09-17)
 DD = ("dd150m", "dd300m", "dd530m")
 
@@ -123,7 +124,8 @@ class Pipeline:
             args = [sys.executable, "scripts/po_select_seeds.py", "--name", name, "--sweep-dir", str(seed_sweep),
                     "--batch-size", str(BATCH_SIZE[model_key]),
                     "--train-subset", str(SUBSETS[task]["train"]), "--val-subset", str(SUBSETS[task]["val"]),
-                    "--n", str(GEPA_N), "--max-metric-calls", str(GEPA_BUDGET), "--root", str(gepa_root)]
+                    "--n", str(GEPA_N), "--max-metric-calls", str(GEPA_BUDGET), "--root", str(gepa_root),
+                    "--metric", GEPA_SCORE_METRIC, "--score-metric", GEPA_SCORE_METRIC]
             if opts.get("formulations"):
                 args += ["--formulations", opts["formulations"]]
             if opts.get("max_group_score") is not None:

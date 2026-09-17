@@ -9,7 +9,9 @@ import pandas as pd
 
 from datadec.po.results import load_sweep
 
-METRICS = ("acc_raw", "acc_per_char", "acc_uncond", "correct_prob", "margin")
+METRICS = ("primary", "primary_likelihood", "acc_raw", "acc_per_char", "acc_uncond",
+           "norm_correct_prob", "norm_correct_prob_per_char", "norm_correct_prob_uncond", "norm_margin")
+HEADLINE = "primary_likelihood"  # spread attribution and best/worst pairs are ranked on this
 
 
 def sweep_summary(sweep_dir: Path) -> dict:
@@ -24,19 +26,23 @@ def sweep_summary(sweep_dir: Path) -> dict:
            "n_items": int(items["native_id"].nunique()), "formulations": {}}
     per_pair = items.groupby(["formulation", "format_id", "instruction_id"])[list(METRICS)].mean().reset_index()
     for form, g in per_pair.groupby("formulation"):
-        canon = items[(items["formulation"] == form) & (items["instruction_id"] == "none") & (items["format_id"] == "daa93775")]
-        entry = {"n_pairs": int(len(g))}
+        form_items = items[items["formulation"] == form]
+        canon = form_items[(form_items["instruction_id"] == "none") & (form_items["format_id"] == "daa93775")]
+        entry = {"n_pairs": int(len(g)),
+                 "primary_metric": form_items["primary_metric"].iloc[0],
+                 "primary_likelihood_metric": form_items["primary_likelihood_metric"].iloc[0]}
         for m in METRICS:
             entry[m] = {"mean": float(g[m].mean()), "std": float(g[m].std()), "min": float(g[m].min()), "max": float(g[m].max())}
             if len(canon):
                 entry[m]["baseline"] = float(canon[m].mean())
         # crude attribution: variance of pair means explained by format vs instruction main effects
         for key, label in (("format_id", "format"), ("instruction_id", "instruction")):
-            means = g.groupby(key)["correct_prob"].mean()
+            means = g.groupby(key)[HEADLINE].mean()
             entry[f"{label}_effect_std"] = float(means.std()) if len(means) > 1 else None
-        top = g.nlargest(3, "correct_prob")[["format_id", "instruction_id", "correct_prob", "acc_raw"]]
-        bot = g.nsmallest(3, "correct_prob")[["format_id", "instruction_id", "correct_prob", "acc_raw"]]
-        entry["best_pairs"] = top.to_dict("records"); entry["worst_pairs"] = bot.to_dict("records")
+        top = g.nlargest(3, HEADLINE)[["format_id", "instruction_id", "primary_likelihood", "primary"]]
+        bot = g.nsmallest(3, HEADLINE)[["format_id", "instruction_id", "primary_likelihood", "primary"]]
+        entry["best_pairs"] = top.to_dict("records")
+        entry["worst_pairs"] = bot.to_dict("records")
         out["formulations"][form] = entry
     return out
 

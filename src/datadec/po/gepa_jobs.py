@@ -7,17 +7,23 @@ from pathlib import Path
 
 import pandas as pd
 
+from datadec.po.metrics import SCORE_METRIC_ALIASES
 from datadec.po.model_cards import model_card
 from datadec.po.subsets import ItemSubset
 
 DEFAULT_ROOT = Path.home() / "drotherm" / "data" / "runs" / "po" / "gepa"
+DEFAULT_SCORE_METRIC = "primary_likelihood"
 
 
-def rank_seeds(items: pd.DataFrame, *, metric: str = "correct_prob") -> pd.DataFrame:
-    """Mean metric per (model, revision, formulation, format_id, instruction_id), ranked within (model, formulation)."""
+def rank_seeds(items: pd.DataFrame, *, metric: str = DEFAULT_SCORE_METRIC) -> pd.DataFrame:
+    """Mean metric per (model, revision, formulation, format_id, instruction_id), ranked within (model, formulation).
+
+    metric is an items column: 'primary', 'primary_likelihood', or a concrete label such as acc_raw.
+    """
     keys = ["model", "revision", "formulation", "format_id", "instruction_id"]
     items = items.assign(revision=items["revision"].fillna("main"))  # pandas drops NaN group keys by default
-    g = items.groupby(keys, dropna=False).agg(score=(metric, "mean"), acc_raw=("acc_raw", "mean"), n=("native_id", "size")).reset_index()
+    g = items.groupby(keys, dropna=False).agg(score=(metric, "mean"), primary=("primary", "mean"), n=("native_id", "size")).reset_index()
+    g["score_metric"] = metric
     g["rank"] = g.groupby(["model", "revision", "formulation"])["score"].rank(ascending=False, method="first")
     g["n_seeds"] = g.groupby(["model", "revision", "formulation"])["score"].transform("size")
     return g.sort_values(["model", "revision", "formulation", "rank"]).reset_index(drop=True)
@@ -44,10 +50,14 @@ def write_jobs(
     batch_size: int = 4,
     formulations: tuple[str, ...] | None = None,
     max_group_score: float | None = None,
+    score_metric: str = DEFAULT_SCORE_METRIC,
     root: Path = DEFAULT_ROOT,
 ) -> list[Path]:
     """Write one job per selected seed. max_group_score skips (model, formulation) groups whose best seed
-    already scores at or above it (no headroom)."""
+    already scores at or above it (no headroom). score_metric ('primary' or 'primary_likelihood') is what
+    GEPA optimizes; the adapter resolves it against the task's OLMES primary metric."""
+    if score_metric not in SCORE_METRIC_ALIASES:
+        raise ValueError(f"score_metric must be one of {SCORE_METRIC_ALIASES}, got {score_metric!r}")
     sweep = json.loads((Path(sweep_dir) / "sweep.json").read_text())
     formats = {_fid(f): f for f in sweep["formats"]} | {p["format_id"]: p["format"] for p in sweep.get("pairs", [])}
     instructions = {i["id"]: i["text"] for i in sweep["instructions"]} | {"none": None}
@@ -70,6 +80,7 @@ def write_jobs(
         job_id = f"{_slug(row['model'])}--{row['formulation']}--{row['group']}-r{int(row['rank']):02d}--{row['format_id']}--{_slug(row['instruction_id'])}"
         job = {
             "job_id": job_id, "group": row["group"], "seed_rank": int(row["rank"]), "seed_score": float(row["score"]),
+            "seed_score_metric": row["score_metric"], "score_metric": score_metric,
             "model": row["model"], "revision": None if row["revision"] in (None, "main") else row["revision"],
             "device": device, "batch_size": batch_size, "task": sweep.get("task", "arc_easy"), "formulation": row["formulation"],
             "prompt_format": formats[row["format_id"]], "format_id": row["format_id"],

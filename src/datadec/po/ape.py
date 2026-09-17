@@ -236,7 +236,7 @@ def load_instructions(path: Path) -> list[dict]:
     """Accept an APE candidates.jsonl or a JSON list of {id, text}; drop unaccepted."""
     path = Path(path)
     if path.suffix == ".jsonl":
-        rows = [json.loads(l) for l in path.read_text().splitlines() if l.strip()]
+        rows = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
         return [{"id": r["id"], "text": r["text"]} for r in rows if r.get("accepted", True) and r.get("text")]
     raw = json.loads(path.read_text())
     return [{"id": r["id"], "text": r["text"]} for r in raw]

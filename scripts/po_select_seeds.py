@@ -5,7 +5,7 @@ from typing import Annotated
 
 import typer
 
-from datadec.po.gepa_jobs import DEFAULT_ROOT, rank_seeds, select_seeds, write_jobs
+from datadec.po.gepa_jobs import DEFAULT_ROOT, DEFAULT_SCORE_METRIC, rank_seeds, select_seeds, write_jobs
 from datadec.po.results import load_sweep
 from datadec.po.subsets import ItemSubset
 
@@ -19,7 +19,8 @@ def main(
     train_subset: Annotated[Path, typer.Option("--train-subset")],
     val_subset: Annotated[Path, typer.Option("--val-subset")],
     n: Annotated[int, typer.Option("--n")] = 3,
-    metric: Annotated[str, typer.Option("--metric")] = "correct_prob",
+    metric: Annotated[str, typer.Option("--metric", help="items column used to rank seeds")] = DEFAULT_SCORE_METRIC,
+    score_metric: Annotated[str, typer.Option("--score-metric", help="what GEPA optimizes: primary or primary_likelihood")] = DEFAULT_SCORE_METRIC,
     max_metric_calls: Annotated[int, typer.Option("--max-metric-calls")] = 600,
     reflection_minibatch_size: Annotated[int, typer.Option("--reflection-minibatch-size")] = 3,
     formulations: Annotated[str | None, typer.Option("--formulations", help="restrict, e.g. rc")] = None,
@@ -39,9 +40,9 @@ def main(
         train_subset=ItemSubset.load(train_subset), val_subset=ItemSubset.load(val_subset),
         max_metric_calls=max_metric_calls, reflection_minibatch_size=reflection_minibatch_size, reflection_model=reflection_model, reflection_reasoning=reflection_reasoning,
         device=device, batch_size=batch_size, formulations=tuple(formulations.split(",")) if formulations else None,
-        max_group_score=max_group_score, root=root,
+        max_group_score=max_group_score, score_metric=score_metric, root=root,
     )
-    typer.echo(selected[["model", "formulation", "group", "rank", "format_id", "instruction_id", "score", "acc_raw"]].to_string(index=False))
+    typer.echo(selected[["model", "formulation", "group", "rank", "format_id", "instruction_id", "score_metric", "score", "primary"]].to_string(index=False))
     typer.echo(f"wrote {len(paths)} jobs under {root / name / 'jobs'}")
 
 

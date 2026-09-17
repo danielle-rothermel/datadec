@@ -20,7 +20,11 @@ def main(sweep_dir: Annotated[Path, typer.Argument()]) -> None:
     t = tables["tasks"]
     typer.echo(f"wrote {out}: {len(t)} tasks, {len(tables['items'])} item rows, {len(tables['choices'])} choice rows")
     if len(t):
-        cols = [c for c in ("formulation", "format_id", "instruction_id", "num_instances", "primary_score") if c in t]
+        items = tables["items"]
+        lik = items.groupby("task_idx")["primary_likelihood"].mean().rename("primary_likelihood")
+        t = t.merge(lik, left_on="task_idx", right_index=True, how="left")
+        cols = [c for c in ("formulation", "format_id", "instruction_id", "num_instances", "primary_metric", "primary",
+                            "primary_likelihood_metric", "primary_likelihood") if c in t]
         typer.echo(t[cols].to_string(index=False))
 
 

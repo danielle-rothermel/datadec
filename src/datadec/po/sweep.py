@@ -10,6 +10,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from datadec.po.formats import format_id, validate
+from datadec.po.metrics import PRIMARY_METRIC
 from datadec.po.subsets import ItemSubset
 
 DEFAULT_ROOT = Path.home() / "drotherm" / "data" / "runs" / "po" / "sweeps"
@@ -20,8 +21,6 @@ TASK_NAMES = {
     ("arc_easy", "rc"): "arc_easy:fmt", ("arc_easy", "mc"): "arc_easy:mc:fmt",
     ("arc_challenge", "rc"): "arc_challenge:fmt", ("arc_challenge", "mc"): "arc_challenge:mc:fmt",
 }
-PRIMARY_METRIC = {("arc_easy", "rc"): "acc_per_char", ("arc_easy", "mc"): "acc_raw",
-                  ("arc_challenge", "rc"): "acc_uncond", ("arc_challenge", "mc"): "acc_raw"}
 
 
 @dataclass(frozen=True, slots=True)
@@ -185,7 +184,7 @@ def run_sweep(sweep_dir: Path, *, olmes_repo: Path = OLMES_REPO, chunk_size: int
     moved out to the baselines dir) is skipped.
     """
     spec = json.loads((sweep_dir / "sweep.json").read_text())
-    tasks = [json.loads(l) for l in (sweep_dir / "tasks.jsonl").read_text().splitlines() if l.strip()]
+    tasks = [json.loads(line) for line in (sweep_dir / "tasks.jsonl").read_text().splitlines() if line.strip()]
     size = chunk_size or len(tasks)
     chunks = [tasks[i:i + size] for i in range(0, len(tasks), size)]
     chunk_dir = sweep_dir / "chunks"
