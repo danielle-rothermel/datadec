@@ -36,6 +36,7 @@ def write_jobs(
     train_subset: ItemSubset,
     val_subset: ItemSubset,
     max_metric_calls: int,
+    reflection_minibatch_size: int = 3,
     reflection_model: str = "openai/gpt-5.1",
     reflection_reasoning: str = "medium",
     device: str = "mps",
@@ -49,8 +50,6 @@ def write_jobs(
     sweep = json.loads((Path(sweep_dir) / "sweep.json").read_text())
     formats = {_fid(f): f for f in sweep["formats"]} | {p["format_id"]: p["format"] for p in sweep.get("pairs", [])}
     instructions = {i["id"]: i["text"] for i in sweep["instructions"]} | {"none": None}
-    if train_subset.split != val_subset.split:
-        raise ValueError("train and val subsets must come from the same split")
     if set(train_subset.ids) & set(val_subset.ids):
         raise ValueError("train and val subsets overlap")
     out_root = root / name
@@ -74,8 +73,10 @@ def write_jobs(
             "device": device, "batch_size": batch_size, "task": sweep.get("task", "arc_easy"), "formulation": row["formulation"],
             "prompt_format": formats[row["format_id"]], "format_id": row["format_id"],
             "seed_instruction": {"id": row["instruction_id"], "text": text},
-            "split": train_subset.split, "train_ids": list(train_subset.ids), "val_ids": list(val_subset.ids),
-            "max_metric_calls": max_metric_calls, "reflection_model": reflection_model,
+            "split": train_subset.split, "val_split": val_subset.split,
+            "train_ids": list(train_subset.ids), "val_ids": list(val_subset.ids),
+            "max_metric_calls": max_metric_calls, "reflection_minibatch_size": reflection_minibatch_size,
+            "reflection_model": reflection_model,
             "reflection_reasoning": reflection_reasoning,
             "model_card": model_card(row["model"], row["revision"] if isinstance(row["revision"], str) else None),
             "source_sweep": str(sweep_dir), "run_dir": str(out_root / "runs" / job_id), "seed": 0,

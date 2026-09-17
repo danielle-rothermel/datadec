@@ -21,6 +21,7 @@ def main(
     n: Annotated[int, typer.Option("--n")] = 3,
     metric: Annotated[str, typer.Option("--metric")] = "correct_prob",
     max_metric_calls: Annotated[int, typer.Option("--max-metric-calls")] = 600,
+    reflection_minibatch_size: Annotated[int, typer.Option("--reflection-minibatch-size")] = 3,
     formulations: Annotated[str | None, typer.Option("--formulations", help="restrict, e.g. rc")] = None,
     reflection_model: Annotated[str, typer.Option("--reflection-model")] = "openai/gpt-5.1",
     reflection_reasoning: Annotated[str, typer.Option("--reflection-reasoning")] = "medium",
@@ -36,7 +37,7 @@ def main(
     paths = write_jobs(
         name=name, sweep_dir=sweep_dir, selected=selected,
         train_subset=ItemSubset.load(train_subset), val_subset=ItemSubset.load(val_subset),
-        max_metric_calls=max_metric_calls, reflection_model=reflection_model, reflection_reasoning=reflection_reasoning,
+        max_metric_calls=max_metric_calls, reflection_minibatch_size=reflection_minibatch_size, reflection_model=reflection_model, reflection_reasoning=reflection_reasoning,
         device=device, batch_size=batch_size, formulations=tuple(formulations.split(",")) if formulations else None,
         max_group_score=max_group_score, root=root,
     )
