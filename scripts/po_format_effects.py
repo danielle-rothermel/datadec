@@ -1,7 +1,9 @@
 """Per-format paired effects against the canonical pair for one-factor format sweeps.
 
 Reads sweeps named <prefix>-<model>-<subset>, pairs items by native_id against the canonical
-5-shot no-instruction pair, and writes effects.csv plus a markdown table per model.
+5-shot no-instruction pair, and writes effects.csv plus a markdown table per model. Effects are
+computed per subset and, when several subsets are present, on their pooled items (subset label
+"train+dev"); the pooled estimate is what the charts draw by default.
 """
 
 from __future__ import annotations
@@ -17,6 +19,7 @@ import typer
 from datadec.po.results import load_sweep
 
 app = typer.Typer()
+POOLED_LABEL = "+"
 
 
 @app.command()
@@ -27,7 +30,7 @@ def main(
     pairs: Annotated[Path, typer.Option("--pairs")],
     out: Annotated[Path, typer.Option("--out")],
     subsets: Annotated[str, typer.Option("--subsets")] = "train,dev",
-    plot_subset: Annotated[str, typer.Option("--plot-subset", help="subset drawn in bars.png")] = "train",
+    plot_subset: Annotated[str, typer.Option("--plot-subset", help="subset drawn in bars.png; subsets joined by '+' are pooled")] = "train+dev",
     resamples: Annotated[int, typer.Option("--resamples")] = 2000,
     seed: Annotated[int, typer.Option("--seed")] = 0,
     model_labels: Annotated[str | None, typer.Option("--model-labels", help="comma-separated display names, same order as --models")] = None,
@@ -42,6 +45,7 @@ def main(
     order = [p["label"] for p in json.loads(pairs.read_text())["pairs"]]
     rows = []
     for model in models.split(","):
+        frames: dict[str, pd.DataFrame] = {}
         for sub in subsets.split(","):
             d = root / f"{prefix}-{model}-{sub}"
             if not (d / "tasks.jsonl").exists():
@@ -50,6 +54,10 @@ def main(
             if it.empty:
                 continue
             it["label"] = (it.format_id + "|k" + it.num_shots.astype(str)).map(labels)
+            frames[sub] = it
+        if len(frames) > 1:
+            frames[POOLED_LABEL.join(frames)] = pd.concat(frames.values(), ignore_index=True)
+        for sub, it in frames.items():
             for form, g in it.groupby("formulation"):
                 base = g[g.label == "canonical"].set_index("native_id")
                 for label, h in g.groupby("label"):
@@ -69,7 +77,7 @@ def main(
             sub_df = df[(df.model == model) & (df.formulation == form)]
             if sub_df.empty:
                 continue
-            subs = [s for s in subsets.split(",") if s in set(sub_df.subset)]
+            subs = [s for s in [*subsets.split(","), POOLED_LABEL.join(subsets.split(","))] if s in set(sub_df.subset)]
             md += [f"## {model} {form.upper()}", "", "| format | " + " | ".join(f"{s} acc Δ | {s} share Δ ± se" for s in subs) + " |", "|---|" + "---|---|" * len(subs)]
             for label in order:
                 cells = []
