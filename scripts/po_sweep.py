@@ -28,6 +28,7 @@ def main(
     batch_size: Annotated[int, typer.Option("--batch-size")] = 16,
     root: Annotated[Path, typer.Option("--root")] = DEFAULT_ROOT,
     run: Annotated[bool, typer.Option("--run/--no-run")] = True,
+    chunk_size: Annotated[int, typer.Option("--chunk-size", help="tasks per OLMES process; 0 = all in one")] = 10,
 ) -> None:
     """Write a matched sweep (formulations x formats x instructions on one subset) and run it."""
     spec = SweepSpec(
@@ -41,7 +42,7 @@ def main(
     sweep_dir = write_sweep(spec, root=root)
     typer.echo(f"wrote {sweep_dir} ({sum(1 for _ in open(sweep_dir / 'tasks.jsonl'))} tasks)")
     if run:
-        rc = run_sweep(sweep_dir)
+        rc = run_sweep(sweep_dir, chunk_size=chunk_size or None)
         typer.echo(f"runner exit code {rc}; see {sweep_dir / 'runner.log'}")
         raise typer.Exit(rc)
 

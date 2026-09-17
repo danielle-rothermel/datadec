@@ -66,7 +66,7 @@ def write_jobs(
                 skipped_groups.append((row["model"], row["formulation"], round(float(group_best), 3)))
                 continue
         text = instructions[row["instruction_id"]] or ""  # no-instruction seeds start GEPA from an empty prompt
-        job_id = f"{_slug(row['model'])}--{row['formulation']}--{row['group']}-r{int(row['rank']):02d}--{row['format_id']}--{row['instruction_id']}"
+        job_id = f"{_slug(row['model'])}--{row['formulation']}--{row['group']}-r{int(row['rank']):02d}--{row['format_id']}--{_slug(row['instruction_id'])}"
         job = {
             "job_id": job_id, "group": row["group"], "seed_rank": int(row["rank"]), "seed_score": float(row["score"]),
             "model": row["model"], "revision": row["revision"] if isinstance(row["revision"], str) else None,
@@ -93,5 +93,5 @@ def _fid(fmt: dict) -> str:
     return format_id({a: fmt[a] for a in AXES})
 
 
-def _slug(model: str) -> str:
-    return model.replace("/", "--")
+def _slug(value: str) -> str:
+    return value.replace("/", "--")

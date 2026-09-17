@@ -147,16 +147,38 @@ def write_sweep(spec: SweepSpec, *, root: Path = DEFAULT_ROOT) -> Path:
     return sweep_dir
 
 
-def run_sweep(sweep_dir: Path, *, olmes_repo: Path = OLMES_REPO) -> int:
-    """Invoke the fork's runner once (model loads once) for every task in tasks.jsonl."""
+def run_sweep(sweep_dir: Path, *, olmes_repo: Path = OLMES_REPO, chunk_size: int | None = 10) -> int:
+    """Run every task in tasks.jsonl through the fork's runner.
+
+    Tasks are split into chunks of chunk_size, one runner process per chunk (each reloads the
+    model, ~15 s), because OLMES scoring slows down markedly as many tasks accumulate in a single
+    process. Chunk run dirs land side by side under <sweep_dir>/olmes; the results loader globs
+    them all. A chunk whose olmes run dir already holds metrics for every task is skipped.
+    """
     spec = json.loads((sweep_dir / "sweep.json").read_text())
-    cmd = [
-        "uv", "run", "local/run_eval.py",
-        "--model", spec["model"], "--device", spec["device"], "--batch-size", str(spec["batch_size"]),
-        "--task-file", str(sweep_dir / "tasks.jsonl"), "--root", str(sweep_dir / "olmes"),
-    ]
-    if spec.get("revision"):
-        cmd += ["--revision", spec["revision"]]
-    (sweep_dir / "run_command.txt").write_text(" ".join(cmd) + "\n")
-    with open(sweep_dir / "runner.log", "a") as log:
-        return subprocess.run(cmd, cwd=olmes_repo, stdout=log, stderr=subprocess.STDOUT).returncode
+    tasks = [json.loads(l) for l in (sweep_dir / "tasks.jsonl").read_text().splitlines() if l.strip()]
+    size = chunk_size or len(tasks)
+    chunks = [tasks[i:i + size] for i in range(0, len(tasks), size)]
+    chunk_dir = sweep_dir / "chunks"
+    chunk_dir.mkdir(exist_ok=True)
+    worst_rc = 0
+    for ci, chunk in enumerate(chunks):
+        name = f"tasks-chunk{ci:03d}"
+        path = chunk_dir / f"{name}.jsonl"
+        path.write_text("".join(json.dumps(t) + "\n" for t in chunk))
+        done = [d for d in (sweep_dir / "olmes").rglob(f"*-{name}") if len(list(d.glob("task-*-metrics.json"))) == len(chunk)]
+        if done:
+            continue
+        cmd = [
+            "uv", "run", "local/run_eval.py",
+            "--model", spec["model"], "--device", spec["device"], "--batch-size", str(spec["batch_size"]),
+            "--task-file", str(path), "--root", str(sweep_dir / "olmes"),
+        ]
+        if spec.get("revision"):
+            cmd += ["--revision", spec["revision"]]
+        with open(sweep_dir / "run_command.txt", "a") as f:
+            f.write(" ".join(cmd) + "\n")
+        with open(sweep_dir / "runner.log", "a") as log:
+            rc = subprocess.run(cmd, cwd=olmes_repo, stdout=log, stderr=subprocess.STDOUT).returncode
+        worst_rc = max(worst_rc, rc)
+    return worst_rc
