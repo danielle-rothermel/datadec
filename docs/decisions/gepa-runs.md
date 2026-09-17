@@ -3,6 +3,19 @@
 How the reflective optimizer is configured: what it optimizes, what it sees, how it is
 validated, and how its results are read. Log, most recent first.
 
+## 2026-09-17 13:20 — Direction: surrogate-plus-confirmation as an alternative to accept-on-minibatch
+
+MIPRO (Opsahl-Ong 2024) scores candidate configurations on random mini-batches, feeds the
+scores to a Tree-structured Parzen Estimator over the discrete candidate set, and every S
+trials confirms the best-by-mean configuration on the full training set; the best
+fully-confirmed one is returned (about 300 mini-batch trials per 50 full evaluations).
+Recorded as an alternative to GEPA's strict-improvement-on-minibatch acceptance for our
+noise regime: the surrogate pools evidence across trials instead of deciding on one
+minibatch, and the confirmation step is a built-in guard against the winner's curse. Not
+adopted yet; would apply to selecting among a fixed candidate pool (seed formats and
+instructions) rather than to reflective rewriting. Demonstration selection is not an
+axis for us: the fixed OLMES demonstrations are part of the evaluation design.
+
 ## 2026-09-17 11:00 — Decision: what the reflection model is shown
 
 - Do not show the proposer raw per-candidate scores as the thing to improve.
