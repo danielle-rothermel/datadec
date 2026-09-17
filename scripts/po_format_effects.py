@@ -31,6 +31,9 @@ def main(
     resamples: Annotated[int, typer.Option("--resamples")] = 2000,
     seed: Annotated[int, typer.Option("--seed")] = 0,
     model_labels: Annotated[str | None, typer.Option("--model-labels", help="comma-separated display names, same order as --models")] = None,
+    plot_formulations: Annotated[str, typer.Option("--plot-formulations", help="comma-separated subset of rc,mc to draw")] = "rc,mc",
+    plot_models: Annotated[str | None, typer.Option("--plot-models", help="comma-separated model keys to draw; default all")] = None,
+    plot_name: Annotated[str, typer.Option("--plot-name")] = "bars.png",
 ) -> None:
     rng = np.random.default_rng(seed)
     labels = {p["format_id"] + f"|k{p['num_shots']}": p["label"] for p in json.loads(pairs.read_text())["pairs"]}
@@ -84,11 +87,14 @@ def main(
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    model_keys = models.split(",")
-    names = model_labels.split(",") if model_labels else model_keys
-    panels = [("rc", "primary", "RC accuracy Δ vs canonical"), ("rc", "primary_likelihood", "RC likelihood Δ vs canonical"),
-              ("mc", "primary", "MC accuracy Δ vs canonical"), ("mc", "primary_likelihood", "MC likelihood Δ vs canonical")]
-    fig, axes = plt.subplots(2, 2, figsize=(14, 8.5), constrained_layout=True)
+    all_keys = models.split(",")
+    all_names = model_labels.split(",") if model_labels else all_keys
+    keep = plot_models.split(",") if plot_models else all_keys
+    model_keys = [k for k in all_keys if k in keep]
+    names = [n for k, n in zip(all_keys, all_names, strict=True) if k in keep]
+    forms = plot_formulations.split(",")
+    panels = [(f, m, f"{f.upper()} {'accuracy' if m == 'primary' else 'likelihood'} Δ vs canonical") for f in forms for m in ("primary", "primary_likelihood")]
+    fig, axes = plt.subplots(len(forms), 2, figsize=(14, 4.5 * len(forms)), constrained_layout=True, squeeze=False)
     width = 0.8 / len(model_keys)
     for ax, (form, metric, title) in zip(axes.flat, panels, strict=True):
         fmts = [f for f in order if f != "canonical" and not df[(df.formulation == form) & (df.format == f) & (df.subset == plot_subset)].empty]
@@ -105,8 +111,8 @@ def main(
         ax.set_title(title)
         ax.grid(axis="y", alpha=0.3)
         ax.legend(fontsize=8)
-    fig.savefig(out / "bars.png", dpi=150)
-    typer.echo(f"wrote {out / 'bars.png'}")
+    fig.savefig(out / plot_name, dpi=150)
+    typer.echo(f"wrote {out / plot_name}")
 
 
 if __name__ == "__main__":
