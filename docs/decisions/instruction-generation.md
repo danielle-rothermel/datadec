@@ -3,6 +3,16 @@
 How candidate instructions are generated, what the proposer sees, and how pools are
 organized. Log, most recent first.
 
+## 2026-09-17 13:10 — Decision: random-string controls in every instruction pool
+
+Every per-format pool includes a small set of random-string instructions (random
+vocabulary tokens and LM-prior phrases of comparable length, seeded and recorded as their
+own generation style) alongside the generated candidates. They are the null hypothesis
+for the pool: a generated pool that does not beat the random controls under the same
+selection (choose on train, report on dev) has not shown anything. Lu 2023 found
+best-of-160 random strings within 1% of OPRO/APE on 2023 base models; the size of the
+effect on our models is an empirical question the controls answer.
+
 ## 2026-09-17 11:00 — Decision: framing-pair generation and near-duplicate filtering
 
 - Generate description-style seeds by crossing two short hand-written lists

@@ -2,6 +2,16 @@
 
 The prompt-format grid (seed formats) and how formats are chosen and scored. Log, most recent first.
 
+## 2026-09-17 13:10 — Decision: widen the answer-descriptor axis and add random-string descriptors
+
+Lu 2023: the string between the input and the scored label (our answer-descriptor slot)
+is where a large share of prompt-optimisation gains live; random vocabulary strings there
+matched LLM-driven optimisers. Amend the stratified grid (10:50): the descriptor axis gets
+a few more conventional pairs and a few random-string descriptors (vocabulary tokens and
+LM-prior phrases, fixed by seed and recorded), so the axis is a probe rather than a fixed
+choice. Random-descriptor formats also serve as the null control for any format search:
+a best-of-k random selection with the same budget and the same train/dev protocol.
+
 ## 2026-09-17 10:50 — Decision: stratified seed formats and a demonstration-count axis
 
 - Add a demonstration-count axis to the format grid, including zero shots (the fixed
