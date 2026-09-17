@@ -30,6 +30,12 @@ plots and tables copied to `assets/2026-09-17-arc-easy-subset-size/`.
 - A single subset's percentile bootstrap tracks the true subsampling band closely at
   every n, so bootstrapping a subset is an honest guide to its uncertainty.
 
+![bars](assets/2026-09-17-arc-easy-subset-size/summary-bars.png)
+
+![paired differences](assets/2026-09-17-arc-easy-subset-size/summary-diff-heatmap.png)
+
+![items for 80% power](assets/2026-09-17-arc-easy-subset-size/summary-power-heatmap.png)
+
 ![overlay](assets/2026-09-17-arc-easy-subset-size/compare-overlay.png)
 
 ![differences](assets/2026-09-17-arc-easy-subset-size/compare-differences.png)
