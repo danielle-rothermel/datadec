@@ -53,6 +53,7 @@ datadec = { workspace = true }
 [dependency-groups]
 dev = [
     "datadec",
+    "matplotlib>=3.11.2",
     "pytest>=8.4.1",
     "pytest-postgresql>=7.0.0",
     "ty",
