@@ -11,7 +11,28 @@ DataDecide (OLMo tokenizer) and Qwen. Anything normalized per token
 never a headline metric. Residual caveat: canonical-tokenization-only scoring leaves a
 little mass unaccounted for, differently per tokenizer; second order.
 
-## 2026-09-17 10:38 — Decision: generation formulation spec (not yet implemented)
+## 2026-09-17 16:50 — Implemented: generation formulation (gen_rc, gen_mc); baseline runs launched
+
+The 10:38 spec is implemented as fork tasks `arc_easy:gen:fmt` / `arc_easy:mc:gen:fmt` (and the
+ARC-Challenge pair) with metric `PrefixMatch` (`oe_eval/metrics/prefix_match.py`), and in datadec
+as formulations `gen_rc` / `gen_mc` (primary `text_match` / `label_match`, no likelihood twin,
+`primary_likelihood` None). Same prompt bytes as RC / MC, greedy, cap 96, stop at newline; the raw
+generation is kept in the predictions file and on the items table (`continuation`).
+
+- DataDecide checkpoints run with `use_cache=false` (`po_sweep.py --no-cache`), as decided; the
+  fork's generate override also pins the mps autocast dtype to float32 because hf_olmo casts its
+  attention bias to that dtype whenever an attention mask is passed (HF generate always passes
+  one; the likelihood path never does), which otherwise fails with a Half/float mismatch.
+- Five-item smoke test on 300M: RC generations are answer text (`the earth's gravity`), MC
+  generations a bare letter; 300M answers `B` on every MC item. Runtime without cache is small at
+  this answer length (under a second for five RC items).
+- Caveat: OLMES's `num_tokens` for a generation is the batch's generated length, not the row's,
+  so `max_tokens_reached` is an upper bound.
+- Label match under RC prompts reads a leading article "a" as label A; it is secondary there.
+- Runs: `gen-base-<model>-<train|dev>` for 300M, 1B, Qwen3-1.7B-Base, Qwen3-1.7B at canonical
+  format, no instruction, 5 shots (`driver-gen-base.sh`).
+
+## 2026-09-17 10:38 — Decision: generation formulation spec
 
 Third formulation beside RC and MC: same prompt, greedy decoding, cap 96 tokens for both
 RC and MC (longest ARC gold answer is 46 tokens; p99 is 17), stop on newline and the
