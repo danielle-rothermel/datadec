@@ -156,8 +156,6 @@ def main(
             ax.plot(t["n"], t["full_mean"], "k--", lw=1, label=f"full set ({t['full_mean'].iloc[0]:.3f})")
             ax.plot(t["n"], t["full_mean"] - t["boot_halfwidth_avg"], "C1:", lw=1, label="avg bootstrap CI of one subset")
             ax.plot(t["n"], t["full_mean"] + t["boot_halfwidth_avg"], "C1:", lw=1)
-            o = ours[key]
-            ax.errorbar([o["n"]], [o["mean"]], yerr=[[o["mean"] - o["boot_lo"]], [o["boot_hi"] - o["mean"]]], fmt="o", color="C3", capsize=3, label="our seed-0 subset ± its bootstrap CI")
             if key.startswith("mc_") and key.endswith("primary"):
                 ax.axhline(0.25, color="grey", lw=0.8, ls="-.", label="chance")
             ax.set_xscale("log")
@@ -167,6 +165,7 @@ def main(
         ax.set_xlabel("subset size n (log)")
     axes[0][0].legend(fontsize=8, loc="lower right")
     fig.suptitle(f"{rc.attrs['model']} ({rc.attrs['revision']}) — ARC-Easy test (n_full={n_full}): what a random n-item subset shows")
+    # the given subset's own values are reported in table.md / summary.json, not drawn
     fig.tight_layout()
     fig.savefig(out / "plot.png", dpi=130)
     typer.echo((out / "table.md").read_text())

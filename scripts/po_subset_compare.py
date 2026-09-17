@@ -109,8 +109,6 @@ def main(
             t = bands[(bands.series == key) & (bands.model == nm)]
             ax.fill_between(t["n"], t["lo"], t["hi"], alpha=0.25, color=f"C{i}")
             ax.plot(t["n"], t["full_mean"], color=f"C{i}", lw=1.2, label=f"{nm} ({t['full_mean'].iloc[0]:.3f})")
-            if sub_pos is not None:
-                ax.plot([100], [t["ours"].iloc[0]], "o", color=f"C{i}")
         if key == "mc_primary":
             ax.axhline(0.25, color="grey", lw=0.8, ls="-.")
         ax.set_xscale("log")
@@ -119,7 +117,7 @@ def main(
         ax.legend(fontsize=8)
     for ax in axes[1]:
         ax.set_xlabel("subset size n (log)")
-    fig.suptitle(f"Per-model subsampling bands on ARC-Easy test (n_full={n_full}); dots = our seed-0 subset")
+    fig.suptitle(f"Per-model subsampling bands on ARC-Easy test (n_full={n_full})")
     fig.tight_layout()
     fig.savefig(out / "overlay.png", dpi=130)
 
@@ -130,8 +128,6 @@ def main(
             t = diffs[(diffs.series == key) & (diffs.pair == pair)]
             ax.fill_between(t["n"], t["lo"], t["hi"], alpha=0.2, color=f"C{i}")
             ax.plot(t["n"], t["full_diff"], color=f"C{i}", lw=1.2, label=f"{pair} ({t['full_diff'].iloc[0]:+.3f})")
-            if sub_pos is not None:
-                ax.plot([100], [t["ours"].iloc[0]], "o", color=f"C{i}")
         ax.axhline(0, color="k", lw=0.8)
         ax.set_xscale("log")
         ax.set_title(f"{TITLES[key]}: paired difference")
@@ -139,7 +135,7 @@ def main(
         ax.legend(fontsize=8)
     for ax in axes[1]:
         ax.set_xlabel("subset size n (log)")
-    fig.suptitle(f"Paired between-model differences vs subset size (n_full={n_full}); dots = our seed-0 subset")
+    fig.suptitle(f"Paired between-model differences vs subset size (n_full={n_full})")
     fig.tight_layout()
     fig.savefig(out / "differences.png", dpi=130)
     typer.echo((out / "table.md").read_text())
