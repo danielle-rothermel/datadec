@@ -1,0 +1,832 @@
+{
+ "seed": 0,
+ "n": 51,
+ "sources": {
+  "formats": "configs/po/formats/arc_easy-fmt-n30-seed0.json",
+  "instructions": [
+   "/Users/daniellerothermel/drotherm/data/runs/po/ape/20260917T125757Z-pool-mc-ape-forward-n24/candidates.jsonl",
+   "/Users/daniellerothermel/drotherm/data/runs/po/ape/20260917T125811Z-pool-mc-p1-description-n8/candidates.jsonl"
+  ],
+  "n_formats": 30,
+  "n_instructions": 33,
+  "matched_to": "matched:arc-pairs-n50-seed0.json"
+ },
+ "pairs": [
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none"
+   },
+   "format_id": "daa93775",
+   "instruction": {
+    "id": "none",
+    "text": null
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "dash",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "f9fd2972",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c007",
+    "text": "For each multiple-choice science question, determine which option (A, B, C, or D) is correct and answer by writing only the letter of the correct choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "dash",
+    "descriptor_case": "lower",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_paren",
+    "choices_header": "options"
+   },
+   "format_id": "412d7ad8",
+   "instruction": {
+    "id": "none",
+    "text": null
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "9aba81ea",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c018",
+    "text": "Read each question and select the correct answer choice (A, B, C, or D). Answer by writing only the letter of the correct choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_rparen",
+    "choices_header": "options"
+   },
+   "format_id": "d8a1e9d5",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c021",
+    "text": "Read each question and choose the letter of the best answer. Answer by writing only the letter corresponding to your choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "865a295d",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c002",
+    "text": "For each multiple-choice question, identify the best answer and respond with only the letter (A, B, C, or D) of that choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "lower",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "3b85b87b",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c009",
+    "text": "For each of the following multiple-choice questions, choose the correct answer and respond with only the letter of that choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "52ae0971",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c002",
+    "text": "For each multiple-choice question, identify the best answer and respond with only the letter (A, B, C, or D) of that choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "number_dot",
+    "choices_header": "none"
+   },
+   "format_id": "c7cb8141",
+   "instruction": {
+    "id": "none",
+    "text": null
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none"
+   },
+   "format_id": "350944f7",
+   "instruction": {
+    "id": "20260917T125811Z-pool-mc-p1-description-n8/c005",
+    "text": "You are a large language model that answers grade-school science multiple-choice questions.\n\nYour task and output format:\n- You will be shown:\n  - This system prompt\n  - Several worked example questions with answers\n  - Then a new multiple-choice question\n- For the new question, you must:\n  1. Read the question and all answer choices carefully.\n  2. Reason **silently** about which choice is correct.\n  3. Output **only** the single letter (A, B, C, or D) of the correct answer.\n- Do **not** repeat the question, do **not** explain your reasoning, and do **not** output anything other than the single letter.\n\nHow to think about the questions (internally, without showing your work):\n1. **Understand the question**\n   - Identify what is being asked (e.g., a definition, cause/effect, comparison, example of a concept).\n   - Note key science terms (e.g., evaporation, habitat, force, energy, condensation, etc.).\n\n2. **Recall relevant science facts**\n   - Use grade-school appropriate knowledge about:\n     - Life science (plants, animals, habitats, food chains, human body, ecosystems)\n     - Physical science (matter, states of matter, forces, motion, energy, simple machines)\n     - Earth and space science (weather, seasons, water cycle, rocks, fossils, planets)\n   - Prefer basic, textbook-style explanations over advanced or technical ones.\n\n3. **Evaluate each choice**\n   - Eliminate choices that"
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none"
+   },
+   "format_id": "350944f7",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c003",
+    "text": "For each multiple-choice question, determine the correct option and respond with only the letter (A, B, C, or D) of the best answer, with no explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "title",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "number_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "99b01188",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c019",
+    "text": "Read each multiple-choice science question and answer by writing only the letter (A, B, C, or D) of the correct choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "number_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "279f69e1",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c017",
+    "text": "For each of the following multiple-choice science questions, write only the letter (A, B, C, or D) corresponding to the best answer."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "6cb80590",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c011",
+    "text": "For each multiple-choice question, write only the letter (A, B, C, or D) corresponding to the correct answer."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "lower_dot",
+    "choices_header": "options"
+   },
+   "format_id": "0ba34f97",
+   "instruction": {
+    "id": "20260917T125811Z-pool-mc-p1-description-n8/c001",
+    "text": "You are a large language model that answers U.S. grade\u2011school science multiple\u2011choice questions.\n\nYour task on each problem:\n1. Read the question and all answer choices carefully.\n2. Reason step by step **internally** to figure out the best answer.\n   - Identify what the question is really asking.\n   - Recall relevant science facts, definitions, and basic principles.\n   - Eliminate clearly wrong options.\n   - Compare the remaining options and choose the one that best fits the question.\n3. **Do not** show your reasoning or explanation in your output.\n4. **Output only** the single capital letter of the correct choice: `A`, `B`, `C`, or `D`.  \n   - No words, no punctuation, no extra text.\n   - Do not repeat the question or answer options.\n   - Do not add explanations, comments, or justifications.\n\nWhen you are unsure, still choose the **single most likely** correct answer based on your knowledge and the given options.\n\nYour final output for each question must be *exactly* one of:\n`A`  \n`B`  \n`C`  \n`D`"
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "59370fec",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c014",
+    "text": "For each of the following multiple-choice science questions, select the correct answer and respond with only the letter corresponding to your choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "dash",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "letter_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "6e16a898",
+   "instruction": {
+    "id": "20260917T125811Z-pool-mc-p1-description-n8/c003",
+    "text": "You are a large language model that answers U.S. grade-school multiple-choice science questions.\n\nYour behavior and output format must follow these rules:\n\n1. **Task and audience**\n   - The questions are grade-school level (approximately ages 8\u201313).\n   - Each question will have several answer choices labeled with capital letters (A, B, C, D, etc.).\n   - Your job is to choose the **single best answer** and output **only the letter** of that choice.\n\n2. **Reasoning style**\n   - Carefully read the question and all answer choices before deciding.\n   - Silently:\n     - Identify what the question is really asking.\n     - Recall relevant science facts and principles.\n     - Eliminate clearly wrong or irrelevant choices.\n     - Compare remaining choices and select the best match.\n   - **Do not show your reasoning, explanations, or justifications.** Perform all analysis internally.\n\n3. **Output format**\n   - Respond with **only** the capital letter of the correct answer choice.\n   - Do **not** repeat the question or answer text.\n   - Do **not** add punctuation, words, or commentary (no \u201cThe answer is\u2026\u201d, no explanations).\n   - Examples of acceptable outputs: `A` or `C`.\n\n4. **Content constraints**\n   - If two options seem plausible, choose the one that is **most scientifically accurate** in standard grade-school curricula.\n   - Never choose \u201cNone of the above\u201d or \u201cAll of the above\u201d unless it is clearly supported by the question and the other options.\n   - If a question appears ambiguous or poorly written, select the answer that best fits typical school science teaching and test conventions.\n\n5. **Behavior across multiple questions**\n   - Treat each question independently.\n   - Do not refer to previous questions or"
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "dash",
+    "descriptor_case": "lower",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_paren",
+    "choices_header": "options"
+   },
+   "format_id": "412d7ad8",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c004",
+    "text": "For each multiple-choice question, write only the letter of the single best answer."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "lower",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "letter_rparen",
+    "choices_header": "choices"
+   },
+   "format_id": "df46db7d",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c004",
+    "text": "For each multiple-choice question, write only the letter of the single best answer."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_rparen",
+    "choices_header": "options"
+   },
+   "format_id": "d8a1e9d5",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c023",
+    "text": "For each multiple-choice science question, write only the letter (A, B, C, or D) of the single best answer."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "number_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "279f69e1",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c006",
+    "text": "Read each multiple-choice science question and respond with only the single capital letter (A, B, C, or D) corresponding to the correct answer, with no explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "number_dot",
+    "choices_header": "options"
+   },
+   "format_id": "7e26611a",
+   "instruction": {
+    "id": "20260917T125811Z-pool-mc-p1-description-n8/c002",
+    "text": "You are a large language model specialized in answering grade-school science multiple-choice questions.\n\nYour task on every question:\n\n1. Read the question and all answer choices carefully.\n2. Reason step by step **internally** to figure out the best answer:\n   - Identify what the question is really asking.\n   - Recall or infer the relevant science ideas (definitions, facts, cause\u2013effect, comparisons, etc.).\n   - Eliminate clearly wrong options.\n   - Compare the remaining options and choose the single best answer.\n3. **Do not** show or describe your reasoning, explanations, or thinking steps in your final output. Keep all reasoning hidden.\n4. Your final output must be:\n   - Exactly one capital letter: `A`, `B`, `C`, or `D`\n   - No words, no punctuation, no explanation, nothing else.\n\nWhen you see a new question, silently think through the problem, decide which option is correct, and then output only the letter of that option."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none"
+   },
+   "format_id": "350944f7",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c022",
+    "text": "For each multiple-choice question, determine the correct answer and respond with only the letter (A, B, C, or D) of that choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "lower",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "number_dot",
+    "choices_header": "options"
+   },
+   "format_id": "f84be137",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c011",
+    "text": "For each multiple-choice question, write only the letter (A, B, C, or D) corresponding to the correct answer."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "52ae0971",
+   "instruction": {
+    "id": "20260917T125811Z-pool-mc-p1-description-n8/c001",
+    "text": "You are a large language model that answers U.S. grade\u2011school science multiple\u2011choice questions.\n\nYour task on each problem:\n1. Read the question and all answer choices carefully.\n2. Reason step by step **internally** to figure out the best answer.\n   - Identify what the question is really asking.\n   - Recall relevant science facts, definitions, and basic principles.\n   - Eliminate clearly wrong options.\n   - Compare the remaining options and choose the one that best fits the question.\n3. **Do not** show your reasoning or explanation in your output.\n4. **Output only** the single capital letter of the correct choice: `A`, `B`, `C`, or `D`.  \n   - No words, no punctuation, no extra text.\n   - Do not repeat the question or answer options.\n   - Do not add explanations, comments, or justifications.\n\nWhen you are unsure, still choose the **single most likely** correct answer based on your knowledge and the given options.\n\nYour final output for each question must be *exactly* one of:\n`A`  \n`B`  \n`C`  \n`D`"
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "lower",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "number_dot",
+    "choices_header": "options"
+   },
+   "format_id": "f84be137",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c012",
+    "text": "For each multiple-choice science question, determine the correct option and respond on a separate line with `Answer: X`, where `X` is the letter of the correct choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "9aba81ea",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c015",
+    "text": "Read each question and choose the correct answer by writing only the letter (A, B, C, or D)."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "ad390f9a",
+   "instruction": {
+    "id": "none",
+    "text": null
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "dash",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "newline",
+    "choice_label_style": "letter_rparen",
+    "choices_header": "choices"
+   },
+   "format_id": "49b31760",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c007",
+    "text": "For each multiple-choice science question, determine which option (A, B, C, or D) is correct and answer by writing only the letter of the correct choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "6cb80590",
+   "instruction": {
+    "id": "20260917T125811Z-pool-mc-p1-description-n8/c003",
+    "text": "You are a large language model that answers U.S. grade-school multiple-choice science questions.\n\nYour behavior and output format must follow these rules:\n\n1. **Task and audience**\n   - The questions are grade-school level (approximately ages 8\u201313).\n   - Each question will have several answer choices labeled with capital letters (A, B, C, D, etc.).\n   - Your job is to choose the **single best answer** and output **only the letter** of that choice.\n\n2. **Reasoning style**\n   - Carefully read the question and all answer choices before deciding.\n   - Silently:\n     - Identify what the question is really asking.\n     - Recall relevant science facts and principles.\n     - Eliminate clearly wrong or irrelevant choices.\n     - Compare remaining choices and select the best match.\n   - **Do not show your reasoning, explanations, or justifications.** Perform all analysis internally.\n\n3. **Output format**\n   - Respond with **only** the capital letter of the correct answer choice.\n   - Do **not** repeat the question or answer text.\n   - Do **not** add punctuation, words, or commentary (no \u201cThe answer is\u2026\u201d, no explanations).\n   - Examples of acceptable outputs: `A` or `C`.\n\n4. **Content constraints**\n   - If two options seem plausible, choose the one that is **most scientifically accurate** in standard grade-school curricula.\n   - Never choose \u201cNone of the above\u201d or \u201cAll of the above\u201d unless it is clearly supported by the question and the other options.\n   - If a question appears ambiguous or poorly written, select the answer that best fits typical school science teaching and test conventions.\n\n5. **Behavior across multiple questions**\n   - Treat each question independently.\n   - Do not refer to previous questions or"
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "number_dot",
+    "choices_header": "none"
+   },
+   "format_id": "a03a8559",
+   "instruction": {
+    "id": "20260917T125811Z-pool-mc-p1-description-n8/c002",
+    "text": "You are a large language model specialized in answering grade-school science multiple-choice questions.\n\nYour task on every question:\n\n1. Read the question and all answer choices carefully.\n2. Reason step by step **internally** to figure out the best answer:\n   - Identify what the question is really asking.\n   - Recall or infer the relevant science ideas (definitions, facts, cause\u2013effect, comparisons, etc.).\n   - Eliminate clearly wrong options.\n   - Compare the remaining options and choose the single best answer.\n3. **Do not** show or describe your reasoning, explanations, or thinking steps in your final output. Keep all reasoning hidden.\n4. Your final output must be:\n   - Exactly one capital letter: `A`, `B`, `C`, or `D`\n   - No words, no punctuation, no explanation, nothing else.\n\nWhen you see a new question, silently think through the problem, decide which option is correct, and then output only the letter of that option."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "number_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "279f69e1",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c008",
+    "text": "Read each multiple-choice science question and write only the letter of the best answer."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "dash",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "62a641fd",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c018",
+    "text": "Read each question and select the correct answer choice (A, B, C, or D). Answer by writing only the letter of the correct choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "lower",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "number_dot",
+    "choices_header": "options"
+   },
+   "format_id": "d7924e88",
+   "instruction": {
+    "id": "20260917T125811Z-pool-mc-p1-description-n8/c006",
+    "text": "You are a large language model that answers grade-school science multiple-choice questions.\n\nYour job:\n- Read each question and its answer choices carefully.\n- Think step by step about the relevant science ideas.\n- Use simple, correct scientific reasoning based only on the information in the question and general grade-school science knowledge.\n- At the end, choose the single best answer choice.\n\nImportant formatting rules:\n- Each question will have choices labeled with letters (e.g., A, B, C, D).\n- For your final answer to each question, output **only** the letter of the correct choice.\n- Do **not** repeat the question or the answer text.\n- Do **not** explain your reasoning in the final answer.\n- Do **not** include any extra words, punctuation, or formatting in the final answer\u2014just the single capital letter (e.g., `C`).\n\nHow to think:\n1. Identify what the question is really asking.\n2. Recall the relevant science concept (e.g., forces, energy, plants, weather, states of matter, simple machines, ecosystems, etc.).\n3. Eliminate choices that clearly do not fit the concept or contradict basic facts.\n4. Compare the remaining choices carefully and select the one that best answers the question.\n5. Double-check that your choice matches the question being asked (for example, cause vs. effect, increase vs. decrease, best vs. first, etc.).\n\nDuring training examples (if any):\n- You may see worked solutions; use them to understand the style of correct reasoning.\n- But for the final new question, you must decide the answer yourself using the steps above.\n\nFor the final question you are asked to answer:\n- Follow the reasoning steps internally.\n- Then respond with **only** the letter of the correct option."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "lower_dot",
+    "choices_header": "options"
+   },
+   "format_id": "0ba34f97",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c005",
+    "text": "Read each multiple-choice science question and respond with only the letter of the single best answer."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "lower",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "letter_rparen",
+    "choices_header": "choices"
+   },
+   "format_id": "df46db7d",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c023",
+    "text": "For each multiple-choice science question, write only the letter (A, B, C, or D) of the single best answer."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "number_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "279f69e1",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c000",
+    "text": "For each of the following multiple-choice science questions, select the best answer and write only its letter (A, B, C, or D)."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "lower",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "number_dot",
+    "choices_header": "options"
+   },
+   "format_id": "f84be137",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c019",
+    "text": "Read each multiple-choice science question and answer by writing only the letter (A, B, C, or D) of the correct choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "title",
+    "answer_break": "space",
+    "example_separator": "newline",
+    "choice_label_style": "letter_paren",
+    "choices_header": "none"
+   },
+   "format_id": "59370fec",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c021",
+    "text": "Read each question and choose the letter of the best answer. Answer by writing only the letter corresponding to your choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "letter_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "158addd2",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c003",
+    "text": "For each multiple-choice question, determine the correct option and respond with only the letter (A, B, C, or D) of the best answer, with no explanation."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_dot",
+    "choices_header": "none"
+   },
+   "format_id": "80f84b04",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c022",
+    "text": "For each multiple-choice question, determine the correct answer and respond with only the letter (A, B, C, or D) of that choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "ad390f9a",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c010",
+    "text": "Read each multiple-choice science question carefully and answer by writing only the letter of the correct option."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_rparen",
+    "choices_header": "options"
+   },
+   "format_id": "d8a1e9d5",
+   "instruction": {
+    "id": "20260917T125811Z-pool-mc-p1-description-n8/c006",
+    "text": "You are a large language model that answers grade-school science multiple-choice questions.\n\nYour job:\n- Read each question and its answer choices carefully.\n- Think step by step about the relevant science ideas.\n- Use simple, correct scientific reasoning based only on the information in the question and general grade-school science knowledge.\n- At the end, choose the single best answer choice.\n\nImportant formatting rules:\n- Each question will have choices labeled with letters (e.g., A, B, C, D).\n- For your final answer to each question, output **only** the letter of the correct choice.\n- Do **not** repeat the question or the answer text.\n- Do **not** explain your reasoning in the final answer.\n- Do **not** include any extra words, punctuation, or formatting in the final answer\u2014just the single capital letter (e.g., `C`).\n\nHow to think:\n1. Identify what the question is really asking.\n2. Recall the relevant science concept (e.g., forces, energy, plants, weather, states of matter, simple machines, ecosystems, etc.).\n3. Eliminate choices that clearly do not fit the concept or contradict basic facts.\n4. Compare the remaining choices carefully and select the one that best answers the question.\n5. Double-check that your choice matches the question being asked (for example, cause vs. effect, increase vs. decrease, best vs. first, etc.).\n\nDuring training examples (if any):\n- You may see worked solutions; use them to understand the style of correct reasoning.\n- But for the final new question, you must decide the answer yourself using the steps above.\n\nFor the final question you are asked to answer:\n- Follow the reasoning steps internally.\n- Then respond with **only** the letter of the correct option."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "dash",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "f9fd2972",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c013",
+    "text": "For each multiple-choice question, identify the correct answer and respond with only the letter of that choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "lower",
+    "answer_break": "newline",
+    "example_separator": "blank_line",
+    "choice_label_style": "number_dot",
+    "choices_header": "options"
+   },
+   "format_id": "d7924e88",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c008",
+    "text": "Read each multiple-choice science question and write only the letter of the best answer."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "q_a",
+    "descriptor_separator": "dash",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "newline",
+    "choice_label_style": "lower_dot",
+    "choices_header": "none"
+   },
+   "format_id": "60a87630",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c009",
+    "text": "For each of the following multiple-choice questions, choose the correct answer and respond with only the letter of that choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "dash",
+    "descriptor_case": "title",
+    "answer_break": "newline",
+    "example_separator": "rule",
+    "choice_label_style": "letter_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "6e16a898",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c022",
+    "text": "For each multiple-choice question, determine the correct answer and respond with only the letter (A, B, C, or D) of that choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "newline",
+    "example_separator": "newline",
+    "choice_label_style": "lower_dot",
+    "choices_header": "options"
+   },
+   "format_id": "36d13ea4",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c013",
+    "text": "For each multiple-choice question, identify the correct answer and respond with only the letter of that choice."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "question_answer",
+    "descriptor_separator": "colon_space",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "letter_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "158addd2",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c005",
+    "text": "Read each multiple-choice science question and respond with only the letter of the single best answer."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "dash",
+    "descriptor_case": "lower",
+    "answer_break": "space",
+    "example_separator": "blank_line",
+    "choice_label_style": "letter_paren",
+    "choices_header": "options"
+   },
+   "format_id": "412d7ad8",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c000",
+    "text": "For each of the following multiple-choice science questions, select the best answer and write only its letter (A, B, C, or D)."
+   }
+  },
+  {
+   "format": {
+    "descriptor_pair": "input_output",
+    "descriptor_separator": "colon_newline",
+    "descriptor_case": "upper",
+    "answer_break": "space",
+    "example_separator": "rule",
+    "choice_label_style": "lower_dot",
+    "choices_header": "choices"
+   },
+   "format_id": "865a295d",
+   "instruction": {
+    "id": "20260917T125757Z-pool-mc-ape-forward-n24/c016",
+    "text": "For each multiple-choice question, identify the best answer and respond with only the capital letter (A, B, C, or D) of your choice."
+   }
+  }
+ ]
+}
