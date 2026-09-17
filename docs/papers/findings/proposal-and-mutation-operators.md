@@ -188,6 +188,19 @@ reasoning-style instruction, whereas GEPA's on the same data contained
 question-specific guidance that the authors read as memorization of the
 training set.
 
+## 2023, Lu: Strings from the Library of Babel: Random Sampling as a Strong Baseline for Prompt Optimisation
+
+Saved as [2311.09569v2.md](../2311.09569v2.md); full summary in
+[template-selection.md](template-selection.md). Random sampling as a proposal
+operator: uniform vocabulary tokens, LM-prior phrases, and LM phrases
+conditioned on a few training examples, all context-free with respect to the
+current candidate. Matched OPRO's LLM-driven proposals within 0.1% averaged
+over models, and did not need an instruction-tuned proposer; task-conditioned
+sampling helped by under 1%. Coherence of the proposal was not a factor
+(0.5% between vocabulary tokens and natural phrases).
+
+Era caveat: as in [template-selection.md](template-selection.md).
+
 ## 2023, Fernando: Promptbreeder: Self-Referential Self-Improvement via Prompt Evolution
 
 Saved as [2309.16797v1.md](../2309.16797v1.md). Nine operators, one drawn

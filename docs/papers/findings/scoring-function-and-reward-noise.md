@@ -39,6 +39,21 @@ Summary:
   reversals in both directions, a noise term separate from response
   sampling.
 
+## 2023, Lu: Strings from the Library of Babel: Random Sampling as a Strong Baseline for Prompt Optimisation
+
+Saved as [2311.09569v2.md](../2311.09569v2.md); full summary in
+[template-selection.md](template-selection.md). Relevant here as the cleanest
+demonstration that a noisy selection metric turns random search into an
+"optimiser": best-of-160 random strings on 64 training items reaches the same
+test accuracy as OPRO and APE, and on GSM8K the best random string beats the
+human CoT trigger while the average random string does not. With a 64-item
+binomial sd near 0.06 and 160 draws, the expected best-of-k train score sits
+several sd above the mean whatever the strings are. Scores are label
+probabilities, so the setting is likelihood-scored like ours. It is the
+reference case for reading any train-set gain against the selection noise.
+
+Era caveat: as in [template-selection.md](template-selection.md).
+
 ## 2025, Yang: What Prompts Don't Say: Understanding and Managing Underspecification in LLM Prompts
 
 Saved as [2505.13360v3.md](../2505.13360v3.md); full summary in

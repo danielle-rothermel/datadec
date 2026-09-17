@@ -179,6 +179,21 @@ descriptions) with LLM-judge validators; nothing is likelihood-scored, and
 the models are far stronger instruction followers than ours. The
 combinatorial construction transfers; the guess rates do not.
 
+## 2023, Lu: Strings from the Library of Babel: Random Sampling as a Strong Baseline for Prompt Optimisation
+
+Saved as [2311.09569v2.md](../2311.09569v2.md); full summary in
+[template-selection.md](template-selection.md). Bears on initialization as a
+control: a seed population of random strings (vocabulary tokens or LM-prior
+phrases) scored on the training set matched LLM-proposed populations to
+within 1% after best-of-160 selection. Any claim that a generated seed pool is
+better than random should be tested against this population, drawn with the
+same budget and selected the same way. Their "language space is rich with
+good separators" result (a >40% chance per draw of beating the human default on
+base models) is also the reason a wide, cheap initial population can beat a
+narrow, expensive one.
+
+Era caveat: as in [template-selection.md](template-selection.md).
+
 ## 2023, Fernando: Promptbreeder: Self-Referential Self-Improvement via Prompt Evolution
 
 Saved as [2309.16797v1.md](../2309.16797v1.md). Initial population of 50

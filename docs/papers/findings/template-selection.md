@@ -98,6 +98,42 @@ Instructions classification and MC with 2 to 4 options, and the accuracy
 reported is over generated or ranked labels, not likelihood. All methods are
 inference- or training-time robustness fixes rather than optimizers.
 
+## 2023, Lu: Strings from the Library of Babel: Random Sampling as a Strong Baseline for Prompt Optimisation
+
+Saved as [2311.09569v2.md](../2311.09569v2.md). The "separator" is the string
+between the input and the scored label, i.e. exactly our answer-descriptor slot
+("Answer:"). Three ways of drawing it at random: tokens sampled uniformly from
+the vocabulary, phrases sampled from the model's own prior with no context, and
+phrases sampled with a few training examples in the meta-prompt. Each draw is
+scored on 64 training items by label-probability argmax (likelihood scoring,
+as in our RC/MC), up to 160 draws, best-on-train kept and reported on a
+held-out test set. Nine classification tasks, eight models from GPT-2 Large to
+ChatGPT.
+
+Results: random vocabulary strings beat the human "Answer:" by 10% relative on
+average and sit within 1% of OPRO and APE; natural-language random phrases add
+0.5%, task-conditioned ones a further 0.3%. On AGNews a single random draw
+beats "Answer:" 37-71% of the time for base models and 14-21% for chat models.
+Best random separators transfer poorly across tasks (Table 10) but reasonably
+across demonstration sets within a task (73% vs 51% for human ones). On GSM8K
+the best of the random draws beat the human chain-of-thought trigger by 15-30%
+relative, though the average random draw did not.
+
+For our grid: the descriptor-pair axis is a three-option slice of this space,
+and the paper says the slice is where a large part of prompt-optimisation gains
+actually live. Two uses: (1) random separator draws are the null baseline any
+optimiser must beat, and belong in every seed population as controls; (2)
+selection of a best-of-k random string on a small training set is itself a
+prompt optimiser, so its train-test gap is the winner's-curse floor for our
+own searches.
+
+Era caveat: 2023 models (GPT-2, Llama-2 7B, Mistral 7B, Alpaca, ChatGPT 0613)
+on short-text classification with one-shot demonstrations; selection on 64
+items has a binomial sd of about 0.06, and "chance of beating the human
+baseline" is measured on those same 64 items. Current instruct models are less
+separator-sensitive (the chat-model rows already show it), so the size of the
+random-string effect is era-specific; the baseline argument is not.
+
 ## 2025, Ferreira: Diverse Prompts: Illuminating the Prompt Space of Large Language Models with MAP-Elites
 
 Saved as [2504.14367v1.md](../2504.14367v1.md); full summary in
