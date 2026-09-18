@@ -11,6 +11,21 @@ DataDecide (OLMo tokenizer) and Qwen. Anything normalized per token
 never a headline metric. Residual caveat: canonical-tokenization-only scoring leaves a
 little mass unaccounted for, differently per tokenizer; second order.
 
+## 2026-09-17 21:40 — Outcome: generation formulation on eight models; gen_mc dropped
+
+Generation baselines (canonical, 5 shots, train and dev) completed for DataDecide 300M and 1B,
+Pythia 160M/410M/1B/2.8B, Qwen3-1.7B Base and Instruct. Results note
+`docs/results/2026-09-17-2140-pythia-ladder-generation.md`.
+
+- `gen_mc` label match equals `mc` likelihood accuracy within a point on every model (same
+  decision: greedy first token vs single-token ranking). Dropped from standing sweeps; `gen_rc`
+  stays as the reference formulation.
+- `gen_rc` text match is 0.01–0.28 against RC likelihood 0.43–0.84, with 64–90 % of generations
+  matching no option although many are correct free answers. Prefix match therefore measures
+  option adherence; a judge column over the stored generations is the open follow-up.
+- Instruct vs base Qwen generate alike under the plain few-shot prompt; the chat-template /
+  section-packaging experiment is where they should separate.
+
 ## 2026-09-17 17:35 — Fixes to the generation path; Pythia ladder queued
 
 - **sdpa attention returns NaN logits for left-padded rows on mps** (GPT-NeoX and Qwen3 both;
