@@ -1,0 +1,312 @@
+[
+ {
+  "id": "g51-c000",
+  "text": "Read the activity label and partial scenario, then examine the possible answer sentences, first ruling out any that are inconsistent, irrelevant, or unnatural for that context, and finally select the single sentence that best and most logically continues the scenario.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "plain",
+  "stance": "eliminate",
+  "aware": false,
+  "words": 40
+ },
+ {
+  "id": "g51-c001",
+  "text": "Given a short scenario or \u201chow to\u201d description that is cut off, and several possible answer options, choose the option that best and most naturally continues the text. Use the topic, tone (e.g., instructional or narrative), grammar, and real\u2011world knowledge to decide what would logically happen next or what relevant explanation would follow. First, rule out any options that are clearly off\u2011topic, contradictory, nonsensical, unsafe, or that break the style or point of view. From the remaining options, select the continuation that is most specific, coherent, and plausible for the scenario.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "plain",
+  "stance": "eliminate",
+  "aware": true,
+  "words": 91
+ },
+ {
+  "id": "g51-c002",
+  "text": "Read the scenario and write one sentence that would most naturally and sensibly continue it, choosing the most common\u2011sense thing to say next.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "plain",
+  "stance": "commonsense",
+  "aware": false,
+  "words": 23
+ },
+ {
+  "id": "g51-c003",
+  "text": "Continue each labeled scenario or how\u2011to passage by writing the next sentence or two that logically and coherently follow, completing any partial sentence and keeping the same style and point of view, choosing the most straightforward, common\u2011sense continuation.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "plain",
+  "stance": "commonsense",
+  "aware": true,
+  "words": 38
+ },
+ {
+  "id": "g51-c004",
+  "text": "Write the sentence that logically continues the given scenario, following the same topic and style.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "plain",
+  "stance": "none",
+  "aware": false,
+  "words": 15
+ },
+ {
+  "id": "g51-c005",
+  "text": "For each question, continue the passage by writing the next sentence or two that would naturally follow, so the result is a coherent, realistic description or explanation of the activity in the same style and tense.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "plain",
+  "stance": "none",
+  "aware": true,
+  "words": 36
+ },
+ {
+  "id": "g51-c006",
+  "text": "You must, for each question, think of several possible next sentences and first rule out any options that are off-topic, inconsistent with the preceding text, or unrealistic; then write only the single sentence that best and most logically continues the scenario.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "rule",
+  "stance": "eliminate",
+  "aware": false,
+  "words": 41
+ },
+ {
+  "id": "g51-c007",
+  "text": "Always continue the given scenario or partially written instruction with a sentence (or short continuation) that is logical, realistic, safe, and consistent with what has already been written. Before deciding what to write, first imagine several possible continuations and rule out any options that are clearly wrong\u2014off\u2011topic, factually incorrect, contradictory, grammatically broken, or encouraging harm. After eliminating these, choose and write the continuation that best and most naturally follows the question text, matching its topic, tone, tense, and point of view.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "rule",
+  "stance": "eliminate",
+  "aware": true,
+  "words": 81
+ },
+ {
+  "id": "g51-c008",
+  "text": "Continue the given scenario with exactly one sentence that most plainly and logically follows from the text, completing any unfinished final sentence while matching its topic, style, and tense; prefer the most common\u2011sense, straightforward continuation and avoid adding surprising or unrelated details.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "rule",
+  "stance": "commonsense",
+  "aware": false,
+  "words": 42
+ },
+ {
+  "id": "g51-c009",
+  "text": "For each Question, continue the described scenario by writing the next sentence or two that would most naturally and logically follow, using everyday common sense; stay on topic, match the existing style and tense, and prefer the most straightforward, realistic continuation over any unusual, unlikely, or irrelevant one.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "rule",
+  "stance": "commonsense",
+  "aware": true,
+  "words": 48
+ },
+ {
+  "id": "g51-c010",
+  "text": "For each question, write an answer that is only one or two short sentences which naturally and logically continue the given scenario, describing what happens next or the next step while keeping the same topic, tense, point of view, and style, and without adding any extra commentary.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "rule",
+  "stance": "none",
+  "aware": false,
+  "words": 47
+ },
+ {
+  "id": "g51-c011",
+  "text": "Given a Question that is a partial description of a task or scene, you must write the next sentence or sentences that most naturally and coherently continue the scenario, preserving its topic, style, and point of view and describing the next logical step, action, or explanation.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "rule",
+  "stance": "none",
+  "aware": true,
+  "words": 46
+ },
+ {
+  "id": "g51-c012",
+  "text": "For each question, rule out off-topic or illogical continuations, then write the single sentence that best continues the scenario.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "short",
+  "stance": "eliminate",
+  "aware": false,
+  "words": 19
+ },
+ {
+  "id": "g51-c013",
+  "text": "Given each Question, produce the Answer: a single sentence that most logically continues it in the same style and topic; first rule out any options that contradict or drift from the context.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "short",
+  "stance": "eliminate",
+  "aware": true,
+  "words": 32
+ },
+ {
+  "id": "g51-c014",
+  "text": "Continue the passage by writing the most common-sense next sentence or two that would naturally follow.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "short",
+  "stance": "commonsense",
+  "aware": false,
+  "words": 16
+ },
+ {
+  "id": "g51-c015",
+  "text": "Continue each scenario with the most natural, commonsense next sentence or two.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "short",
+  "stance": "commonsense",
+  "aware": true,
+  "words": 12
+ },
+ {
+  "id": "g51-c016",
+  "text": "Write one or two sentences that naturally continue the scenario.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "short",
+  "stance": "none",
+  "aware": false,
+  "words": 10
+ },
+ {
+  "id": "g51-c017",
+  "text": "After \u201cAnswer:\u201d, continue the Question with the next sentence, matching its style and context.",
+  "pool": "20261001T100917Z-framed-rc-hellaswag-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "short",
+  "stance": "none",
+  "aware": true,
+  "words": 14
+ },
+ {
+  "id": "terra-c000",
+  "text": "First rule out the options that do not logically follow the scenario, then choose the sentence that most naturally continues it.",
+  "pool": "20261001T100922Z-framed-rc-hellaswag-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "plain",
+  "stance": "eliminate",
+  "aware": false,
+  "words": 21
+ },
+ {
+  "id": "terra-c002",
+  "text": "Continue each scenario with the most natural next sentence, preferring the most common-sense answer.",
+  "pool": "20261001T100922Z-framed-rc-hellaswag-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "plain",
+  "stance": "commonsense",
+  "aware": false,
+  "words": 14
+ },
+ {
+  "id": "terra-c003",
+  "text": "Continue each scenario with the most common-sense next sentence.",
+  "pool": "20261001T100922Z-framed-rc-hellaswag-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "plain",
+  "stance": "commonsense",
+  "aware": true,
+  "words": 9
+ },
+ {
+  "id": "terra-c004",
+  "text": "Write the next sentence that logically continues the scenario.",
+  "pool": "20261001T100922Z-framed-rc-hellaswag-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "plain",
+  "stance": "none",
+  "aware": false,
+  "words": 9
+ },
+ {
+  "id": "terra-c005",
+  "text": "Complete each scenario by writing the next sentence.",
+  "pool": "20261001T100922Z-framed-rc-hellaswag-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "plain",
+  "stance": "none",
+  "aware": true,
+  "words": 8
+ },
+ {
+  "id": "terra-c006",
+  "text": "Rule out any continuations that contradict the scenario or do not logically follow from it, then write the single most plausible next sentence.",
+  "pool": "20261001T100922Z-framed-rc-hellaswag-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "rule",
+  "stance": "eliminate",
+  "aware": false,
+  "words": 23
+ },
+ {
+  "id": "terra-c007",
+  "text": "First rule out options that do not logically and naturally follow the scenario, then choose the continuation that best fits the context.",
+  "pool": "20261001T100922Z-framed-rc-hellaswag-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "rule",
+  "stance": "eliminate",
+  "aware": true,
+  "words": 22
+ },
+ {
+  "id": "terra-c008",
+  "text": "Continue the scenario with the most likely next sentence, choosing the most common-sense continuation.",
+  "pool": "20261001T100922Z-framed-rc-hellaswag-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "rule",
+  "stance": "commonsense",
+  "aware": false,
+  "words": 14
+ },
+ {
+  "id": "terra-c009",
+  "text": "Choose the continuation that is the most common-sense and natural next step in the scenario.",
+  "pool": "20261001T100922Z-framed-rc-hellaswag-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "rule",
+  "stance": "commonsense",
+  "aware": true,
+  "words": 15
+ },
+ {
+  "id": "terra-c010",
+  "text": "Continue each scenario by writing one concise, plausible next sentence that logically follows from the preceding text.",
+  "pool": "20261001T100922Z-framed-rc-hellaswag-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "rule",
+  "stance": "none",
+  "aware": false,
+  "words": 17
+ },
+ {
+  "id": "terra-c011",
+  "text": "Continue each scenario with the single sentence that most naturally follows, preserving its topic, style, and logical sequence.",
+  "pool": "20261001T100922Z-framed-rc-hellaswag-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "rule",
+  "stance": "none",
+  "aware": true,
+  "words": 18
+ },
+ {
+  "id": "terra-c012",
+  "text": "Rule out wrong options first, then write the most likely continuation.",
+  "pool": "20261001T100922Z-framed-rc-hellaswag-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "short",
+  "stance": "eliminate",
+  "aware": false,
+  "words": 11
+ },
+ {
+  "id": "terra-c016",
+  "text": "Write the next sentence.",
+  "pool": "20261001T100922Z-framed-rc-hellaswag-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "short",
+  "stance": "none",
+  "aware": false,
+  "words": 4
+ }
+]
