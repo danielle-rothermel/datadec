@@ -360,7 +360,7 @@
     "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
    ],
    "model": "allenai/DataDecide-c4-150M",
-   "revision": "step38157-seed-default",
+   "revision": "step37500-seed-default",
    "task": "arc_easy",
    "batch_size": 64
   },
@@ -373,7 +373,7 @@
     "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
    ],
    "model": "allenai/DataDecide-c4-300M",
-   "revision": "step45787-seed-default",
+   "revision": "step45000-seed-default",
    "task": "arc_easy",
    "batch_size": 64
   },
