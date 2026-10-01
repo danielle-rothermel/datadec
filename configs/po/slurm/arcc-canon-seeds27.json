@@ -1,0 +1,140 @@
+{
+ "jobs": [
+  {
+   "name": "arcc-canon-dd300m-train",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed0.json",
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "task": "arc_challenge",
+   "batch_size": 64,
+   "revision": "step45000-seed-default"
+  },
+  {
+   "name": "arcc-canon-dd300m-dev",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed1.json",
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "task": "arc_challenge",
+   "batch_size": 64,
+   "revision": "step45000-seed-default"
+  },
+  {
+   "name": "arcc-canon-dd300m-test",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed2.json",
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "task": "arc_challenge",
+   "batch_size": 64,
+   "revision": "step45000-seed-default"
+  },
+  {
+   "name": "arcc-seeds27-dd300m-train",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed0.json",
+   "formulations": [
+    "rc"
+   ],
+   "instructions": "configs/po/instructions/framed-rc-27.json",
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "task": "arc_challenge",
+   "batch_size": 64,
+   "revision": "step45000-seed-default"
+  },
+  {
+   "name": "arcc-canon-dd1b-train",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed0.json",
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "task": "arc_challenge",
+   "batch_size": 64,
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "arcc-canon-dd1b-dev",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed1.json",
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "task": "arc_challenge",
+   "batch_size": 64,
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "arcc-canon-dd1b-test",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed2.json",
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "task": "arc_challenge",
+   "batch_size": 64,
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "arcc-seeds27-dd1b-train",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed0.json",
+   "formulations": [
+    "rc"
+   ],
+   "instructions": "configs/po/instructions/framed-rc-27.json",
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "task": "arc_challenge",
+   "batch_size": 64,
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "arcc-canon-qwen1.7b-base-train",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed0.json",
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "arc_challenge",
+   "batch_size": 16
+  },
+  {
+   "name": "arcc-canon-qwen1.7b-base-dev",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed1.json",
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "arc_challenge",
+   "batch_size": 16
+  },
+  {
+   "name": "arcc-canon-qwen1.7b-base-test",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed2.json",
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "arc_challenge",
+   "batch_size": 16
+  },
+  {
+   "name": "arcc-seeds27-qwen1.7b-base-train",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed0.json",
+   "formulations": [
+    "rc"
+   ],
+   "instructions": "configs/po/instructions/framed-rc-27.json",
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "arc_challenge",
+   "batch_size": 16
+  },
+  {
+   "name": "arcc-canon-qwen1.7b-train",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed0.json",
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "arc_challenge",
+   "batch_size": 16
+  },
+  {
+   "name": "arcc-canon-qwen1.7b-dev",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed1.json",
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "arc_challenge",
+   "batch_size": 16
+  },
+  {
+   "name": "arcc-canon-qwen1.7b-test",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed2.json",
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "arc_challenge",
+   "batch_size": 16
+  },
+  {
+   "name": "arcc-seeds27-qwen1.7b-train",
+   "subset": "configs/po/subsets/arc_challenge-test-n300-seed0.json",
+   "formulations": [
+    "rc"
+   ],
+   "instructions": "configs/po/instructions/framed-rc-27.json",
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "arc_challenge",
+   "batch_size": 16
+  }
+ ]
+}
