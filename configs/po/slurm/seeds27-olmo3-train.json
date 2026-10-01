@@ -1,0 +1,24 @@
+{
+ "jobs": [
+  {
+   "name": "seeds27-olmo3-base-train",
+   "model": "allenai/Olmo-3-1025-7B",
+   "subset": "configs/po/subsets/arc_easy-test-snr-train-n300-seed0.json",
+   "formulations": [
+    "rc"
+   ],
+   "instructions": "configs/po/instructions/framed-rc-27.json",
+   "batch_size": 16
+  },
+  {
+   "name": "seeds27-olmo3-instruct-train",
+   "model": "allenai/Olmo-3-7B-Instruct",
+   "subset": "configs/po/subsets/arc_easy-test-snr-train-n300-seed0.json",
+   "formulations": [
+    "rc"
+   ],
+   "instructions": "configs/po/instructions/framed-rc-27.json",
+   "batch_size": 16
+  }
+ ]
+}
