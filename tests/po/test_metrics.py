@@ -58,6 +58,7 @@ def test_missing_gold_yields_nulls():
 def test_primary_pairing_is_pinned():
     assert PRIMARY_METRIC == {("arc_easy", "rc"): "acc_per_char", ("arc_easy", "mc"): "acc_raw",
                               ("arc_challenge", "rc"): "acc_uncond", ("arc_challenge", "mc"): "acc_raw",
+                              ("hellaswag", "rc"): "acc_per_char", ("hellaswag", "mc"): "acc_raw",
                               ("arc_easy", "gen_rc"): "text_match", ("arc_easy", "gen_mc"): "label_match",
                               ("arc_challenge", "gen_rc"): "text_match", ("arc_challenge", "gen_mc"): "label_match"}
     assert primary_likelihood_metric("acc_per_char") == "norm_correct_prob_per_char"

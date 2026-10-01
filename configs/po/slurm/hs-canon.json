@@ -1,0 +1,94 @@
+{
+ "jobs": [
+  {
+   "name": "hs-canon-dd300m-train",
+   "subset": "configs/po/subsets/hellaswag-validation-n300-seed0.json",
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "task": "hellaswag",
+   "batch_size": 32,
+   "revision": "step45000-seed-default"
+  },
+  {
+   "name": "hs-canon-dd300m-dev",
+   "subset": "configs/po/subsets/hellaswag-validation-n300-seed1.json",
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "task": "hellaswag",
+   "batch_size": 32,
+   "revision": "step45000-seed-default"
+  },
+  {
+   "name": "hs-canon-dd300m-test",
+   "subset": "configs/po/subsets/hellaswag-validation-n300-seed2.json",
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "task": "hellaswag",
+   "batch_size": 32,
+   "revision": "step45000-seed-default"
+  },
+  {
+   "name": "hs-canon-dd1b-train",
+   "subset": "configs/po/subsets/hellaswag-validation-n300-seed0.json",
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "task": "hellaswag",
+   "batch_size": 32,
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "hs-canon-dd1b-dev",
+   "subset": "configs/po/subsets/hellaswag-validation-n300-seed1.json",
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "task": "hellaswag",
+   "batch_size": 32,
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "hs-canon-dd1b-test",
+   "subset": "configs/po/subsets/hellaswag-validation-n300-seed2.json",
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "task": "hellaswag",
+   "batch_size": 32,
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "hs-canon-qwen1.7b-base-train",
+   "subset": "configs/po/subsets/hellaswag-validation-n300-seed0.json",
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "hellaswag",
+   "batch_size": 8
+  },
+  {
+   "name": "hs-canon-qwen1.7b-base-dev",
+   "subset": "configs/po/subsets/hellaswag-validation-n300-seed1.json",
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "hellaswag",
+   "batch_size": 8
+  },
+  {
+   "name": "hs-canon-qwen1.7b-base-test",
+   "subset": "configs/po/subsets/hellaswag-validation-n300-seed2.json",
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "hellaswag",
+   "batch_size": 8
+  },
+  {
+   "name": "hs-canon-qwen1.7b-train",
+   "subset": "configs/po/subsets/hellaswag-validation-n300-seed0.json",
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "hellaswag",
+   "batch_size": 8
+  },
+  {
+   "name": "hs-canon-qwen1.7b-dev",
+   "subset": "configs/po/subsets/hellaswag-validation-n300-seed1.json",
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "hellaswag",
+   "batch_size": 8
+  },
+  {
+   "name": "hs-canon-qwen1.7b-test",
+   "subset": "configs/po/subsets/hellaswag-validation-n300-seed2.json",
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "hellaswag",
+   "batch_size": 8
+  }
+ ]
+}

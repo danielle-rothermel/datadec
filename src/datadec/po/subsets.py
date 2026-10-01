@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from collections import Counter
 import random
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -10,7 +11,13 @@ from pathlib import Path
 from datasets import load_dataset
 
 ARC_EASY = ("allenai/ai2_arc", "ARC-Easy")
-DATASET_NAMES = {"arc_easy": "ARC-Easy", "arc_challenge": "ARC-Challenge"}
+# task key -> (HF dataset path, config name, native id field, OLMES eval split)
+DATASETS: dict[str, tuple[str, str | None, str, str]] = {
+    "arc_easy": ("allenai/ai2_arc", "ARC-Easy", "id", "test"),
+    "arc_challenge": ("allenai/ai2_arc", "ARC-Challenge", "id", "test"),
+    "hellaswag": ("allenai/hellaswag", None, "ind", "validation"),  # ids are ints; OLMES demos come from train
+}
+DATASET_NAMES = {k: v[1] for k, v in DATASETS.items()}
 # The five curated demonstrations OLMES prepends to every ARC-Easy prompt (fewshot_sources.py in the fork).
 OLMES_ARC_EASY_FEWSHOT_IDS = ("MCAS_2007_8_5189", "Mercury_SC_401169", "MCAS_2004_8_27", "NYSEDREGENTS_2006_8_10", "Mercury_7013388", "Mercury_7179953", "Mercury_7205118", "MCAS_2016_8_13")
 OLMES_ARC_CHALLENGE_FEWSHOT_IDS = ('Mercury_SC_415702', 'MCAS_2009_5_6516', 'Mercury_7233695', 'Mercury_7041615', 'MCAS_1998_4_3', 'Mercury_7041860', 'ACTAAP_2013_5_11', 'MDSA_2008_5_30', 'MEA_2016_8_14', 'Mercury_SC_401653', 'Mercury_7106908')
@@ -19,10 +26,10 @@ OLMES_ARC_CHALLENGE_FEWSHOT_IDS = ('Mercury_SC_415702', 'MCAS_2009_5_6516', 'Mer
 @dataclass(frozen=True, slots=True)
 class ItemSubset:
     dataset_path: str
-    dataset_name: str
+    dataset_name: str | None
     split: str
     seed: int
-    ids: tuple[str, ...]
+    ids: tuple[str | int, ...]  # HellaSwag native ids are ints
 
     @property
     def n(self) -> int:
@@ -50,11 +57,13 @@ def sample_subset(
     dataset_path: str = ARC_EASY[0],
     dataset_name: str = ARC_EASY[1],
     split: str = "test",
-    exclude: frozenset[str] = frozenset(),
+    exclude: frozenset[str | int] = frozenset(),
+    id_field: str = "id",
 ) -> ItemSubset:
     """Draw n ids uniformly without replacement from the split, deterministically in seed."""
     ds = load_dataset(dataset_path, dataset_name, split=split)
-    all_ids = sorted(i for i in ds["id"] if i not in exclude)
+    counts = Counter(ds[id_field])  # HellaSwag "ind" repeats for 433 validation rows; only unambiguous ids are eligible
+    all_ids = sorted(i for i, c in counts.items() if c == 1 and i not in exclude)
     if n > len(all_ids):
         raise ValueError(f"requested {n} ids but only {len(all_ids)} available")
     ids = tuple(random.Random(seed).sample(all_ids, n))
@@ -64,5 +73,6 @@ def sample_subset(
 def load_items(subset: ItemSubset) -> list[dict]:
     """Return the full documents for a subset, in subset order."""
     ds = load_dataset(subset.dataset_path, subset.dataset_name, split=subset.split)
-    by_id = {row["id"]: row for row in ds}
+    id_field = next((v[2] for v in DATASETS.values() if v[:2] == (subset.dataset_path, subset.dataset_name)), "id")
+    by_id = {row[id_field]: row for row in ds}
     return [by_id[i] for i in subset.ids]

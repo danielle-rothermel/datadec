@@ -5,7 +5,7 @@ from typing import Annotated
 
 import typer
 
-from datadec.po.subsets import DATASET_NAMES, OLMES_ARC_EASY_FEWSHOT_IDS, OLMES_ARC_CHALLENGE_FEWSHOT_IDS, ItemSubset, sample_subset
+from datadec.po.subsets import DATASETS, OLMES_ARC_EASY_FEWSHOT_IDS, OLMES_ARC_CHALLENGE_FEWSHOT_IDS, ItemSubset, sample_subset
 
 app = typer.Typer()
 DEFAULT_DIR = Path(__file__).resolve().parents[1] / "configs" / "po" / "subsets"
@@ -13,22 +13,25 @@ DEFAULT_DIR = Path(__file__).resolve().parents[1] / "configs" / "po" / "subsets"
 
 @app.command()
 def main(
-    dataset: Annotated[str, typer.Option("--dataset", help="arc_easy or arc_challenge")] = "arc_easy",
+    dataset: Annotated[str, typer.Option("--dataset", help="arc_easy, arc_challenge or hellaswag")] = "arc_easy",
     n: Annotated[int, typer.Option("--n")] = 100,
     seed: Annotated[int, typer.Option("--seed")] = 0,
-    split: Annotated[str, typer.Option("--split")] = "test",
+    split: Annotated[str | None, typer.Option("--split", help="default: the dataset's OLMES eval split")] = None,
     out_dir: Annotated[Path, typer.Option("--out-dir")] = DEFAULT_DIR,
     exclude: Annotated[list[Path] | None, typer.Option("--exclude", help="subset files whose ids to exclude")] = None,
     exclude_fewshot: Annotated[bool, typer.Option("--exclude-fewshot/--no-exclude-fewshot")] = True,
 ) -> None:
-    """Dump a seeded ARC-Easy item subset as JSON under configs/po/subsets."""
-    fewshot = {"arc_easy": OLMES_ARC_EASY_FEWSHOT_IDS, "arc_challenge": OLMES_ARC_CHALLENGE_FEWSHOT_IDS}[dataset]
-    excluded: set[str] = set(fewshot) if exclude_fewshot else set()
-    for path in exclude or []:
-        excluded |= set(ItemSubset.load(path).ids)
-    if dataset not in DATASET_NAMES:
-        raise typer.BadParameter(f"dataset must be one of {sorted(DATASET_NAMES)}")
-    subset = sample_subset(n=n, seed=seed, split=split, dataset_name=DATASET_NAMES[dataset], exclude=frozenset(excluded))
+    """Dump a seeded item subset as JSON under configs/po/subsets."""
+    if dataset not in DATASETS:
+        raise typer.BadParameter(f"dataset must be one of {sorted(DATASETS)}")
+    path_, name, id_field, default_split = DATASETS[dataset]
+    split = split or default_split
+    # HellaSwag demos come from the train split, so nothing in its validation split needs excluding.
+    fewshot = {"arc_easy": OLMES_ARC_EASY_FEWSHOT_IDS, "arc_challenge": OLMES_ARC_CHALLENGE_FEWSHOT_IDS, "hellaswag": ()}[dataset]
+    excluded: set[str | int] = set(fewshot) if exclude_fewshot else set()
+    for p in exclude or []:
+        excluded |= set(ItemSubset.load(p).ids)
+    subset = sample_subset(n=n, seed=seed, split=split, dataset_path=path_, dataset_name=name, exclude=frozenset(excluded), id_field=id_field)
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / f"{dataset}-{split}-n{n}-seed{seed}.json"
     if path.exists():

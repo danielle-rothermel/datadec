@@ -18,7 +18,7 @@ def main(
     subset: Annotated[Path, typer.Option("--subset")],
     model: Annotated[str, typer.Option("--model")],
     revision: Annotated[str | None, typer.Option("--revision")] = None,
-    task: Annotated[str, typer.Option("--task", help="arc_easy or arc_challenge")] = "arc_easy",
+    task: Annotated[str, typer.Option("--task", help="arc_easy, arc_challenge or hellaswag")] = "arc_easy",
     pairs: Annotated[Path | None, typer.Option("--pairs", help="sampled (format, instruction) pairs JSON; overrides formats x instructions")] = None,
     formulations: Annotated[str, typer.Option("--formulations", help="comma-separated from rc, mc, gen_rc, gen_mc")] = "rc,mc",
     formats: Annotated[Path | None, typer.Option("--formats", help="formats JSON; omit for canonical only")] = None,

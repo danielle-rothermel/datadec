@@ -15,6 +15,7 @@ app = typer.Typer()
 @app.command()
 def main(
     formulation: Annotated[str, typer.Option("--formulation", help="rc or mc")],
+    task: Annotated[str, typer.Option("--task", help="arc_easy or hellaswag (demos and framing text)")] = "arc_easy",
     framings: Annotated[Path, typer.Option("--framings")] = Path("configs/po/framings.json"),
     aware_model: Annotated[str | None, typer.Option("--aware-model", help="target model for the model-aware cells")] = None,
     aware_revision: Annotated[str | None, typer.Option("--aware-revision")] = None,
@@ -31,17 +32,17 @@ def main(
     """Framed APE grid: one proposer call per (operator, stance, model-aware) cell at the canonical format."""
     fr = json.loads(framings.read_text())
     if dry_run:
-        demos = olmes_demos(5)
+        demos = olmes_demos(5, task)
         op, st = fr["operators"][0], fr["stances"][0]
         typer.echo("=== not aware ===")
-        typer.echo(build_framed_meta_prompt(formulation, demos, op["text"], st["text"], None))
+        typer.echo(build_framed_meta_prompt(formulation, demos, op["text"], st["text"], None, task))
         if aware_model:
             typer.echo("=== aware ===")
-            typer.echo(build_framed_meta_prompt(formulation, demos, op["text"], st["text"], model_card(aware_model, aware_revision)))
+            typer.echo(build_framed_meta_prompt(formulation, demos, op["text"], st["text"], model_card(aware_model, aware_revision), task))
         return
     settings = ProposerSettings(model=model, temperature=temperature, reasoning=reasoning, token_limit=token_limit, concurrency=concurrency)
     out = run_ape_grid(formulation=formulation, framings=fr, aware_model=aware_model, aware_revision=aware_revision,
-                       settings=settings, seed_base=seed_base, root=root, slug=slug)
+                       settings=settings, seed_base=seed_base, root=root, slug=slug, task=task)
     typer.echo(f"wrote {out}")
 
 

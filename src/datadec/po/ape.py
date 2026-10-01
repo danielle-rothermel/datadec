@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import datetime as dt
 import json
+import re
 import random
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -77,7 +78,7 @@ META_PROMPTS: dict[str, str] = {
 
 # Framed generation (2026-09-17): demonstrations exactly as the scored prompt renders them, a rewrite
 # operator x stance framing pair, and an optional description of the reader model.
-FRAMED_META_PROMPTS: dict[str, str] = {
+FRAMED_META_PROMPTS: dict[str, str] = {  # ARC (science questions); see TASK_FRAMED_META_PROMPTS for other tasks
     "rc": (
         "I gave a friend an instruction and {k} science questions. The friend read the instruction and "
         "wrote the correct answer to each question. Here are the question-answer pairs, exactly as the "
@@ -95,6 +96,27 @@ FRAMED_META_PROMPTS: dict[str, str] = {
         "general. {operator} {stance}Reply with the instruction only."
     ),
 }
+HELLASWAG_FRAMED_META_PROMPTS: dict[str, str] = {
+    "rc": (
+        "I gave a friend an instruction and {k} short scenarios, each labelled with its activity and cut off "
+        "mid-way. The friend read the instruction and wrote the sentence that correctly continues each "
+        "scenario. Here are the scenario-continuation pairs, exactly as the friend saw them:\n\n{demos}\n\n{reader}"
+        "Write the instruction I gave my friend. It will be placed once at the top of a prompt, before "
+        "these examples and then a new scenario, so it should say how to continue this kind of scenario in "
+        "general. {operator} {stance}Reply with the instruction only."
+    ),
+    "mc": (
+        "I gave a friend an instruction and {k} short scenarios, each labelled with its activity and cut off "
+        "mid-way, with four candidate continuations. The friend read the instruction and wrote the letter of "
+        "the continuation that correctly continues each scenario. Here are the scenario-answer pairs, exactly "
+        "as the friend saw them:\n\n{demos}\n\n{reader}"
+        "Write the instruction I gave my friend. It will be placed once at the top of a prompt, before "
+        "these examples and then a new scenario, so it should say how to continue this kind of scenario in "
+        "general. {operator} {stance}Reply with the instruction only."
+    ),
+}
+TASK_FRAMED_META_PROMPTS: dict[str, dict[str, str]] = {"arc_easy": FRAMED_META_PROMPTS, "hellaswag": HELLASWAG_FRAMED_META_PROMPTS}
+HELLASWAG_DEMOS = Path(__file__).resolve().parents[3] / "configs" / "po" / "demos-hellaswag-olmes.json"  # OLMES:hellaswag source, train split
 READER_TEMPLATE = (
     "The friend is a language model, not a person: {card}. It never writes anything; it is scored by "
     "the likelihood it assigns to each candidate answer after the prompt, so the instruction can only help "
@@ -119,8 +141,32 @@ def sample_demos(k: int, seed: int) -> list[dict]:
     return random.Random(seed).sample(rows, k)
 
 
-def olmes_demos(k: int = 5) -> list[dict]:
-    """The first k curated OLMES ARC-Easy demonstrations (train split), in OLMES order."""
+def _hellaswag_preprocess(text: str) -> str:
+    """The fork's HellaSwag.preprocess plus a final strip (WikiHow bracket tags removed)."""
+    text = text.strip()
+    text = re.sub("\\.? \\[title\\]", ". ", text)
+    text = re.sub("\\[.*?\\]", "", text)
+    return text.replace("  ", " ").strip()
+
+
+def hellaswag_demos(k: int = 5) -> list[dict]:
+    """The first k OLMES HellaSwag demonstrations, normalised to the ARC demo shape (question / choices / answerKey)."""
+    raw = json.loads(HELLASWAG_DEMOS.read_text())[:k]
+    letters = "ABCDE"
+    return [{
+        "id": str(d["ind"]),
+        "question": _hellaswag_preprocess(d["activity_label"] + ": " + d["ctx_a"] + " " + d["ctx_b"].capitalize()),
+        "choices": {"text": [_hellaswag_preprocess(e) for e in d["endings"]], "label": list(letters[: len(d["endings"])])},
+        "answerKey": letters[int(d["label"])],
+    } for d in raw]
+
+
+def olmes_demos(k: int = 5, task: str = "arc_easy") -> list[dict]:
+    """The first k curated OLMES demonstrations for the task, in OLMES order (ARC-Easy from the train split)."""
+    if task == "hellaswag":
+        return hellaswag_demos(k)
+    if task != "arc_easy":
+        raise ValueError(f"no demonstration source for task {task!r}")
     want = list(OLMES_ARC_EASY_FEWSHOT_IDS[:k])
     ds = load_dataset(ARC_EASY[0], ARC_EASY[1], split="train")
     by_id = {r["id"]: r for r in ds if r["id"] in set(want)}
@@ -153,8 +199,8 @@ def render_reader(card: dict[str, str]) -> str:
     return READER_TEMPLATE.format(card="; ".join(parts))
 
 
-def build_framed_meta_prompt(formulation: str, demos: list[dict], operator: str, stance: str, card: dict[str, str] | None) -> str:
-    return FRAMED_META_PROMPTS[formulation].format(
+def build_framed_meta_prompt(formulation: str, demos: list[dict], operator: str, stance: str, card: dict[str, str] | None, task: str = "arc_easy") -> str:
+    return TASK_FRAMED_META_PROMPTS[task][formulation].format(
         k=len(demos), demos=render_demos(demos, formulation),
         reader=render_reader(card) if card else "",
         operator=operator, stance=(stance + " ") if stance else "",
@@ -312,22 +358,23 @@ def run_ape_grid(
     seed_base: int,
     root: Path = DEFAULT_ROOT,
     slug: str | None = None,
+    task: str = "arc_easy",
 ) -> Path:
     """One call per (operator, stance, aware) cell; every candidate records its factors."""
     started = dt.datetime.now(dt.timezone.utc)
-    out_dir = root / f"{started:%Y%m%dT%H%M%SZ}-{slug or f'framed-{formulation}'}"
+    out_dir = root / f"{started:%Y%m%dT%H%M%SZ}-{slug or f'framed-{task}-{formulation}'}"
     out_dir.mkdir(parents=True)
-    demos = olmes_demos(5)
+    demos = olmes_demos(5, task)
     card = model_card(aware_model, aware_revision) if aware_model else None
     cells = []
     for op in framings["operators"]:
         for st in framings["stances"]:
             for aware in (False, True) if card else (False,):
                 cells.append((op, st, aware))
-    prompts = [build_framed_meta_prompt(formulation, demos, op["text"], st["text"], card if aware else None) for op, st, aware in cells]
+    prompts = [build_framed_meta_prompt(formulation, demos, op["text"], st["text"], card if aware else None, task) for op, st, aware in cells]
     (out_dir / "meta_prompts.jsonl").write_text("".join(json.dumps({"cell": i, "operator": op["id"], "stance": st["id"], "aware": aware, "meta_prompt": pr}) + "\n"
                                                         for i, ((op, st, aware), pr) in enumerate(zip(cells, prompts, strict=True))))
-    manifest = {"formulation": formulation, "framings": framings, "aware_model": aware_model, "aware_revision": aware_revision,
+    manifest = {"task": task, "formulation": formulation, "framings": framings, "aware_model": aware_model, "aware_revision": aware_revision,
                 "model_card": card, "settings": asdict(settings), "seed_base": seed_base, "demo_ids": [d["id"] for d in demos],
                 "n_cells": len(cells), "started_utc": started.isoformat()}
     (out_dir / "run.json").write_text(json.dumps(manifest, indent=1) + "\n")
