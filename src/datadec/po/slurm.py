@@ -1,7 +1,7 @@
 """Write a set of sweeps and submit them as one Slurm job array (one GPU per sweep).
 
 A job list is a JSON file: {"jobs": [{"name", "model", "revision"?, "subsets": [...], "formulations"?, "pairs"?,
-"formats"?, "instructions"?, "num_shots"?, "batch_size"?, "dtype"?, "use_cache"?}, ...]}. Each job becomes
+"formats"?, "instructions"?, "num_shots"?, "batch_size"?, "dtype"?, "quant"? (int8|nf4, with dtype bfloat16), "use_cache"?}, ...]}. Each job becomes
 one sweep directory under <root>/sweeps/<name> (written up front, so the array script only runs them).
 Array tasks take `concurrent` consecutive sweeps each and run them in parallel on the one GPU (MPS is
 requested when concurrent > 1), so small models can share a GPU; order the job list accordingly. The array
@@ -49,7 +49,7 @@ def build_specs(jobs: list[dict], repo: Path) -> list[SweepSpec]:
             instructions=tuple(load_instructions(repo / j["instructions"])) if j.get("instructions") else (),
             pairs=tuple(load_pairs(repo / j["pairs"])) if j.get("pairs") else (),
             num_shots=int(j.get("num_shots", 5)), device="cuda", batch_size=int(j.get("batch_size", 64)),
-            dtype=j.get("dtype", "float32"), use_cache=bool(j.get("use_cache", True)),
+            dtype=j.get("dtype", "float32"), quant=j.get("quant"), use_cache=bool(j.get("use_cache", True)),
         ))
     return specs
 

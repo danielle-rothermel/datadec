@@ -27,6 +27,7 @@ def _po_columns(task_config: dict, model_config: dict) -> dict:
         "sweep": po.get("sweep"), "formulation": po.get("formulation"),
         "format_id": po.get("format_id"), "instruction_id": po.get("instruction_id"),
         "subset": po.get("subset"), "subset_seed": po.get("subset_seed"), "subset_n": po.get("subset_n"),
+        "dtype": po.get("dtype"), "quant": po.get("quant"),
         "model": model_config.get("model"), "revision": model_config.get("revision"),
         "num_shots": task_config.get("num_shots"),
         "primary_metric": primary, "primary_likelihood_metric": primary_likelihood_metric(primary),

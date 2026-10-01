@@ -58,3 +58,10 @@ def test_task_groups_and_mps_comment() -> None:
     solo = array_script(Path("/arr"), task_groups(dirs, 1), SlurmSettings())
     assert "gpu_mps" not in solo and "--array=0-4%4" in solo and "a100_cilvr" in solo
     assert "steps/task-$SLURM_ARRAY_TASK_ID.log" in solo
+
+
+def test_quant_and_dtype_recorded_on_tasks(tmp_path: Path) -> None:
+    a = _subset(tmp_path, "arc_easy-test-part-test1-n1-seed0", ("i1",))
+    spec = SweepSpec(name="q", subset_paths=(a,), model="m", revision=None, formats=(dict(CANONICAL),), dtype="bfloat16", quant="nf4")
+    task = build_tasks(spec, [ItemSubset.load(a)])[0]
+    assert task["metadata"]["po"]["dtype"] == "bfloat16" and task["metadata"]["po"]["quant"] == "nf4"

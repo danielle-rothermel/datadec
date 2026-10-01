@@ -47,6 +47,7 @@ class SweepSpec:
     device: str = "mps"
     batch_size: int = 16
     dtype: str | None = None  # model dtype for the runner (float32, bfloat16); None leaves the wrapper's default
+    quant: str | None = None  # bitsandbytes weight quantization on load: "int8" or "nf4" (CUDA only); dtype should be bfloat16
     use_cache: bool = True  # generation formulations only; False for hf_olmo (DataDecide) checkpoints, which cannot generate with a KV cache
 
 
@@ -119,6 +120,8 @@ def _subset_tasks(spec: SweepSpec, subset: ItemSubset, label: str) -> list[dict]
                         "sweep": spec.name,
                         "task": spec.task,
                         "subset": label,
+                        "dtype": spec.dtype,
+                        "quant": spec.quant,
                         "formulation": formulation,
                         "format_id": fid,
                         "format": dict(fmt),
@@ -247,6 +250,8 @@ def run_sweep(sweep_dir: Path, *, olmes_repo: Path = OLMES_REPO, chunk_size: int
             cmd += ["--revision", spec["revision"]]
         if spec.get("dtype"):
             cmd += ["--dtype", spec["dtype"]]
+        if spec.get("quant"):
+            cmd += ["--quant", spec["quant"]]
         with open(sweep_dir / "run_command.txt", "a") as f:
             f.write(" ".join(cmd) + "\n")
         with open(sweep_dir / "runner.log", "a") as log:
