@@ -26,6 +26,7 @@ def main(
     num_shots: Annotated[int, typer.Option("--num-shots")] = 5,
     device: Annotated[str, typer.Option("--device")] = "mps",
     batch_size: Annotated[int, typer.Option("--batch-size")] = 16,
+    dtype: Annotated[str | None, typer.Option("--dtype", help="model dtype for the runner (float32, bfloat16); default leaves the wrapper's choice")] = None,
     use_cache: Annotated[bool, typer.Option("--cache/--no-cache", help="KV cache for generation formulations; --no-cache for DataDecide (hf_olmo) checkpoints")] = True,
     root: Annotated[Path, typer.Option("--root")] = DEFAULT_ROOT,
     run: Annotated[bool, typer.Option("--run/--no-run")] = True,
@@ -38,7 +39,7 @@ def main(
         formulations=tuple(f.strip() for f in formulations.split(",") if f.strip()),
         formats=tuple(load_formats(formats)) if formats else (dict(CANONICAL),),
         instructions=tuple(load_instructions(instructions)) if instructions else (),
-        num_shots=num_shots, device=device, batch_size=batch_size, use_cache=use_cache,
+        num_shots=num_shots, device=device, batch_size=batch_size, dtype=dtype, use_cache=use_cache,
     )
     sweep_dir = write_sweep(spec, root=root)
     typer.echo(f"wrote {sweep_dir} ({sum(1 for _ in open(sweep_dir / 'tasks.jsonl'))} tasks)")

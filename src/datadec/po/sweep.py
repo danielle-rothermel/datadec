@@ -39,6 +39,7 @@ class SweepSpec:
     num_shots: int = 5
     device: str = "mps"
     batch_size: int = 16
+    dtype: str | None = None  # model dtype for the runner (float32, bfloat16); None leaves the wrapper's default
     use_cache: bool = True  # generation formulations only; False for hf_olmo (DataDecide) checkpoints, which cannot generate with a KV cache
 
 
@@ -217,6 +218,8 @@ def run_sweep(sweep_dir: Path, *, olmes_repo: Path = OLMES_REPO, chunk_size: int
         ]
         if spec.get("revision"):
             cmd += ["--revision", spec["revision"]]
+        if spec.get("dtype"):
+            cmd += ["--dtype", spec["dtype"]]
         with open(sweep_dir / "run_command.txt", "a") as f:
             f.write(" ".join(cmd) + "\n")
         with open(sweep_dir / "runner.log", "a") as log:
