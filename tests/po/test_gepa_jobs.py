@@ -39,8 +39,8 @@ def test_write_jobs_records_dtype_and_per_model_batch(tmp_path):
     train = ItemSubset(dataset_path="allenai/ai2_arc", dataset_name="ARC-Easy", split="test", seed=0, ids=("x0",))
     val = ItemSubset(dataset_path="allenai/ai2_arc", dataset_name="ARC-Easy", split="test", seed=0, ids=("y0",))
     paths = write_jobs(name="t", sweep_dir=sweep, selected=sel, train_subset=train, val_subset=val, max_metric_calls=10,
-                       device="cuda", batch_size=4, batch_sizes={"m": 64}, dtype="float32", root=tmp_path / "gepa")
+                       max_proposals=10, device="cuda", batch_size=4, batch_sizes={"m": 64}, dtype="float32", root=tmp_path / "gepa")
     jobs = [json.loads(p.read_text()) for p in paths]
     assert {j["group"] for j in jobs} == {"best", "worst", "empty"}
-    assert all(j["device"] == "cuda" and j["dtype"] == "float32" and j["batch_size"] == 64 for j in jobs)
+    assert all(j["device"] == "cuda" and j["dtype"] == "float32" and j["batch_size"] == 64 and j["max_proposals"] == 10 for j in jobs)
     assert [j["seed_instruction"]["text"] for j in jobs if j["group"] == "empty"] == [""]

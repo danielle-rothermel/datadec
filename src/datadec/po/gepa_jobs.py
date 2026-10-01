@@ -59,6 +59,7 @@ def write_jobs(
     train_subset: ItemSubset,
     val_subset: ItemSubset,
     max_metric_calls: int,
+    max_proposals: int | None = None,  # stop after this many reflection rounds (GEPA MaxCandidateProposalsStopper); None = budget only
     reflection_minibatch_size: int = 3,
     reflection_model: str = "openai/gpt-5.1",
     reflection_reasoning: str = "medium",
@@ -106,7 +107,7 @@ def write_jobs(
             "seed_instruction": {"id": row["instruction_id"], "text": text},
             "split": train_subset.split, "val_split": val_subset.split,
             "train_ids": list(train_subset.ids), "val_ids": list(val_subset.ids),
-            "max_metric_calls": max_metric_calls, "reflection_minibatch_size": reflection_minibatch_size,
+            "max_metric_calls": max_metric_calls, "max_proposals": max_proposals, "reflection_minibatch_size": reflection_minibatch_size,
             "reflection_model": reflection_model,
             "reflection_reasoning": reflection_reasoning,
             "model_card": model_card(row["model"], None if row["revision"] in (None, "main") else row["revision"]),
