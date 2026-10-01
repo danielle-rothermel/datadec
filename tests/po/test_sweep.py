@@ -57,3 +57,4 @@ def test_task_groups_and_mps_comment() -> None:
     assert "#SBATCH --comment=gpu_mps=yes" in shared and "--array=0-2%4" in shared
     solo = array_script(Path("/arr"), task_groups(dirs, 1), SlurmSettings())
     assert "gpu_mps" not in solo and "--array=0-4%4" in solo and "a100_cilvr" in solo
+    assert "steps/task-$SLURM_ARRAY_TASK_ID.log" in solo

@@ -5,8 +5,9 @@ A job list is a JSON file: {"jobs": [{"name", "model", "revision"?, "subsets": [
 one sweep directory under <root>/sweeps/<name> (written up front, so the array script only runs them).
 Array tasks take `concurrent` consecutive sweeps each and run them in parallel on the one GPU (MPS is
 requested when concurrent > 1), so small models can share a GPU; order the job list accordingly. The array
-script appends "STEP <name>: running|done|FAILED" lines to <root>/slurm/<array>/driver.log, the same
-interface the local drivers used, so a monitor can tail it.
+script appends "STEP <name>: running|done|FAILED" lines to <root>/slurm/<array>/steps/task-<n>.log (authoritative,
+one writer each) and to the shared <root>/slurm/<array>/driver.log (convenience; concurrent appends from several
+nodes can corrupt it, so read it with `grep -a`).
 """
 
 from __future__ import annotations
@@ -79,7 +80,9 @@ source {CLUSTER_ENV}
 export PATH=/home/ddr8143/.local/bin:$SCRATCH/.local/bin:$PATH
 export HOME=/scratch/ddr8143 UV_MANAGED_PYTHON=1 UV_CACHE_DIR=$SCRATCH/.cache/uv UV_LINK_MODE=copy HF_HOME=$SCRATCH/.huggingface
 LOG={array_dir}/driver.log
-log() {{ echo "$(date '+%Y-%m-%d %H:%M:%S') $*" >> "$LOG"; }}
+mkdir -p {array_dir}/steps
+# per-task log is authoritative (concurrent appends from several nodes have clobbered the shared driver.log with NULs)
+log() {{ local line="$(date '+%Y-%m-%d %H:%M:%S') $*"; echo "$line" >> "{array_dir}/steps/task-$SLURM_ARRAY_TASK_ID.log"; echo "$line" >> "$LOG"; }}
 run_one() {{  # $1 = sweep dir; runs in the background, one per sweep of this task
   local name=$(basename "$1") t0=$(date +%s)
   log "STEP $name: running (job $SLURM_JOB_ID task $SLURM_ARRAY_TASK_ID on $(hostname))"
