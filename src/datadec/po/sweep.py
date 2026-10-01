@@ -1,4 +1,6 @@
-"""Build and run matched OLMES sweeps: formulations x formats x instructions on one item subset."""
+"""Build and run matched OLMES sweeps: formulations x formats x instructions on one or more item subsets.
+
+All subsets of a sweep run in the same OLMES process(es), so one model load serves every split."""
 
 from __future__ import annotations
 
@@ -29,11 +31,11 @@ TASK_NAMES = {
 @dataclass(frozen=True, slots=True)
 class SweepSpec:
     name: str
-    subset_path: Path
+    subset_paths: tuple[Path, ...]
     model: str
     revision: str | None
     task: str = "arc_easy"
-    formulations: tuple[str, ...] = ("rc", "mc")
+    formulations: tuple[str, ...] = ("rc",)  # MC dropped from all sweeps from 2026-10-01 (decision log, phase 2)
     formats: tuple[dict, ...] = field(default_factory=tuple)
     instructions: tuple[dict, ...] = field(default_factory=tuple)  # {id, text}; empty -> one "none" entry
     pairs: tuple[dict, ...] = field(default_factory=tuple)  # {format, instruction{id,text}, formulation?}; overrides the cross
@@ -67,7 +69,22 @@ def _combos(spec: SweepSpec) -> list[tuple[str, dict, dict, int]]:
     return out
 
 
-def build_tasks(spec: SweepSpec, subset: ItemSubset) -> list[dict]:
+def subset_label(path: Path) -> str:
+    """The subset's role label as recorded on every task: the subset file stem."""
+    return Path(path).stem
+
+
+def build_tasks(spec: SweepSpec, subsets: list[ItemSubset]) -> list[dict]:
+    """One OLMES task per (subset, formulation, format, instruction); subsets run back to back in one process."""
+    if len(subsets) != len(spec.subset_paths):
+        raise ValueError("one loaded ItemSubset per subset_path")
+    tasks = []
+    for path, subset in zip(spec.subset_paths, subsets):
+        tasks += _subset_tasks(spec, subset, subset_label(path))
+    return tasks
+
+
+def _subset_tasks(spec: SweepSpec, subset: ItemSubset, label: str) -> list[dict]:
     tasks = []
     for formulation, fmt, instr, num_shots in _combos(spec):
         if (spec.task, formulation) not in TASK_NAMES:
@@ -93,10 +110,11 @@ def build_tasks(spec: SweepSpec, subset: ItemSubset) -> list[dict]:
                 **extra,
                 "custom_kwargs": {"native_ids": list(subset.ids)},
                 "metadata": {
-                    "alias": f"{formulation}|{fid}|{instr['id']}" + (f"|k{num_shots}" if num_shots != 5 else ""),
+                    "alias": f"{formulation}|{fid}|{instr['id']}" + (f"|k{num_shots}" if num_shots != 5 else "") + f"|{label}",
                     "po": {
                         "sweep": spec.name,
                         "task": spec.task,
+                        "subset": label,
                         "formulation": formulation,
                         "format_id": fid,
                         "format": dict(fmt),
@@ -136,8 +154,10 @@ def load_pairs(path: Path) -> list[dict]:
 
 
 def write_sweep(spec: SweepSpec, *, root: Path = DEFAULT_ROOT) -> Path:
-    subset = ItemSubset.load(spec.subset_path)
-    tasks = build_tasks(spec, subset)
+    if not spec.subset_paths:
+        raise ValueError("a sweep needs at least one subset")
+    subsets = [ItemSubset.load(p) for p in spec.subset_paths]
+    tasks = build_tasks(spec, subsets)
     sweep_dir = root / spec.name
     if sweep_dir.exists():
         raise FileExistsError(f"{sweep_dir} exists; sweep names are unique")
@@ -149,9 +169,11 @@ def write_sweep(spec: SweepSpec, *, root: Path = DEFAULT_ROOT) -> Path:
         "instructions": [dict(i) for i in spec.instructions] + [
             p["instruction"] for p in spec.pairs if p["instruction"]["id"] not in {i["id"] for i in spec.instructions}
         ],
-        "subset_path": str(spec.subset_path),
-        "subset_sha1": hashlib.sha1(Path(spec.subset_path).read_bytes()).hexdigest(),
-        "subset_ids": list(subset.ids),
+        "subset_paths": [str(p) for p in spec.subset_paths],
+        "subsets": [
+            {"label": subset_label(p), "path": str(p), "sha1": hashlib.sha1(Path(p).read_bytes()).hexdigest(), "n": s.n, "ids": list(s.ids)}
+            for p, s in zip(spec.subset_paths, subsets)
+        ],
         "num_tasks": len(tasks),
         "created_utc": dt.datetime.now(dt.timezone.utc).isoformat(),
         "olmes_commit": subprocess.run(

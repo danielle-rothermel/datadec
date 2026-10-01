@@ -4,43 +4,51 @@
    "name": "seeds27-dd300m-train",
    "model": "allenai/DataDecide-dclm-baseline-300M",
    "revision": "step45000-seed-default",
-   "subset": "configs/po/subsets/arc_easy-test-snr-train-n300-seed0.json",
    "formulations": [
     "rc"
    ],
    "instructions": "configs/po/instructions/framed-rc-27.json",
-   "batch_size": 64
+   "batch_size": 64,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-train-n300-seed0.json"
+   ]
   },
   {
    "name": "seeds27-dd1b-train",
    "model": "allenai/DataDecide-dclm-baseline-1B",
    "revision": "step69369-seed-default",
-   "subset": "configs/po/subsets/arc_easy-test-snr-train-n300-seed0.json",
    "formulations": [
     "rc"
    ],
    "instructions": "configs/po/instructions/framed-rc-27.json",
-   "batch_size": 64
+   "batch_size": 64,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-train-n300-seed0.json"
+   ]
   },
   {
    "name": "seeds27-qwen1.7b-base-train",
    "model": "Qwen/Qwen3-1.7B-Base",
-   "subset": "configs/po/subsets/arc_easy-test-snr-train-n300-seed0.json",
    "formulations": [
     "rc"
    ],
    "instructions": "configs/po/instructions/framed-rc-27.json",
-   "batch_size": 16
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-train-n300-seed0.json"
+   ]
   },
   {
    "name": "seeds27-qwen1.7b-train",
    "model": "Qwen/Qwen3-1.7B",
-   "subset": "configs/po/subsets/arc_easy-test-snr-train-n300-seed0.json",
    "formulations": [
     "rc"
    ],
    "instructions": "configs/po/instructions/framed-rc-27.json",
-   "batch_size": 16
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-train-n300-seed0.json"
+   ]
   }
  ]
 }

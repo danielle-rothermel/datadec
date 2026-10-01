@@ -4,150 +4,288 @@
    "name": "canon-dd150m-dev",
    "model": "allenai/DataDecide-dclm-baseline-150M",
    "revision": "step37500-seed-default",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 64
+   "batch_size": 64,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-dd300m-dev",
    "model": "allenai/DataDecide-dclm-baseline-300M",
    "revision": "step45000-seed-default",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 64
+   "batch_size": 64,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-dd530m-dev",
    "model": "allenai/DataDecide-dclm-baseline-530M",
    "revision": "step57776-seed-default",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 64
+   "batch_size": 64,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-dd1b-dev",
    "model": "allenai/DataDecide-dclm-baseline-1B",
    "revision": "step69369-seed-default",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 64
+   "batch_size": 64,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-dd-dolma-150m-dev",
    "model": "allenai/DataDecide-dolma1_7-150M",
    "revision": "step37500-seed-default",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 64
+   "batch_size": 64,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-dd-dolma-300m-dev",
    "model": "allenai/DataDecide-dolma1_7-300M",
    "revision": "step45000-seed-default",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 64
+   "batch_size": 64,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-dd-dolma-1b-dev",
    "model": "allenai/DataDecide-dolma1_7-1B",
    "revision": "step69369-seed-default",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 64
+   "batch_size": 64,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-pythia160m-dev",
    "model": "EleutherAI/pythia-160m",
    "revision": "step143000",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 64
+   "batch_size": 64,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-pythia410m-dev",
    "model": "EleutherAI/pythia-410m",
    "revision": "step143000",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 64
+   "batch_size": 64,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-pythia1b-dev",
    "model": "EleutherAI/pythia-1b",
    "revision": "step143000",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 64
+   "batch_size": 64,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-pythia2.8b-dev",
    "model": "EleutherAI/pythia-2.8b",
    "revision": "step143000",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 64
+   "batch_size": 64,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-qwen0.6b-base-dev",
    "model": "Qwen/Qwen3-0.6B-Base",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 16
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-qwen0.6b-dev",
    "model": "Qwen/Qwen3-0.6B",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 16
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-qwen1.7b-base-dev",
    "model": "Qwen/Qwen3-1.7B-Base",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 16
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-qwen1.7b-dev",
    "model": "Qwen/Qwen3-1.7B",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 16
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-qwen4b-base-dev",
    "model": "Qwen/Qwen3-4B-Base",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 16
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-qwen4b-dev",
    "model": "Qwen/Qwen3-4B",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 16
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-qwen8b-base-dev",
    "model": "Qwen/Qwen3-8B-Base",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 8
+   "batch_size": 8,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-qwen8b-dev",
    "model": "Qwen/Qwen3-8B",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 8
+   "batch_size": 8,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-olmo3-base-dev",
    "model": "allenai/Olmo-3-1025-7B",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 16
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-olmo3-sft-dev",
    "model": "allenai/Olmo-3-7B-Instruct-SFT",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 16
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-olmo3-dpo-dev",
    "model": "allenai/Olmo-3-7B-Instruct-DPO",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 16
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   },
   {
    "name": "canon-olmo3-instruct-dev",
    "model": "allenai/Olmo-3-7B-Instruct",
-   "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json",
-   "batch_size": 16
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
   }
  ]
 }

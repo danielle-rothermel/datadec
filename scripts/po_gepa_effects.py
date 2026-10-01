@@ -28,9 +28,11 @@ SEED_PREFIX = "seed-"
 METRICS = {"primary": "accuracy", "primary_likelihood": "share"}
 
 
-def _subset_label(sweep_dir: Path) -> str:
+def _subset_label(sweep_dir: Path) -> str | None:
+    """Single-subset sweeps: the subset stem from the manifest; multi-subset sweeps carry it per item instead."""
     manifest = json.loads((sweep_dir / "sweep.json").read_text())
-    return Path(manifest["subset_path"]).stem
+    paths = manifest.get("subset_paths") or [manifest.get("subset_path")]
+    return Path(paths[0]).stem if len(paths) == 1 and paths[0] else None
 
 
 def _instruction_texts(sweep_dir: Path) -> dict[str, str]:
@@ -121,8 +123,12 @@ def main(
         if items.empty:
             typer.echo(f"no items in {d}")
             continue
-        label = _subset_label(d)
-        rows += [r | {"sweep": d.name, "subset": label} for r in paired_effects(items, rng=rng, resamples=resamples, texts=_instruction_texts(d))]
+        texts = _instruction_texts(d)
+        if "subset" in items and items["subset"].notna().any():
+            for label, sub in items.groupby("subset"):
+                rows += [r | {"sweep": d.name, "subset": label} for r in paired_effects(sub, rng=rng, resamples=resamples, texts=texts)]
+        else:
+            rows += [r | {"sweep": d.name, "subset": _subset_label(d)} for r in paired_effects(items, rng=rng, resamples=resamples, texts=texts)]
     df = pd.DataFrame(rows)
     if subset_labels:
         df["subset"] = df["subset"].replace(dict(kv.split("=") for kv in subset_labels.split(",")))

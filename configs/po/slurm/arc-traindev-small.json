@@ -1,0 +1,154 @@
+{
+ "jobs": [
+  {
+   "name": "traindev-qwen1.7b-base",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "arc_easy",
+   "batch_size": 16
+  },
+  {
+   "name": "traindev-qwen1.7b",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "arc_easy",
+   "batch_size": 16
+  },
+  {
+   "name": "traindev-dd1b",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "traindev-dd-dolma-1b",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dolma1_7-1B",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "traindev-pythia1b",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json"
+   ],
+   "model": "EleutherAI/pythia-1b",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step143000"
+  },
+  {
+   "name": "traindev-qwen0.6b-base",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-0.6B-Base",
+   "task": "arc_easy",
+   "batch_size": 16
+  },
+  {
+   "name": "traindev-qwen0.6b",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-0.6B",
+   "task": "arc_easy",
+   "batch_size": 16
+  },
+  {
+   "name": "traindev-dd530m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-530M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step57776-seed-default"
+  },
+  {
+   "name": "traindev-pythia410m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json"
+   ],
+   "model": "EleutherAI/pythia-410m",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step143000"
+  },
+  {
+   "name": "traindev-dd300m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step45000-seed-default"
+  },
+  {
+   "name": "traindev-dd-dolma-300m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dolma1_7-300M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step45000-seed-default"
+  },
+  {
+   "name": "traindev-dd150m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-150M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step37500-seed-default"
+  },
+  {
+   "name": "traindev-dd-dolma-150m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dolma1_7-150M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step37500-seed-default"
+  },
+  {
+   "name": "traindev-pythia160m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json"
+   ],
+   "model": "EleutherAI/pythia-160m",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step143000"
+  }
+ ]
+}
