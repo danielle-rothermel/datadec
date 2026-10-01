@@ -52,6 +52,13 @@ def paired_effects(items: pd.DataFrame, *, rng: np.random.Generator, resamples: 
             same_text = False
             if seed.empty and texts.get(GEPA_PREFIX + job) is not None and texts.get(GEPA_PREFIX + job) == texts.get(SEED_PREFIX + job):
                 seed, same_text = opt, True
+            if seed.empty:
+                # Several sets can share one seed text (de-duplicated to a single seed-* id when the pairs files were
+                # merged): fall back to any seed row for the same model whose id ends in the same seed instruction id.
+                tail = job.rsplit("--", 1)[-1]
+                alt = [i for i in g["instruction_id"].unique() if i.startswith(SEED_PREFIX) and i.rsplit("--", 1)[-1] == tail]
+                if alt:
+                    seed = g[g["instruction_id"] == alt[0]].set_index("native_id")
             ids = opt.index.intersection(seed.index)
             if len(ids) == 0:
                 continue
