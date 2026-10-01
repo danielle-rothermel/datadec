@@ -1,0 +1,40 @@
+{
+ "jobs": [
+  {
+   "name": "g4-olmo2-1b-sft",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/OLMo-2-0425-1B-SFT",
+   "task": "arc_easy",
+   "batch_size": 32
+  },
+  {
+   "name": "g4-olmo2-1b-dpo",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/OLMo-2-0425-1B-DPO",
+   "task": "arc_easy",
+   "batch_size": 32
+  },
+  {
+   "name": "g4-olmo2-1b-rlvr1",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/OLMo-2-0425-1B-RLVR1",
+   "task": "arc_easy",
+   "batch_size": 32
+  }
+ ]
+}
