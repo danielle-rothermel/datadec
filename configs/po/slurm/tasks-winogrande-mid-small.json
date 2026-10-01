@@ -547,45 +547,6 @@
    "revision": "step2500-seed-default"
   },
   {
-   "name": "t-winogrande-mid-pythia-12b",
-   "subsets": [
-    "configs/po/subsets/winogrande-train-part-train-n1267-seed0.json",
-    "configs/po/subsets/winogrande-train-part-traindev-n633-seed0.json",
-    "configs/po/subsets/winogrande-validation-part-test-n633-seed0.json",
-    "configs/po/subsets/winogrande-train-part-testaug-n634-seed0.json"
-   ],
-   "task": "winogrande",
-   "batch_size": 4,
-   "model": "EleutherAI/pythia-12b",
-   "revision": "step71000"
-  },
-  {
-   "name": "t-winogrande-mid-pythia-6.9b",
-   "subsets": [
-    "configs/po/subsets/winogrande-train-part-train-n1267-seed0.json",
-    "configs/po/subsets/winogrande-train-part-traindev-n633-seed0.json",
-    "configs/po/subsets/winogrande-validation-part-test-n633-seed0.json",
-    "configs/po/subsets/winogrande-train-part-testaug-n634-seed0.json"
-   ],
-   "task": "winogrande",
-   "batch_size": 8,
-   "model": "EleutherAI/pythia-6.9b",
-   "revision": "step71000"
-  },
-  {
-   "name": "t-winogrande-mid-pythia-2.8b",
-   "subsets": [
-    "configs/po/subsets/winogrande-train-part-train-n1267-seed0.json",
-    "configs/po/subsets/winogrande-train-part-traindev-n633-seed0.json",
-    "configs/po/subsets/winogrande-validation-part-test-n633-seed0.json",
-    "configs/po/subsets/winogrande-train-part-testaug-n634-seed0.json"
-   ],
-   "task": "winogrande",
-   "batch_size": 16,
-   "model": "EleutherAI/pythia-2.8b",
-   "revision": "step71000"
-  },
-  {
    "name": "t-winogrande-mid-pythia-1.4b",
    "subsets": [
     "configs/po/subsets/winogrande-train-part-train-n1267-seed0.json",

@@ -1,0 +1,40 @@
+{
+ "jobs": [
+  {
+   "name": "t-hellaswag-mid-pythia-12b",
+   "subsets": [
+    "configs/po/subsets/hellaswag-train-part-train-n2000-seed0.json",
+    "configs/po/subsets/hellaswag-train-part-traindev-n1000-seed0.json",
+    "configs/po/subsets/hellaswag-validation-part-test-n2000-seed0.json"
+   ],
+   "task": "hellaswag",
+   "batch_size": 4,
+   "model": "EleutherAI/pythia-12b",
+   "revision": "step71000"
+  },
+  {
+   "name": "t-hellaswag-mid-pythia-6.9b",
+   "subsets": [
+    "configs/po/subsets/hellaswag-train-part-train-n2000-seed0.json",
+    "configs/po/subsets/hellaswag-train-part-traindev-n1000-seed0.json",
+    "configs/po/subsets/hellaswag-validation-part-test-n2000-seed0.json"
+   ],
+   "task": "hellaswag",
+   "batch_size": 8,
+   "model": "EleutherAI/pythia-6.9b",
+   "revision": "step71000"
+  },
+  {
+   "name": "t-hellaswag-mid-pythia-2.8b",
+   "subsets": [
+    "configs/po/subsets/hellaswag-train-part-train-n2000-seed0.json",
+    "configs/po/subsets/hellaswag-train-part-traindev-n1000-seed0.json",
+    "configs/po/subsets/hellaswag-validation-part-test-n2000-seed0.json"
+   ],
+   "task": "hellaswag",
+   "batch_size": 16,
+   "model": "EleutherAI/pythia-2.8b",
+   "revision": "step71000"
+  }
+ ]
+}

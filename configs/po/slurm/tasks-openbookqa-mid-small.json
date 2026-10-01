@@ -547,45 +547,6 @@
    "revision": "step2500-seed-default"
   },
   {
-   "name": "t-openbookqa-mid-pythia-12b",
-   "subsets": [
-    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
-    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
-    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
-   ],
-   "task": "openbookqa",
-   "batch_size": 4,
-   "model": "EleutherAI/pythia-12b",
-   "revision": "step71000"
-  },
-  {
-   "name": "t-openbookqa-mid-pythia-6.9b",
-   "subsets": [
-    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
-    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
-    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
-   ],
-   "task": "openbookqa",
-   "batch_size": 8,
-   "model": "EleutherAI/pythia-6.9b",
-   "revision": "step71000"
-  },
-  {
-   "name": "t-openbookqa-mid-pythia-2.8b",
-   "subsets": [
-    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
-    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
-    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
-   ],
-   "task": "openbookqa",
-   "batch_size": 16,
-   "model": "EleutherAI/pythia-2.8b",
-   "revision": "step71000"
-  },
-  {
    "name": "t-openbookqa-mid-pythia-1.4b",
    "subsets": [
     "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",

@@ -547,45 +547,6 @@
    "revision": "step2500-seed-default"
   },
   {
-   "name": "t-arc_challenge-mid-pythia-12b",
-   "subsets": [
-    "configs/po/subsets/arc_challenge-train-part-train-n739-seed0.json",
-    "configs/po/subsets/arc_challenge-train-part-traindev-n369-seed0.json",
-    "configs/po/subsets/arc_challenge-validation-n299-seed0.json",
-    "configs/po/subsets/arc_challenge-test-part-test1-n586-seed0.json"
-   ],
-   "task": "arc_challenge",
-   "batch_size": 4,
-   "model": "EleutherAI/pythia-12b",
-   "revision": "step71000"
-  },
-  {
-   "name": "t-arc_challenge-mid-pythia-6.9b",
-   "subsets": [
-    "configs/po/subsets/arc_challenge-train-part-train-n739-seed0.json",
-    "configs/po/subsets/arc_challenge-train-part-traindev-n369-seed0.json",
-    "configs/po/subsets/arc_challenge-validation-n299-seed0.json",
-    "configs/po/subsets/arc_challenge-test-part-test1-n586-seed0.json"
-   ],
-   "task": "arc_challenge",
-   "batch_size": 8,
-   "model": "EleutherAI/pythia-6.9b",
-   "revision": "step71000"
-  },
-  {
-   "name": "t-arc_challenge-mid-pythia-2.8b",
-   "subsets": [
-    "configs/po/subsets/arc_challenge-train-part-train-n739-seed0.json",
-    "configs/po/subsets/arc_challenge-train-part-traindev-n369-seed0.json",
-    "configs/po/subsets/arc_challenge-validation-n299-seed0.json",
-    "configs/po/subsets/arc_challenge-test-part-test1-n586-seed0.json"
-   ],
-   "task": "arc_challenge",
-   "batch_size": 16,
-   "model": "EleutherAI/pythia-2.8b",
-   "revision": "step71000"
-  },
-  {
    "name": "t-arc_challenge-mid-pythia-1.4b",
    "subsets": [
     "configs/po/subsets/arc_challenge-train-part-train-n739-seed0.json",

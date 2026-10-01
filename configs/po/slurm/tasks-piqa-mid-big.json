@@ -1,0 +1,43 @@
+{
+ "jobs": [
+  {
+   "name": "t-piqa-mid-pythia-12b",
+   "subsets": [
+    "configs/po/subsets/piqa-train-part-train-n1838-seed0.json",
+    "configs/po/subsets/piqa-train-part-traindev-n919-seed0.json",
+    "configs/po/subsets/piqa-validation-part-test-n919-seed0.json",
+    "configs/po/subsets/piqa-train-part-testaug-n919-seed0.json"
+   ],
+   "task": "piqa",
+   "batch_size": 4,
+   "model": "EleutherAI/pythia-12b",
+   "revision": "step71000"
+  },
+  {
+   "name": "t-piqa-mid-pythia-6.9b",
+   "subsets": [
+    "configs/po/subsets/piqa-train-part-train-n1838-seed0.json",
+    "configs/po/subsets/piqa-train-part-traindev-n919-seed0.json",
+    "configs/po/subsets/piqa-validation-part-test-n919-seed0.json",
+    "configs/po/subsets/piqa-train-part-testaug-n919-seed0.json"
+   ],
+   "task": "piqa",
+   "batch_size": 8,
+   "model": "EleutherAI/pythia-6.9b",
+   "revision": "step71000"
+  },
+  {
+   "name": "t-piqa-mid-pythia-2.8b",
+   "subsets": [
+    "configs/po/subsets/piqa-train-part-train-n1838-seed0.json",
+    "configs/po/subsets/piqa-train-part-traindev-n919-seed0.json",
+    "configs/po/subsets/piqa-validation-part-test-n919-seed0.json",
+    "configs/po/subsets/piqa-train-part-testaug-n919-seed0.json"
+   ],
+   "task": "piqa",
+   "batch_size": 16,
+   "model": "EleutherAI/pythia-2.8b",
+   "revision": "step71000"
+  }
+ ]
+}
