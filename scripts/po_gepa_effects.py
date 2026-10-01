@@ -29,13 +29,25 @@ def _subset_label(sweep_dir: Path) -> str:
     return Path(manifest["subset_path"]).stem
 
 
-def paired_effects(items: pd.DataFrame, *, rng: np.random.Generator, resamples: int) -> list[dict]:
+def _instruction_texts(sweep_dir: Path) -> dict[str, str]:
+    manifest = json.loads((sweep_dir / "sweep.json").read_text())
+    return {i["id"]: (i.get("text") or "") for i in manifest["instructions"]}
+
+
+def paired_effects(items: pd.DataFrame, *, rng: np.random.Generator, resamples: int, texts: dict[str, str] | None = None) -> list[dict]:
+    """texts: instruction id -> text from the sweep manifest. When GEPA returns the seed itself as its best
+    candidate the two prompts are identical and OLMES runs them as one task, so the seed rows are missing; the
+    effect is then exactly zero and is reported with same_text=True."""
     rows = []
+    texts = texts or {}
     for (model, form), g in items.groupby(["model", "formulation"]):
         jobs = sorted({i[len(GEPA_PREFIX):] for i in g["instruction_id"].unique() if i.startswith(GEPA_PREFIX)})
         for job in jobs:
             opt = g[g["instruction_id"] == GEPA_PREFIX + job].set_index("native_id")
             seed = g[g["instruction_id"] == SEED_PREFIX + job].set_index("native_id")
+            same_text = False
+            if seed.empty and texts.get(GEPA_PREFIX + job) is not None and texts.get(GEPA_PREFIX + job) == texts.get(SEED_PREFIX + job):
+                seed, same_text = opt, True
             ids = opt.index.intersection(seed.index)
             if len(ids) == 0:
                 continue
@@ -44,7 +56,7 @@ def paired_effects(items: pd.DataFrame, *, rng: np.random.Generator, resamples: 
                 diff = (opt[metric] - seed[metric]).to_numpy(float)
                 boot = diff[rng.integers(0, len(diff), size=(resamples, len(diff)))].mean(axis=1)
                 rows.append({
-                    "model": model, "formulation": form, "job": job, "metric": metric, "n": int(len(diff)),
+                    "model": model, "formulation": form, "job": job, "metric": metric, "n": int(len(diff)), "same_text": same_text,
                     "seed_mean": float(seed[metric].mean()), "optimized_mean": float(opt[metric].mean()),
                     "diff": float(diff.mean()), "se": float(diff.std(ddof=1) / np.sqrt(len(diff))),
                     "ci_lo": float(np.percentile(boot, 2.5)), "ci_hi": float(np.percentile(boot, 97.5)),
@@ -67,7 +79,7 @@ def main(
             typer.echo(f"no items in {d}")
             continue
         label = _subset_label(d)
-        rows += [r | {"sweep": d.name, "subset": label} for r in paired_effects(items, rng=rng, resamples=resamples)]
+        rows += [r | {"sweep": d.name, "subset": label} for r in paired_effects(items, rng=rng, resamples=resamples, texts=_instruction_texts(d))]
     df = pd.DataFrame(rows)
     out.mkdir(parents=True, exist_ok=True)
     df.to_csv(out / "effects.csv", index=False)
@@ -75,7 +87,8 @@ def main(
     for (sweep, subset), sub in df.groupby(["sweep", "subset"]):
         md += [f"## {sweep} ({subset})", "", "| model | form | job | metric | n | seed | optimized | diff | 95% CI |", "|---|---|---|---|---|---|---|---|---|"]
         for _, r in sub.sort_values(["model", "formulation", "job", "metric"]).iterrows():
-            md.append(f"| {r.model} | {r.formulation} | {r.job} | {r.metric} | {r.n} | {r.seed_mean:.4f} | {r.optimized_mean:.4f} | {r['diff']:+.4f} | [{r.ci_lo:+.4f}, {r.ci_hi:+.4f}] |")
+            note = " (best = seed)" if r.get("same_text") else ""
+            md.append(f"| {r.model} | {r.formulation} | {r.job}{note} | {r.metric} | {r.n} | {r.seed_mean:.4f} | {r.optimized_mean:.4f} | {r['diff']:+.4f} | [{r.ci_lo:+.4f}, {r.ci_hi:+.4f}] |")
         md.append("")
     (out / "effects.md").write_text("\n".join(md))
     typer.echo(f"{len(df)} rows -> {out / 'effects.csv'}")
