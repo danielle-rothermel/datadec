@@ -20,6 +20,7 @@ def main(
     out_dir: Annotated[Path, typer.Option("--out-dir")] = DEFAULT_DIR,
     exclude: Annotated[list[Path] | None, typer.Option("--exclude", help="subset files whose ids to exclude")] = None,
     exclude_fewshot: Annotated[bool, typer.Option("--exclude-fewshot/--no-exclude-fewshot")] = True,
+    tag: Annotated[str | None, typer.Option("--tag", help="role label inserted in the file name, e.g. train1 for a partition of a split")] = None,
 ) -> None:
     """Dump a seeded item subset as JSON under configs/po/subsets."""
     if dataset not in DATASETS:
@@ -33,7 +34,7 @@ def main(
         excluded |= set(ItemSubset.load(p).ids)
     subset = sample_subset(n=n, seed=seed, split=split, dataset_path=path_, dataset_name=name, exclude=frozenset(excluded), id_field=id_field)
     out_dir.mkdir(parents=True, exist_ok=True)
-    path = out_dir / f"{dataset}-{split}-n{n}-seed{seed}.json"
+    path = out_dir / f"{dataset}-{split}-{tag + '-' if tag else ''}n{n}-seed{seed}.json"
     if path.exists():
         raise typer.BadParameter(f"{path} already exists; subsets are immutable once written")
     path.write_text(subset.to_json())
