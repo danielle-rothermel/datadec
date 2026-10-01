@@ -26,6 +26,16 @@
    "model": "Qwen/Qwen3-1.7B-Base",
    "task": "arc_easy",
    "batch_size": 64
+  },
+  {
+   "name": "bscheck-dd300m-b64",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "revision": "step45000-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
   }
  ]
 }
