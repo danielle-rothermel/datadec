@@ -35,6 +35,22 @@ def select_seeds(ranked: pd.DataFrame, n: int) -> pd.DataFrame:
     return pd.concat([top, bottom]).sort_values(["model", "revision", "formulation", "rank"]).reset_index(drop=True)
 
 
+def add_empty_seed(selected: pd.DataFrame, ranked: pd.DataFrame) -> pd.DataFrame:
+    """Append one 'empty' seed row (instruction 'none', empty text) per (model, revision, formulation, format)
+    present in selected, scored from ranked when the sweep had a no-instruction pair, else NaN."""
+    rows = []
+    for keys, g in selected.groupby(["model", "revision", "formulation", "format_id"], dropna=False):
+        model, revision, formulation, fid = keys
+        have = ranked[(ranked["model"] == model) & (ranked["revision"] == revision) & (ranked["formulation"] == formulation)
+                      & (ranked["format_id"] == fid) & (ranked["instruction_id"] == "none")]
+        base = g.iloc[0].to_dict()
+        base.update({"instruction_id": "none", "group": "empty", "rank": 0,
+                     "score": float(have["score"].iloc[0]) if len(have) else float("nan"),
+                     "primary": float(have["primary"].iloc[0]) if len(have) else float("nan")})
+        rows.append(base)
+    return pd.concat([selected, pd.DataFrame(rows)]).reset_index(drop=True)
+
+
 def write_jobs(
     *,
     name: str,
@@ -48,6 +64,8 @@ def write_jobs(
     reflection_reasoning: str = "medium",
     device: str = "mps",
     batch_size: int = 4,
+    batch_sizes: dict[str, int] | None = None,  # per-model override of batch_size, keyed by hf id
+    dtype: str | None = None,  # model dtype for scoring (cluster runs: float32); None = wrapper default
     formulations: tuple[str, ...] | None = None,
     max_group_score: float | None = None,
     score_metric: str = DEFAULT_SCORE_METRIC,
@@ -76,13 +94,14 @@ def write_jobs(
             if group_best >= max_group_score:
                 skipped_groups.append((row["model"], row["formulation"], round(float(group_best), 3)))
                 continue
-        text = instructions[row["instruction_id"]] or ""  # no-instruction seeds start GEPA from an empty prompt
+        text = instructions.get(row["instruction_id"]) or ""  # no-instruction / empty seeds start GEPA from an empty prompt
         job_id = f"{_slug(row['model'])}--{row['formulation']}--{row['group']}-r{int(row['rank']):02d}--{row['format_id']}--{_slug(row['instruction_id'])}"
         job = {
             "job_id": job_id, "group": row["group"], "seed_rank": int(row["rank"]), "seed_score": float(row["score"]),
             "seed_score_metric": row["score_metric"], "score_metric": score_metric,
             "model": row["model"], "revision": None if row["revision"] in (None, "main") else row["revision"],
-            "device": device, "batch_size": batch_size, "task": sweep.get("task", "arc_easy"), "formulation": row["formulation"],
+            "device": device, "batch_size": int((batch_sizes or {}).get(row["model"], batch_size)), "dtype": dtype,
+            "task": sweep.get("task", "arc_easy"), "formulation": row["formulation"],
             "prompt_format": formats[row["format_id"]], "format_id": row["format_id"],
             "seed_instruction": {"id": row["instruction_id"], "text": text},
             "split": train_subset.split, "val_split": val_subset.split,
