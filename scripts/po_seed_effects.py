@@ -59,7 +59,7 @@ def _style(ax):
     ax.set_axisbelow(True)
 
 
-def plot_mean_effects(df: pd.DataFrame, models: list[str], labels: dict[str, str], proposer: dict[str, str], out: Path) -> None:
+def plot_mean_effects(df: pd.DataFrame, models: list[str], labels: dict[str, str], proposer: dict[str, str], out: Path, *, task_label: str) -> None:
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
     colors = {"gpt-5.1": "#1f77b4", "terra": "#d62728"}
     for ax, (metric, name) in zip(axes, METRICS.items()):
@@ -81,7 +81,8 @@ def plot_mean_effects(df: pd.DataFrame, models: list[str], labels: dict[str, str
         _style(ax)
     handles = [plt.Line2D([], [], marker="o", linestyle="", color=c, label=p) for p, c in colors.items()]
     axes[0].legend(handles=handles, title="proposer", frameon=False, fontsize=9, title_fontsize=9)
-    fig.suptitle("27 seed prompts, RC, 300 train items: effect vs no-instruction canonical prompt", y=1.02)
+    n_seeds = df.groupby("model")["instruction_id"].nunique().max()
+    fig.suptitle(f"{n_seeds} seed prompts, {task_label}, RC, 300 train items: effect vs no-instruction canonical prompt", y=1.02)
     fig.tight_layout()
     fig.savefig(out, dpi=160, bbox_inches="tight")
     plt.close(fig)
@@ -91,7 +92,7 @@ def rng_jitter(n: int, center: int, width: float = 0.18) -> np.ndarray:
     return center + np.random.default_rng(center).uniform(-width, width, size=n)
 
 
-def plot_per_item(per_item: dict, df: pd.DataFrame, models: list[str], labels: dict[str, str], out: Path) -> None:
+def plot_per_item(per_item: dict, df: pd.DataFrame, models: list[str], labels: dict[str, str], out: Path, *, task_label: str) -> None:
     metric = "primary_likelihood"
     fig, axes = plt.subplots(1, len(models), figsize=(3.0 * len(models), 4.0), sharey=True)
     for ax, m in zip(np.atleast_1d(axes), models):
@@ -109,7 +110,7 @@ def plot_per_item(per_item: dict, df: pd.DataFrame, models: list[str], labels: d
         ax.set_title(labels.get(m, m))
         _style(ax)
     np.atleast_1d(axes)[0].set_ylabel("Δ share per item (seed − canonical)")
-    fig.suptitle("Per-item share effects for the worst, median and best seed of each model", y=1.02)
+    fig.suptitle(f"{task_label}: per-item share effects for the worst, median and best seed of each model", y=1.02)
     fig.tight_layout()
     fig.savefig(out, dpi=160, bbox_inches="tight")
     plt.close(fig)
@@ -121,6 +122,7 @@ def main(
     out: Annotated[Path, typer.Option("--out")],
     instructions: Annotated[Path | None, typer.Option("--instructions", help="instruction set JSON with proposer per id")] = None,
     model_labels: Annotated[str | None, typer.Option("--model-labels", help="comma-separated key=label")] = None,
+    task_label: Annotated[str, typer.Option("--task-label", help="task name shown in figure titles")] = "ARC-Easy",
     resamples: Annotated[int, typer.Option("--resamples")] = 2000,
     seed: Annotated[int, typer.Option("--seed")] = 0,
 ) -> None:
@@ -142,8 +144,8 @@ def main(
     df = pd.DataFrame(rows)
     out.mkdir(parents=True, exist_ok=True)
     df.to_csv(out / "per_seed.csv", index=False)
-    plot_mean_effects(df, models, labels, proposer, out / "violin_mean_effects.png")
-    plot_per_item(per_item, df, models, labels, out / "violin_per_item.png")
+    plot_mean_effects(df, models, labels, proposer, out / "violin_mean_effects.png", task_label=task_label)
+    plot_per_item(per_item, df, models, labels, out / "violin_per_item.png", task_label=task_label)
 
     md = ["# Seed-prompt effects vs canonical (paired per-item bootstrap, 95% CI)", ""]
     md += ["| model | metric | canonical | seed mean (min / median / max) | spread | seeds above 0 (CI excludes 0) | seeds below 0 (CI excludes 0) |", "|---|---|---|---|---|---|---|"]
