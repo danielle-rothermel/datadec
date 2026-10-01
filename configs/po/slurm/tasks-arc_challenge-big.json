@@ -221,30 +221,6 @@
    "model": "ibm-granite/granite-4.0-micro"
   },
   {
-   "name": "t-arc_challenge-g5-granite4-h-micro-base",
-   "subsets": [
-    "configs/po/subsets/arc_challenge-train-part-train-n739-seed0.json",
-    "configs/po/subsets/arc_challenge-train-part-traindev-n369-seed0.json",
-    "configs/po/subsets/arc_challenge-validation-n299-seed0.json",
-    "configs/po/subsets/arc_challenge-test-part-test1-n586-seed0.json"
-   ],
-   "task": "arc_challenge",
-   "batch_size": 16,
-   "model": "ibm-granite/granite-4.0-h-micro-base"
-  },
-  {
-   "name": "t-arc_challenge-g5-granite4-h-micro-instruct",
-   "subsets": [
-    "configs/po/subsets/arc_challenge-train-part-train-n739-seed0.json",
-    "configs/po/subsets/arc_challenge-train-part-traindev-n369-seed0.json",
-    "configs/po/subsets/arc_challenge-validation-n299-seed0.json",
-    "configs/po/subsets/arc_challenge-test-part-test1-n586-seed0.json"
-   ],
-   "task": "arc_challenge",
-   "batch_size": 16,
-   "model": "ibm-granite/granite-4.0-h-micro"
-  },
-  {
    "name": "t-arc_challenge-quant-olmo3-base-bf16",
    "subsets": [
     "configs/po/subsets/arc_challenge-train-part-train-n739-seed0.json",

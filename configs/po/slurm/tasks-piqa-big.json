@@ -221,30 +221,6 @@
    "model": "ibm-granite/granite-4.0-micro"
   },
   {
-   "name": "t-piqa-g5-granite4-h-micro-base",
-   "subsets": [
-    "configs/po/subsets/piqa-train-part-train-n1838-seed0.json",
-    "configs/po/subsets/piqa-train-part-traindev-n919-seed0.json",
-    "configs/po/subsets/piqa-validation-part-test-n919-seed0.json",
-    "configs/po/subsets/piqa-train-part-testaug-n919-seed0.json"
-   ],
-   "task": "piqa",
-   "batch_size": 16,
-   "model": "ibm-granite/granite-4.0-h-micro-base"
-  },
-  {
-   "name": "t-piqa-g5-granite4-h-micro-instruct",
-   "subsets": [
-    "configs/po/subsets/piqa-train-part-train-n1838-seed0.json",
-    "configs/po/subsets/piqa-train-part-traindev-n919-seed0.json",
-    "configs/po/subsets/piqa-validation-part-test-n919-seed0.json",
-    "configs/po/subsets/piqa-train-part-testaug-n919-seed0.json"
-   ],
-   "task": "piqa",
-   "batch_size": 16,
-   "model": "ibm-granite/granite-4.0-h-micro"
-  },
-  {
    "name": "t-piqa-quant-olmo3-base-bf16",
    "subsets": [
     "configs/po/subsets/piqa-train-part-train-n1838-seed0.json",

@@ -203,28 +203,6 @@
    "model": "ibm-granite/granite-4.0-micro"
   },
   {
-   "name": "t-hellaswag-g5-granite4-h-micro-base",
-   "subsets": [
-    "configs/po/subsets/hellaswag-train-part-train-n2000-seed0.json",
-    "configs/po/subsets/hellaswag-train-part-traindev-n1000-seed0.json",
-    "configs/po/subsets/hellaswag-validation-part-test-n2000-seed0.json"
-   ],
-   "task": "hellaswag",
-   "batch_size": 16,
-   "model": "ibm-granite/granite-4.0-h-micro-base"
-  },
-  {
-   "name": "t-hellaswag-g5-granite4-h-micro-instruct",
-   "subsets": [
-    "configs/po/subsets/hellaswag-train-part-train-n2000-seed0.json",
-    "configs/po/subsets/hellaswag-train-part-traindev-n1000-seed0.json",
-    "configs/po/subsets/hellaswag-validation-part-test-n2000-seed0.json"
-   ],
-   "task": "hellaswag",
-   "batch_size": 16,
-   "model": "ibm-granite/granite-4.0-h-micro"
-  },
-  {
    "name": "t-hellaswag-quant-olmo3-base-bf16",
    "subsets": [
     "configs/po/subsets/hellaswag-train-part-train-n2000-seed0.json",
