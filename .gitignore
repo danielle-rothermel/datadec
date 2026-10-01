@@ -11,3 +11,6 @@ outputs/
 wandb_data/
 node_modules/
 .claude/launch.json
+
+# environments
+.venv/
