@@ -1,0 +1,712 @@
+{
+ "jobs": [
+  {
+   "name": "t-openbookqa-baselines-dd1b",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "t-openbookqa-baselines-dd-dolma-1b",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-1B",
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "t-openbookqa-baselines-pythia1b",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "EleutherAI/pythia-1b",
+   "revision": "step143000"
+  },
+  {
+   "name": "t-openbookqa-baselines-qwen0.6b-base",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 16,
+   "model": "Qwen/Qwen3-0.6B-Base"
+  },
+  {
+   "name": "t-openbookqa-baselines-qwen0.6b",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 16,
+   "model": "Qwen/Qwen3-0.6B"
+  },
+  {
+   "name": "t-openbookqa-baselines-dd530m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-530M",
+   "revision": "step57776-seed-default"
+  },
+  {
+   "name": "t-openbookqa-baselines-pythia410m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "EleutherAI/pythia-410m",
+   "revision": "step143000"
+  },
+  {
+   "name": "t-openbookqa-baselines-dd300m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "revision": "step45000-seed-default"
+  },
+  {
+   "name": "t-openbookqa-baselines-dd-dolma-300m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-300M",
+   "revision": "step45000-seed-default"
+  },
+  {
+   "name": "t-openbookqa-baselines-dd150m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-150M",
+   "revision": "step37500-seed-default"
+  },
+  {
+   "name": "t-openbookqa-baselines-dd-dolma-150m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-150M",
+   "revision": "step37500-seed-default"
+  },
+  {
+   "name": "t-openbookqa-baselines-pythia160m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "EleutherAI/pythia-160m",
+   "revision": "step143000"
+  },
+  {
+   "name": "t-openbookqa-pythia-ladder-70m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "EleutherAI/pythia-70m",
+   "revision": "step143000"
+  },
+  {
+   "name": "t-openbookqa-pythia-ladder-31m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "EleutherAI/pythia-31m",
+   "revision": "step143000"
+  },
+  {
+   "name": "t-openbookqa-pythia-ladder-14m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "EleutherAI/pythia-14m",
+   "revision": "step143000"
+  },
+  {
+   "name": "t-openbookqa-g4-olmo2-1b-base",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 32,
+   "model": "allenai/OLMo-2-0425-1B"
+  },
+  {
+   "name": "t-openbookqa-g4-olmo2-1b-instruct",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 32,
+   "model": "allenai/OLMo-2-0425-1B-Instruct"
+  },
+  {
+   "name": "t-openbookqa-g4-olmo2-1b-sft",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 32,
+   "model": "allenai/OLMo-2-0425-1B-SFT"
+  },
+  {
+   "name": "t-openbookqa-g4-olmo2-1b-dpo",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 32,
+   "model": "allenai/OLMo-2-0425-1B-DPO"
+  },
+  {
+   "name": "t-openbookqa-g4-olmo2-1b-rlvr1",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 32,
+   "model": "allenai/OLMo-2-0425-1B-RLVR1"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dclm-4m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-4M",
+   "revision": "step5745-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dolma-4m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-4M",
+   "revision": "step5735-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-c4-4m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-4M",
+   "revision": "step5735-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dclm-6m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-6M",
+   "revision": "step9182-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dolma-6m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-6M",
+   "revision": "step9182-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-c4-6m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-6M",
+   "revision": "step9182-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dclm-8m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-8M",
+   "revision": "step13039-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dolma-8m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-8M",
+   "revision": "step13039-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-c4-8m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-8M",
+   "revision": "step13039-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dclm-10m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-10M",
+   "revision": "step15117-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dolma-10m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-10M",
+   "revision": "step15117-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-c4-10m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-10M",
+   "revision": "step15117-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dclm-14m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-14M",
+   "revision": "step21953-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dolma-14m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-14M",
+   "revision": "step21953-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-c4-14m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-14M",
+   "revision": "step21953-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dclm-16m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-16M",
+   "revision": "step24432-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dolma-16m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-16M",
+   "revision": "step24432-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-c4-16m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-16M",
+   "revision": "step24432-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dclm-20m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-20M",
+   "revision": "step14594-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dolma-20m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-20M",
+   "revision": "step14594-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-c4-20m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-20M",
+   "revision": "step14594-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dclm-60m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-60M",
+   "revision": "step29052-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dolma-60m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-60M",
+   "revision": "step29052-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-c4-60m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-60M",
+   "revision": "step29052-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dclm-90m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-90M",
+   "revision": "step29901-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dolma-90m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-90M",
+   "revision": "step29901-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-c4-90m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-90M",
+   "revision": "step29901-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-c4-150m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-150M",
+   "revision": "step37500-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-c4-300m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-300M",
+   "revision": "step45000-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dolma-530m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-530M",
+   "revision": "step57776-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-c4-530m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-530M",
+   "revision": "step57776-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dclm-750m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-750M",
+   "revision": "step63589-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-dolma-750m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-750M",
+   "revision": "step63589-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-c4-750m",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-750M",
+   "revision": "step63589-seed-default"
+  },
+  {
+   "name": "t-openbookqa-ladder-dd-c4-1b",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-1B",
+   "revision": "step69369-seed-default"
+  }
+ ]
+}

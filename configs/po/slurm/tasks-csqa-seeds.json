@@ -1,0 +1,940 @@
+{
+ "jobs": [
+  {
+   "name": "t-csqa-ladder-dd-dclm-4m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-4M",
+   "revision": "step5725-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-4m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-4M",
+   "revision": "step5725-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-6m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-6M",
+   "revision": "step9182-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-6m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-6M",
+   "revision": "step9182-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-8m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-8M",
+   "revision": "step13039-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-8m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-8M",
+   "revision": "step13039-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-10m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-10M",
+   "revision": "step15117-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-10m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-10M",
+   "revision": "step15117-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-14m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-14M",
+   "revision": "step21953-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-14m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-14M",
+   "revision": "step21953-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-16m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-16M",
+   "revision": "step24432-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-16m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-16M",
+   "revision": "step24432-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-20m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-20M",
+   "revision": "step14584-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-20m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-20M",
+   "revision": "step14584-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-60m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-60M",
+   "revision": "step29042-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-60m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-60M",
+   "revision": "step29042-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-90m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-90M",
+   "revision": "step29901-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-90m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-90M",
+   "revision": "step29901-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-150m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-150M",
+   "revision": "step37500-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-150m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-150M",
+   "revision": "step37500-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-300m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "revision": "step45000-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-300m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "revision": "step45000-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-1b-large-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "revision": "step69369-seed-large-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dclm-1b-large-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "revision": "step69369-seed-large-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-4m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-4M",
+   "revision": "step5725-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-4m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-4M",
+   "revision": "step5725-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-6m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-6M",
+   "revision": "step9182-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-6m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-6M",
+   "revision": "step9182-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-8m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-8M",
+   "revision": "step13039-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-8m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-8M",
+   "revision": "step13039-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-10m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-10M",
+   "revision": "step15117-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-10m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-10M",
+   "revision": "step15117-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-14m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-14M",
+   "revision": "step21953-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-14m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-14M",
+   "revision": "step21953-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-16m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-16M",
+   "revision": "step24432-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-16m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-16M",
+   "revision": "step24432-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-20m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-20M",
+   "revision": "step14584-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-20m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-20M",
+   "revision": "step14584-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-60m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-60M",
+   "revision": "step29042-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-60m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-60M",
+   "revision": "step29042-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-90m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-90M",
+   "revision": "step29901-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-90m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-90M",
+   "revision": "step29901-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-150m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-150M",
+   "revision": "step37500-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-150m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-150M",
+   "revision": "step37500-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-300m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-300M",
+   "revision": "step45000-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-300m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-300M",
+   "revision": "step45000-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-1b-large-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-1B",
+   "revision": "step69369-seed-large-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-dolma-1b-large-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-1B",
+   "revision": "step69369-seed-large-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-4m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-4M",
+   "revision": "step5725-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-4m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-4M",
+   "revision": "step5725-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-6m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-6M",
+   "revision": "step9182-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-6m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-6M",
+   "revision": "step9182-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-8m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-8M",
+   "revision": "step13039-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-8m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-8M",
+   "revision": "step13039-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-10m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-10M",
+   "revision": "step15117-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-10m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-10M",
+   "revision": "step15117-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-14m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-14M",
+   "revision": "step21953-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-14m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-14M",
+   "revision": "step21953-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-16m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-16M",
+   "revision": "step24432-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-16m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-16M",
+   "revision": "step24432-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-20m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-20M",
+   "revision": "step14584-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-20m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-20M",
+   "revision": "step14584-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-60m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-60M",
+   "revision": "step29042-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-60m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-60M",
+   "revision": "step29042-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-90m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-90M",
+   "revision": "step29901-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-90m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-90M",
+   "revision": "step29901-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-150m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-150M",
+   "revision": "step37500-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-150m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-150M",
+   "revision": "step37500-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-300m-small-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-300M",
+   "revision": "step45000-seed-small-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-300m-small-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-300M",
+   "revision": "step45000-seed-small-aux-3"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-1b-large-aux-2",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-1B",
+   "revision": "step69369-seed-large-aux-2"
+  },
+  {
+   "name": "t-csqa-ladder-dd-c4-1b-large-aux-3",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-c4-1B",
+   "revision": "step69369-seed-large-aux-3"
+  }
+ ]
+}

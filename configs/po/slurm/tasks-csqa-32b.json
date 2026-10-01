@@ -1,0 +1,168 @@
+{
+ "jobs": [
+  {
+   "name": "t-csqa-quant-olmo3-32b-base-bf16",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 2,
+   "model": "allenai/Olmo-3-1125-32B",
+   "dtype": "bfloat16"
+  },
+  {
+   "name": "t-csqa-quant-olmo3.1-32b-sft-bf16",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 2,
+   "model": "allenai/Olmo-3.1-32B-Instruct-SFT",
+   "dtype": "bfloat16"
+  },
+  {
+   "name": "t-csqa-quant-olmo3.1-32b-dpo-bf16",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 2,
+   "model": "allenai/Olmo-3.1-32B-Instruct-DPO",
+   "dtype": "bfloat16"
+  },
+  {
+   "name": "t-csqa-quant-olmo3.1-32b-instruct-bf16",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 2,
+   "model": "allenai/Olmo-3.1-32B-Instruct",
+   "dtype": "bfloat16"
+  },
+  {
+   "name": "t-csqa-quant-olmo3-32b-base-int8",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 4,
+   "model": "allenai/Olmo-3-1125-32B",
+   "dtype": "bfloat16",
+   "quant": "int8"
+  },
+  {
+   "name": "t-csqa-quant-olmo3.1-32b-sft-int8",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 4,
+   "model": "allenai/Olmo-3.1-32B-Instruct-SFT",
+   "dtype": "bfloat16",
+   "quant": "int8"
+  },
+  {
+   "name": "t-csqa-quant-olmo3.1-32b-dpo-int8",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 4,
+   "model": "allenai/Olmo-3.1-32B-Instruct-DPO",
+   "dtype": "bfloat16",
+   "quant": "int8"
+  },
+  {
+   "name": "t-csqa-quant-olmo3.1-32b-instruct-int8",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 4,
+   "model": "allenai/Olmo-3.1-32B-Instruct",
+   "dtype": "bfloat16",
+   "quant": "int8"
+  },
+  {
+   "name": "t-csqa-quant-olmo3-32b-base-nf4",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 4,
+   "model": "allenai/Olmo-3-1125-32B",
+   "dtype": "bfloat16",
+   "quant": "nf4"
+  },
+  {
+   "name": "t-csqa-quant-olmo3.1-32b-sft-nf4",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 4,
+   "model": "allenai/Olmo-3.1-32B-Instruct-SFT",
+   "dtype": "bfloat16",
+   "quant": "nf4"
+  },
+  {
+   "name": "t-csqa-quant-olmo3.1-32b-dpo-nf4",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 4,
+   "model": "allenai/Olmo-3.1-32B-Instruct-DPO",
+   "dtype": "bfloat16",
+   "quant": "nf4"
+  },
+  {
+   "name": "t-csqa-quant-olmo3.1-32b-instruct-nf4",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 4,
+   "model": "allenai/Olmo-3.1-32B-Instruct",
+   "dtype": "bfloat16",
+   "quant": "nf4"
+  }
+ ]
+}
