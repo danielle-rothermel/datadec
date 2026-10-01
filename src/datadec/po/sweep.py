@@ -18,13 +18,17 @@ from datadec.po.subsets import ItemSubset
 DEFAULT_ROOT = Path.home() / "drotherm" / "data" / "runs" / "po" / "sweeps"
 BASELINES_DIRNAME = "baselines"
 OLMES_REPO = Path.home() / "drotherm" / "repos" / "olmes"
-FEWSHOT_SOURCE = {"arc_easy": "OLMES:ARC-Easy", "arc_challenge": "OLMES:ARC-Challenge", "hellaswag": "OLMES:hellaswag"}
+FEWSHOT_SOURCE = {"arc_easy": "OLMES:ARC-Easy", "arc_challenge": "OLMES:ARC-Challenge", "hellaswag": "OLMES:hellaswag",
+                  "csqa": "OLMES:commonsense_qa", "socialiqa": "OLMES:social_i_qa", "openbookqa": "OLMES:openbookqa",
+                  "piqa": "OLMES:piqa", "winogrande": "OLMES:winogrande"}
 TASK_NAMES = {
     ("arc_easy", "rc"): "arc_easy:fmt", ("arc_easy", "mc"): "arc_easy:mc:fmt",
     ("arc_challenge", "rc"): "arc_challenge:fmt", ("arc_challenge", "mc"): "arc_challenge:mc:fmt",
     ("arc_easy", "gen_rc"): "arc_easy:gen:fmt", ("arc_easy", "gen_mc"): "arc_easy:mc:gen:fmt",
     ("arc_challenge", "gen_rc"): "arc_challenge:gen:fmt", ("arc_challenge", "gen_mc"): "arc_challenge:mc:gen:fmt",
     ("hellaswag", "rc"): "hellaswag:fmt", ("hellaswag", "mc"): "hellaswag:mc:fmt",
+    ("csqa", "rc"): "csqa:fmt", ("socialiqa", "rc"): "socialiqa:fmt", ("openbookqa", "rc"): "openbookqa:fmt",
+    ("piqa", "rc"): "piqa:fmt", ("winogrande", "rc"): "winogrande:fmt",
 }
 
 

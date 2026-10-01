@@ -24,6 +24,9 @@ import math
 PRIMARY_METRIC = {("arc_easy", "rc"): "acc_per_char", ("arc_easy", "mc"): "acc_raw",
                   ("arc_challenge", "rc"): "acc_uncond", ("arc_challenge", "mc"): "acc_raw",
                   ("hellaswag", "rc"): "acc_per_char", ("hellaswag", "mc"): "acc_raw",
+                  # phase-2 tasks, RC only; acc_per_char everywhere so accuracy pairs with the per-char likelihood
+                  ("csqa", "rc"): "acc_per_char", ("socialiqa", "rc"): "acc_per_char", ("openbookqa", "rc"): "acc_per_char",
+                  ("piqa", "rc"): "acc_per_char", ("winogrande", "rc"): "acc_per_char",
                   # generation formulations (fork's PrefixMatch): no likelihood twin
                   ("arc_easy", "gen_rc"): "text_match", ("arc_easy", "gen_mc"): "label_match",
                   ("arc_challenge", "gen_rc"): "text_match", ("arc_challenge", "gen_mc"): "label_match"}
