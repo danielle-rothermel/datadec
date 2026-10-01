@@ -1,0 +1,31 @@
+{
+ "jobs": [
+  {
+   "name": "bscheck-qwen1.7b-base-b16",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "arc_easy",
+   "batch_size": 16
+  },
+  {
+   "name": "bscheck-qwen1.7b-base-b32",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "arc_easy",
+   "batch_size": 32
+  },
+  {
+   "name": "bscheck-qwen1.7b-base-b64",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "arc_easy",
+   "batch_size": 64
+  }
+ ]
+}

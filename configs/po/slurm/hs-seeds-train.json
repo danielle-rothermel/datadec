@@ -1,0 +1,58 @@
+{
+ "jobs": [
+  {
+   "name": "hs-seeds-dd300m-train",
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "task": "hellaswag",
+   "formulations": [
+    "rc"
+   ],
+   "instructions": "configs/po/instructions/framed-rc-hellaswag.json",
+   "batch_size": 32,
+   "revision": "step45000-seed-default",
+   "subsets": [
+    "configs/po/subsets/hellaswag-validation-n300-seed0.json"
+   ]
+  },
+  {
+   "name": "hs-seeds-dd1b-train",
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "task": "hellaswag",
+   "formulations": [
+    "rc"
+   ],
+   "instructions": "configs/po/instructions/framed-rc-hellaswag.json",
+   "batch_size": 32,
+   "revision": "step69369-seed-default",
+   "subsets": [
+    "configs/po/subsets/hellaswag-validation-n300-seed0.json"
+   ]
+  },
+  {
+   "name": "hs-seeds-qwen1.7b-base-train",
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "hellaswag",
+   "formulations": [
+    "rc"
+   ],
+   "instructions": "configs/po/instructions/framed-rc-hellaswag.json",
+   "batch_size": 8,
+   "subsets": [
+    "configs/po/subsets/hellaswag-validation-n300-seed0.json"
+   ]
+  },
+  {
+   "name": "hs-seeds-qwen1.7b-train",
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "hellaswag",
+   "formulations": [
+    "rc"
+   ],
+   "instructions": "configs/po/instructions/framed-rc-hellaswag.json",
+   "batch_size": 8,
+   "subsets": [
+    "configs/po/subsets/hellaswag-validation-n300-seed0.json"
+   ]
+  }
+ ]
+}

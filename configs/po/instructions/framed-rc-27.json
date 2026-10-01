@@ -1,0 +1,272 @@
+[
+ {
+  "id": "g51-c000",
+  "text": "Read each science question and its answer choices, rule out the choices that are clearly incorrect, then select the best remaining choice and write it as your answer using only the words of that choice and no explanation.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "plain",
+  "stance": "eliminate",
+  "aware": false,
+  "words": 38
+ },
+ {
+  "id": "g51-c001",
+  "text": "Answer each science question by carefully reading the question and all answer choices, ruling out the options that are incorrect, and then selecting the single best remaining option. Respond with only the text of the correct answer, not its letter and not an explanation.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "plain",
+  "stance": "eliminate",
+  "aware": true,
+  "words": 44
+ },
+ {
+  "id": "g51-c002",
+  "text": "Answer each question with the single most common-sense correct answer, expressed as a short word or phrase, without any explanation.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "plain",
+  "stance": "commonsense",
+  "aware": false,
+  "words": 20
+ },
+ {
+  "id": "g51-c003",
+  "text": "Answer each question by giving the single most common-sense correct answer as a short phrase or sentence, with no explanation or extra text.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "plain",
+  "stance": "commonsense",
+  "aware": true,
+  "words": 23
+ },
+ {
+  "id": "g51-c004",
+  "text": "Answer the question with the correct short answer only, without explanation.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "plain",
+  "stance": "none",
+  "aware": false,
+  "words": 11
+ },
+ {
+  "id": "g51-c005",
+  "text": "Answer each science question by writing only the short, direct answer (a word or phrase) after \u201cAnswer:\u201d, with no explanation or extra text.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "plain",
+  "stance": "none",
+  "aware": true,
+  "words": 23
+ },
+ {
+  "id": "g51-c006",
+  "text": "Rule: For each multiple-choice science question, first carefully evaluate and rule out all incorrect options, then choose the single best remaining option and respond with only the exact text of that correct choice, with no extra words or explanation.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "rule",
+  "stance": "eliminate",
+  "aware": false,
+  "words": 39
+ },
+ {
+  "id": "g51-c007",
+  "text": "You must answer multiple-choice science questions by first reading the question and all of the answer options, then ruling out every option that is clearly wrong. From the remaining options, choose the single best answer and respond with only the exact text of that answer choice, with nothing added or removed and no explanation.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "rule",
+  "stance": "eliminate",
+  "aware": true,
+  "words": 54
+ },
+ {
+  "id": "g51-c008",
+  "text": "You must answer each science question with a brief, direct word or phrase (not an explanation), completing the sentence if needed, and always choose the single most common-sense, commonly expected answer.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "rule",
+  "stance": "commonsense",
+  "aware": false,
+  "words": 31
+ },
+ {
+  "id": "g51-c009",
+  "text": "You must answer each science question with only a short word or phrase that is the most common-sense correct answer, as on a basic school science test, and give no explanation or extra text.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "rule",
+  "stance": "commonsense",
+  "aware": true,
+  "words": 34
+ },
+ {
+  "id": "g51-c010",
+  "text": "For each question, write only the correct answer as a short word or phrase, without repeating the question or adding any explanation.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "rule",
+  "stance": "none",
+  "aware": false,
+  "words": 22
+ },
+ {
+  "id": "g51-c011",
+  "text": "Always answer each question after `Answer:` with a short, direct phrase stating only the correct answer, and do not include any explanation or extra text.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "rule",
+  "stance": "none",
+  "aware": true,
+  "words": 25
+ },
+ {
+  "id": "g51-c012",
+  "text": "For each question, first rule out the incorrect options, then write only the correct answer as briefly as possible.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "short",
+  "stance": "eliminate",
+  "aware": false,
+  "words": 19
+ },
+ {
+  "id": "g51-c013",
+  "text": "For each question, first rule out the wrong options, then answer with the single best remaining option as a brief phrase.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "short",
+  "stance": "eliminate",
+  "aware": true,
+  "words": 21
+ },
+ {
+  "id": "g51-c014",
+  "text": "For each question, give the most common-sense correct answer in a few words.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "short",
+  "stance": "commonsense",
+  "aware": false,
+  "words": 13
+ },
+ {
+  "id": "g51-c015",
+  "text": "Answer each science question with a short, direct phrase giving the most common-sense correct answer.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "short",
+  "stance": "commonsense",
+  "aware": true,
+  "words": 15
+ },
+ {
+  "id": "g51-c017",
+  "text": "Write only the correct answer, with no explanation.",
+  "pool": "20260917T173637Z-framed-rc-dd300m",
+  "proposer": "openai/gpt-5.1",
+  "operator": "short",
+  "stance": "none",
+  "aware": true,
+  "words": 8
+ },
+ {
+  "id": "terra-c000",
+  "text": "For each question, rule out the incorrect answer choices first, then choose the best remaining answer.",
+  "pool": "20260917T180641Z-framed-rc-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "plain",
+  "stance": "eliminate",
+  "aware": false,
+  "words": 16
+ },
+ {
+  "id": "terra-c001",
+  "text": "Eliminate the wrong answer choices first, then select the best answer.",
+  "pool": "20260917T180641Z-framed-rc-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "plain",
+  "stance": "eliminate",
+  "aware": true,
+  "words": 11
+ },
+ {
+  "id": "terra-c002",
+  "text": "Answer each question with the most common-sense answer.",
+  "pool": "20260917T180641Z-framed-rc-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "plain",
+  "stance": "commonsense",
+  "aware": false,
+  "words": 8
+ },
+ {
+  "id": "terra-c004",
+  "text": "Answer each question with the correct answer only.",
+  "pool": "20260917T180641Z-framed-rc-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "plain",
+  "stance": "none",
+  "aware": false,
+  "words": 8
+ },
+ {
+  "id": "terra-c006",
+  "text": "Rule: First rule out the incorrect answer choices, then write only the correct answer.",
+  "pool": "20260917T180641Z-framed-rc-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "rule",
+  "stance": "eliminate",
+  "aware": false,
+  "words": 14
+ },
+ {
+  "id": "terra-c007",
+  "text": "Rule out the wrong answer choices first, then give the correct answer.",
+  "pool": "20260917T180641Z-framed-rc-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "rule",
+  "stance": "eliminate",
+  "aware": true,
+  "words": 12
+ },
+ {
+  "id": "terra-c012",
+  "text": "Rule out wrong options, then give the correct answer.",
+  "pool": "20260917T180641Z-framed-rc-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "short",
+  "stance": "eliminate",
+  "aware": false,
+  "words": 9
+ },
+ {
+  "id": "terra-c013",
+  "text": "Eliminate wrong options first.",
+  "pool": "20260917T180641Z-framed-rc-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "short",
+  "stance": "eliminate",
+  "aware": true,
+  "words": 4
+ },
+ {
+  "id": "terra-c015",
+  "text": "Use common sense.",
+  "pool": "20260917T180641Z-framed-rc-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "short",
+  "stance": "commonsense",
+  "aware": true,
+  "words": 3
+ },
+ {
+  "id": "terra-c016",
+  "text": "Answer the question.",
+  "pool": "20260917T180641Z-framed-rc-dd300m-terra",
+  "proposer": "openai/gpt-5.6-terra",
+  "operator": "short",
+  "stance": "none",
+  "aware": false,
+  "words": 3
+ }
+]

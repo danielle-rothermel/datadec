@@ -1,0 +1,9 @@
+model,task,n,acc_raw,acc_per_char,acc_uncond
+pythia-160m,arc_easy,2376,0.4554,0.4327,0.4104
+pythia-160m,arc_easy:mc,2376,0.2542,0.2542,
+pythia-410m,arc_easy,2376,0.5606,0.5551,0.5055
+pythia-410m,arc_easy:mc,2376,0.2479,0.2479,
+pythia-1b,arc_easy,2376,0.601,0.6019,0.5535
+pythia-1b,arc_easy:mc,2376,0.2344,0.2344,
+pythia-2.8b,arc_easy,2376,0.678,0.6827,0.6098
+pythia-2.8b,arc_easy:mc,2376,0.2416,0.2416,
