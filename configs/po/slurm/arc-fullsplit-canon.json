@@ -1,0 +1,94 @@
+{
+ "jobs": [
+  {
+   "name": "fullsplit-dd300m-train",
+   "subset": "configs/po/subsets/arc_easy-train-n2243-seed0.json",
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step45000-seed-default"
+  },
+  {
+   "name": "fullsplit-dd300m-validation",
+   "subset": "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step45000-seed-default"
+  },
+  {
+   "name": "fullsplit-dd300m-test",
+   "subset": "configs/po/subsets/arc_easy-test-n2376-seed0.json",
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step45000-seed-default"
+  },
+  {
+   "name": "fullsplit-dd1b-train",
+   "subset": "configs/po/subsets/arc_easy-train-n2243-seed0.json",
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "fullsplit-dd1b-validation",
+   "subset": "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "fullsplit-dd1b-test",
+   "subset": "configs/po/subsets/arc_easy-test-n2376-seed0.json",
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "fullsplit-qwen1.7b-base-train",
+   "subset": "configs/po/subsets/arc_easy-train-n2243-seed0.json",
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "arc_easy",
+   "batch_size": 16
+  },
+  {
+   "name": "fullsplit-qwen1.7b-base-validation",
+   "subset": "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "arc_easy",
+   "batch_size": 16
+  },
+  {
+   "name": "fullsplit-qwen1.7b-base-test",
+   "subset": "configs/po/subsets/arc_easy-test-n2376-seed0.json",
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "arc_easy",
+   "batch_size": 16
+  },
+  {
+   "name": "fullsplit-qwen1.7b-train",
+   "subset": "configs/po/subsets/arc_easy-train-n2243-seed0.json",
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "arc_easy",
+   "batch_size": 16
+  },
+  {
+   "name": "fullsplit-qwen1.7b-validation",
+   "subset": "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "arc_easy",
+   "batch_size": 16
+  },
+  {
+   "name": "fullsplit-qwen1.7b-test",
+   "subset": "configs/po/subsets/arc_easy-test-n2376-seed0.json",
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "arc_easy",
+   "batch_size": 16
+  }
+ ]
+}
