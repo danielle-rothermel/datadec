@@ -1,0 +1,4 @@
+{"jobs": [
+ {"name": "smoke-dd150m-train", "model": "allenai/DataDecide-dclm-baseline-150M", "revision": "step37500-seed-default", "subset": "configs/po/subsets/arc_easy-test-snr-train-n300-seed0.json", "batch_size": 64},
+ {"name": "smoke-dd150m-dev", "model": "allenai/DataDecide-dclm-baseline-150M", "revision": "step37500-seed-default", "subset": "configs/po/subsets/arc_easy-test-snr-dev-n300-seed0.json", "batch_size": 64}
+]}
