@@ -68,15 +68,21 @@ def _data_deletion_plan(
     artifacts: DataArtifacts, selection: DatasetSelection
 ) -> _DeletionPlan:
     raw_plan = _raw_deletion_plan(artifacts, selection)
+    processing_trees = artifacts.processing_intermediate_tree_paths(selection)
+    tree_paths = set(processing_trees)
     return _DeletionPlan(
         file_paths=_deduplicate(
             (
                 *raw_plan.file_paths,
                 *artifacts.processed_paths(selection),
-                *artifacts.processing_intermediate_paths(selection),
+                *(
+                    path
+                    for path in artifacts.processing_intermediate_paths(selection)
+                    if path not in tree_paths
+                ),
             )
         ),
-        tree_paths=raw_plan.tree_paths,
+        tree_paths=_deduplicate((*raw_plan.tree_paths, *processing_trees)),
     )
 
 

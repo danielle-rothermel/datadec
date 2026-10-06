@@ -24,7 +24,7 @@
 
 - **Step 5 — Add selective downloads of processed outputs from Hugging Face:** Added exact selected processed downloads from an immutable Hugging Face commit, with size/hash/schema verification before replacing any existing outputs. Raw downloads now use the same resolved selection and support published-result units. All 356 integrated tests passed.
 
-- **Step 6 — Add shared, scoped cleanup with dry-run support:** Added shared raw/full cleanup with exact dry-run plans and all remote checks before deletion. Missing files are idempotent; subsets preserve shared caches, processor staging and unrelated files; symlink escapes and unexpected directories are rejected. All 370 integrated tests passed.
+- **Step 6 — Add shared, scoped cleanup with dry-run support:** Added shared raw/full cleanup with exact dry-run plans and all remote checks before deletion. Missing files are idempotent; subsets preserve shared caches and unrelated files; raw cleanup preserves processor staging. Symlink escapes and unexpected directories are rejected. All 370 integrated tests passed. Follow-up: full cleanup handles selected DuckDB spill directories explicitly; 23 focused cleanup/artifact tests passed.
 
 ## Goal
 

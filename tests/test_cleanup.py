@@ -93,6 +93,24 @@ def test_raw_cleanup_all_removes_only_declared_cache_trees(tmp_path: Path) -> No
     assert unrelated.exists()
 
 
+def test_clean_removes_only_selected_duckdb_spill_directory(tmp_path: Path) -> None:
+    artifacts = DataArtifacts(tmp_path)
+    selection = resolve_selection(olmes_details=("c4",))
+    spill = artifacts.processing_intermediate_tree_paths(selection)[0]
+    other_spill = Path(f"{artifacts.olmes_details_staging_path('dolma1.7')}.tmp")
+    for directory in (spill, other_spill):
+        _write(directory / "duckdb_temp_storage.bin")
+
+    cleanup_raw(artifacts, selection)
+    assert spill.exists()
+    preview = clean_data(artifacts, selection, dry_run=True)
+    assert preview.would_remove_paths == (spill,)
+    result = clean_data(artifacts, selection)
+    assert result.removed_paths == (spill,)
+    assert not spill.exists()
+    assert other_spill.exists()
+
+
 def test_raw_cleanup_is_idempotent_and_reports_missing_paths(tmp_path: Path) -> None:
     artifacts = DataArtifacts(tmp_path)
     selection = resolve_selection(ppl=True)

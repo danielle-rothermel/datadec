@@ -226,6 +226,15 @@ class DataArtifacts:
             for path in self.olmes_detail_metadata_paths(recipe)
         )
 
+    def processing_intermediate_tree_paths(
+        self, selection: DatasetSelection
+    ) -> tuple[Path, ...]:
+        """DuckDB spill directories owned by selected detail processing."""
+        return tuple(
+            Path(f"{self.olmes_details_staging_path(recipe)}.tmp")
+            for recipe in selection.olmes_details
+        )
+
     def _selected_drive_sources(
         self, selection: DatasetSelection
     ) -> tuple[PublishedResultFile, ...]:
