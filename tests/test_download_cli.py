@@ -32,8 +32,12 @@ def test_cli_requires_an_explicit_selection() -> None:
 
 def test_cli_forwards_mixed_repeatable_options_and_force(tmp_path: Path) -> None:
     paths = object()
+    selection = object()
     with (
         patch.object(script, "DataArtifacts", return_value=paths) as path_type,
+        patch.object(
+            script, "resolve_selection", return_value=selection
+        ) as resolve_selection,
         patch.object(script, "download_sources") as download_sources,
     ):
         result = runner.invoke(
@@ -47,6 +51,8 @@ def test_cli_forwards_mixed_repeatable_options_and_force(tmp_path: Path) -> None
                 "c4",
                 "--scaling-law",
                 "--published-results",
+                "--unit",
+                "outputs2",
                 "--published-figures",
                 "--force",
                 "--data-dir",
@@ -56,14 +62,18 @@ def test_cli_forwards_mixed_repeatable_options_and_force(tmp_path: Path) -> None
 
     assert result.exit_code == 0
     path_type.assert_called_once_with(tmp_path)
-    download_sources.assert_called_once_with(
-        paths,
+    resolve_selection.assert_called_once_with(
         ppl=True,
         olmes=True,
         olmes_details=["fineweb-pro", "c4"],
         scaling_law=True,
         published_results=True,
+        units=["outputs2"],
         published_figures=True,
+    )
+    download_sources.assert_called_once_with(
+        paths,
+        selection,
         force=True,
         verbose=True,
     )
@@ -87,10 +97,9 @@ def test_cli_default_is_repo_data_independent_of_cwd(
 
 def test_cli_reports_unknown_detail_recipe_as_usage_error() -> None:
     with (
-        patch.object(script, "DataArtifacts", return_value=object()),
         patch.object(
             script,
-            "download_sources",
+            "resolve_selection",
             side_effect=ValueError("unknown OLMES detail recipe: missing"),
         ),
     ):

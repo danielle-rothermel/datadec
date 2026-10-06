@@ -298,7 +298,6 @@ def test_typed_ingest_downloads_missing_raw_sources_directly(tmp_path: Path) -> 
 
     download_sources.assert_called_once_with(
         paths,
-        ppl=True,
-        olmes=True,
+        ingest_module.resolve_selection(ppl=True, olmes=True),
         verbose=True,
     )

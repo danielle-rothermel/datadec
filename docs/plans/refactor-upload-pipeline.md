@@ -6,7 +6,7 @@
 - [x] Centralize dataset selection, artifact paths, and file ownership.
 - [x] Keep processors local-only and separate verification from processing.
 - [x] Separate publication-unit construction from upload and remote verification.
-- [ ] Add selective downloads of processed outputs from Hugging Face.
+- [x] Add selective downloads of processed outputs from Hugging Face.
 - [ ] Add shared, scoped cleanup with dry-run support.
 - [ ] Implement the full pipeline coordinator in `src`.
 - [ ] Consolidate the Typer CLI in `src` and retire superseded scripts.
@@ -21,6 +21,8 @@
 - **Step 3 — Keep processors local-only and separate verification from processing:** Moved verification into data/verify and added typed selection-aware reports. Base-only derivation checks never scan detail files; cross-source prerequisites are reported explicitly. Extracted shared checkpoint identity normalization and staging ownership. All 352 tests passed. Live-data follow-up: the pinned scaling-law inputs encode nominal compute in 489,258 rows; those differences are diagnostic while exact-compute checks on generated outputs remain blocking.
 
 - **Step 4 — Separate publication-unit construction from upload and remote verification:** Separated publication units from CAS upload and immutable size/hash verification. Publishing never deletes local files; added read-only verification for cleanup. Updated tests to prove raw/output retention on success and failure. All 347 integrated tests passed.
+
+- **Step 5 — Add selective downloads of processed outputs from Hugging Face:** Added exact selected processed downloads from an immutable Hugging Face commit, with size/hash/schema verification before replacing any existing outputs. Raw downloads now use the same resolved selection and support published-result units. All 356 integrated tests passed.
 
 ## Goal
 

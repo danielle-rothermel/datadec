@@ -19,7 +19,7 @@ from datadec.config import (
 )
 from datadec.data import download
 from datadec.data.download import download_sources
-from datadec.data.selection import resolve_olmes_detail_recipes
+from datadec.data.selection import resolve_olmes_detail_recipes, resolve_selection
 from datadec.data.artifacts import DataArtifacts
 
 PUBLISHED_RESULTS_FOLDER_URL = (
@@ -140,9 +140,11 @@ def test_download_sources_preserves_ppl_olmes_then_detail_order(
     ):
         results = download_sources(
             paths,
-            ppl=True,
-            olmes=True,
-            olmes_details=["fineweb-pro", "c4", "fineweb-pro"],
+            resolve_selection(
+                ppl=True,
+                olmes=True,
+                olmes_details=["fineweb-pro", "c4", "fineweb-pro"],
+            ),
             manifest=detail_manifest("fineweb-pro", "c4"),
         )
 
@@ -220,9 +222,7 @@ def test_existing_outputs_are_reused_without_network_calls(tmp_path: Path) -> No
     ):
         results = download_sources(
             paths,
-            ppl=True,
-            olmes=True,
-            olmes_details=["c4"],
+            resolve_selection(ppl=True, olmes=True, olmes_details=["c4"]),
             manifest=detail_manifest("c4"),
         )
 
@@ -245,8 +245,7 @@ def test_force_propagates_to_dataset_and_detail_downloads(tmp_path: Path) -> Non
     ):
         download_sources(
             paths,
-            ppl=True,
-            olmes_details=["c4"],
+            resolve_selection(ppl=True, olmes_details=["c4"]),
             force=True,
             manifest=detail_manifest("c4"),
         )
@@ -278,7 +277,7 @@ def test_invalid_existing_dataset_output_is_redownloaded(tmp_path: Path) -> None
     dataset.to_parquet.side_effect = _write_dataset_parquet
 
     with patch("datadec.data.download.load_dataset", return_value=dataset):
-        result = download_sources(paths, ppl=True)
+        result = download_sources(paths, resolve_selection(ppl=True))
 
     assert result[0].status == "downloaded"
     assert pd.read_parquet(output)["value"].tolist() == [1]
@@ -295,7 +294,7 @@ def test_existing_detail_archive_requires_matching_digest(tmp_path: Path) -> Non
     ):
         download_sources(
             DataArtifacts(tmp_path),
-            olmes_details=["c4"],
+            resolve_selection(olmes_details=["c4"]),
             manifest=detail_manifest("c4"),
         )
 
@@ -318,7 +317,7 @@ def test_downloaded_detail_archive_requires_matching_digest(tmp_path: Path) -> N
     ):
         download_sources(
             DataArtifacts(tmp_path),
-            olmes_details=["c4"],
+            resolve_selection(olmes_details=["c4"]),
             manifest=detail_manifest("c4"),
         )
 
@@ -341,7 +340,7 @@ def test_failed_forced_dataset_export_preserves_existing_output(
         patch("datadec.data.download.load_dataset", return_value=dataset),
         pytest.raises(RuntimeError, match="interrupted export"),
     ):
-        download_sources(paths, ppl=True, force=True)
+        download_sources(paths, resolve_selection(ppl=True), force=True)
 
     assert pd.read_parquet(output)["value"].tolist() == [7]
     assert list(output.parent.glob(f".{output.name}.*.tmp")) == []
@@ -356,23 +355,12 @@ def test_all_detail_recipes_use_config_order() -> None:
     )
 
 
-def test_unknown_detail_recipe_is_rejected_before_download(tmp_path: Path) -> None:
-    with (
-        patch("datadec.data.download.load_dataset") as load_dataset,
-        patch("datadec.data.download.hf_hub_download") as hf_hub_download,
-    ):
-        with pytest.raises(ValueError, match="unknown OLMES detail recipe: missing"):
-            download_sources(
-                DataArtifacts(tmp_path), ppl=True, olmes_details=["missing"]
-            )
+def test_download_sources_uses_only_the_canonical_selection_api() -> None:
+    parameters = inspect.signature(download_sources).parameters
 
-    load_dataset.assert_not_called()
-    hf_hub_download.assert_not_called()
-
-
-def test_download_sources_requires_an_explicit_selection(tmp_path: Path) -> None:
-    with pytest.raises(ValueError, match="select at least one source"):
-        download_sources(DataArtifacts(tmp_path))
+    assert tuple(parameters)[:2] == ("paths", "selection")
+    assert "ppl" not in parameters
+    assert "olmes" not in parameters
 
 
 def test_verbose_status_identifies_source_destination_and_reuse(
@@ -382,7 +370,9 @@ def test_verbose_status_identifies_source_destination_and_reuse(
     output.parent.mkdir(parents=True)
     _write_dataset_parquet(output)
 
-    download_sources(DataArtifacts(tmp_path), ppl=True, verbose=True)
+    download_sources(
+        DataArtifacts(tmp_path), resolve_selection(ppl=True), verbose=True
+    )
 
     assert capsys.readouterr().out == f"ppl: reused -> {output}\n"
 
@@ -684,23 +674,22 @@ def test_drive_selectors_are_disjoint_complete_and_deterministic(
 
     scaling = download_sources(
         DataArtifacts(tmp_path),
-        scaling_law=True,
+        resolve_selection(scaling_law=True),
         published_results_manifest=manifest,
     )
     published = download_sources(
         DataArtifacts(tmp_path),
-        published_results=True,
+        resolve_selection(published_results=True),
         published_results_manifest=manifest,
     )
     combined = download_sources(
         DataArtifacts(tmp_path),
-        scaling_law=True,
-        published_results=True,
+        resolve_selection(scaling_law=True, published_results=True),
         published_results_manifest=manifest,
     )
     figures = download_sources(
         DataArtifacts(tmp_path),
-        published_figures=True,
+        resolve_selection(published_figures=True),
         published_results_manifest=manifest,
     )
 
@@ -749,12 +738,12 @@ def test_real_manifest_drive_selectors_pin_counts_bytes_and_use_no_network(
     ):
         structured = download_sources(
             DataArtifacts(tmp_path),
-            published_results=True,
+            resolve_selection(published_results=True),
             published_results_manifest=manifest,
         )
         figures = download_sources(
             DataArtifacts(tmp_path),
-            published_figures=True,
+            resolve_selection(published_figures=True),
             published_results_manifest=manifest,
         )
 
@@ -771,3 +760,38 @@ def test_real_manifest_drive_selectors_pin_counts_bytes_and_use_no_network(
     assert {source.category for source in structured_sources} == {"published_results"}
     assert {source.category for source in figure_sources} == {"published_figures"}
     urlopen.assert_not_called()
+
+
+def test_raw_published_results_downloads_only_selected_publication_unit(
+    tmp_path: Path,
+) -> None:
+    manifest = load_published_results_manifest()
+
+    def selected_result(
+        paths: DataArtifacts, source: PublishedResultFile, *, force: bool
+    ) -> download.DownloadResult:
+        return download.DownloadResult(
+            source.path,
+            paths.published_result_download_path(source),
+            "reused",
+        )
+
+    with patch(
+        "datadec.data.download._download_published_result_file",
+        side_effect=selected_result,
+    ) as download_file:
+        results = download_sources(
+            DataArtifacts(tmp_path),
+            resolve_selection(units=["outputs2"]),
+            published_results_manifest=manifest,
+        )
+
+    selected_sources = [item.args[1] for item in download_file.call_args_list]
+    expected_sources = [
+        source
+        for source in manifest.files
+        if source.category == "published_results"
+        and source.publication_unit == "outputs2"
+    ]
+    assert selected_sources == expected_sources
+    assert len(results) == len(expected_sources)

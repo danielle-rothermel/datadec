@@ -20,6 +20,7 @@ from datadec.data.ingest.registries.model_details import (
 from datadec.data.ingest.run import TrainingRun
 from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.ppl import group_perplexity_rows
+from datadec.data.selection import resolve_selection
 
 type RunKey = tuple[ModelSizeName, DataRecipeName, Seed]
 type TaskRowsByKey = dict[RunKey, dict[int, dict[Task, TaskEvalMetrics]]]
@@ -79,7 +80,11 @@ def _ensure_raw_parquets_exist(paths: DataArtifacts, *, verbose: bool) -> None:
         return
     if verbose:
         print(f">> missing raw parquets for {missing_types}; downloading")
-    download_sources(paths, ppl=True, olmes=True, verbose=verbose)
+    download_sources(
+        paths,
+        resolve_selection(ppl=True, olmes=True),
+        verbose=verbose,
+    )
 
 
 def _group_task_rows(dwn_df: pd.DataFrame) -> TaskRowsByKey:

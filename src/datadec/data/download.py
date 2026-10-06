@@ -1,19 +1,20 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, replace
 import hashlib
 import os
 from pathlib import Path
 import re
+import shutil
 import tempfile
-from typing import Protocol, cast
-from typing import Literal, Sequence
+from typing import Literal, Protocol, cast
 from urllib.request import Request, urlopen
 
 import pyarrow as pa
 import pyarrow.parquet as pq
 from datasets import load_dataset
-from huggingface_hub import hf_hub_download
+from huggingface_hub import HfApi, hf_hub_download
 
 from datadec.config import (
     DatasetSource,
@@ -21,11 +22,14 @@ from datadec.config import (
     PublishedResultFile,
     PublishedResultsManifest,
     SourceManifest,
+    load_publishing_contract,
     load_published_results_manifest,
     load_source_manifest,
 )
 from datadec.data.artifacts import DataArtifacts
-from datadec.data.selection import resolve_olmes_detail_recipes
+from datadec.data.publication import PublicationFile, PublicationUnit, publication_units
+from datadec.data.publish import validate_publication_unit
+from datadec.data.selection import DatasetSelection
 
 _GOOGLE_DRIVE_DOWNLOAD_URL = (
     "https://drive.usercontent.google.com/download?id={file_id}"
@@ -82,6 +86,17 @@ def _validate_file_identity(
             f"{description} has unexpected SHA-256: {path} has {actual_sha256}, "
             f"expected {expected_sha256}"
         )
+
+
+def _matches_file_identity(
+    path: Path, *, expected_size: int, expected_sha256: str
+) -> bool:
+    try:
+        return path.is_file() and path.stat().st_size == expected_size and (
+            _sha256(path) == expected_sha256
+        )
+    except OSError:
+        return False
 
 
 def _download_dataset_source(
@@ -263,30 +278,15 @@ def _download_published_result_file(
 
 def download_sources(
     paths: DataArtifacts,
+    selection: DatasetSelection,
     *,
-    ppl: bool = False,
-    olmes: bool = False,
-    olmes_details: Sequence[str] = (),
-    scaling_law: bool = False,
-    published_results: bool = False,
-    published_figures: bool = False,
     force: bool = False,
     verbose: bool = False,
     manifest: SourceManifest | None = None,
     published_results_manifest: PublishedResultsManifest | None = None,
-) -> list[DownloadResult]:
-    if (
-        not ppl
-        and not olmes
-        and not olmes_details
-        and not scaling_law
-        and not published_results
-        and not published_figures
-    ):
-        raise ValueError("select at least one source to download")
+) -> tuple[DownloadResult, ...]:
 
     manifest = manifest or load_source_manifest()
-    detail_recipes = resolve_olmes_detail_recipes(olmes_details, manifest.olmes_details)
     results: list[DownloadResult] = []
 
     def record(result: DownloadResult) -> None:
@@ -294,27 +294,176 @@ def download_sources(
         if verbose:
             print(f"{result.source}: {result.status} -> {result.destination}")
 
-    if ppl:
+    if selection.ppl:
         record(_download_dataset_source(paths, manifest.ppl, force=force))
-    if olmes:
+    if selection.olmes:
         record(_download_dataset_source(paths, manifest.olmes, force=force))
-    for recipe in detail_recipes:
+    for recipe in selection.olmes_details:
         record(
             _download_detail_source(paths, manifest.olmes_details, recipe, force=force)
         )
 
-    if scaling_law or published_results or published_figures:
+    if (
+        selection.scaling_law
+        or selection.published_results
+        or selection.published_figures
+    ):
         drive_manifest = published_results_manifest or load_published_results_manifest()
-        categories = []
-        if scaling_law:
+        categories: list[str] = []
+        if selection.scaling_law:
             categories.append("scaling_law")
-        if published_results:
+        if selection.published_results:
             categories.append("published_results")
-        if published_figures:
+        if selection.published_figures:
             categories.append("published_figures")
+        selected_units = set(selection.published_results)
         for category in categories:
             for source in drive_manifest.files:
-                if source.category == category:
+                if source.category == category and (
+                    category != "published_results"
+                    or source.publication_unit in selected_units
+                ):
                     record(_download_published_result_file(paths, source, force=force))
 
-    return results
+    return tuple(results)
+
+
+def _remote_lfs_sha256(remote_file: object) -> str | None:
+    lfs = getattr(remote_file, "lfs", None)
+    if lfs is None:
+        return None
+    if isinstance(lfs, Mapping):
+        value = lfs.get("sha256") or lfs.get("oid")
+    else:
+        value = getattr(lfs, "sha256", None)
+    return value if isinstance(value, str) and value else None
+
+
+def _validate_processed_file(
+    unit: PublicationUnit,
+    publication_file: PublicationFile,
+    path: Path,
+) -> None:
+    validate_publication_unit(
+        PublicationUnit(
+            name=unit.name,
+            files=(replace(publication_file, local_path=path),),
+            commit_message=unit.commit_message,
+        )
+    )
+
+
+def download_processed_outputs(
+    artifacts: DataArtifacts,
+    selection: DatasetSelection,
+    *,
+    force: bool = False,
+    hf_token: str | None = None,
+    api: HfApi | None = None,
+    verbose: bool = False,
+) -> tuple[DownloadResult, ...]:
+    """Download selected published outputs from one immutable repository commit."""
+    if selection.published_figures:
+        raise ValueError(
+            "published figures are raw-only; use download_sources for that selection"
+        )
+
+    publishing = load_publishing_contract()
+    units = publication_units(artifacts, selection, contract=publishing)
+    files = tuple((unit, file) for unit in units for file in unit.files)
+    if not files:
+        return ()
+
+    resolved_api = api or HfApi(token=hf_token)
+    target = publishing.target
+    repo_info = resolved_api.repo_info(
+        target.repo_id,
+        repo_type="dataset",
+        revision=target.revision,
+    )
+    commit_oid = getattr(repo_info, "sha", None)
+    if not isinstance(commit_oid, str) or not commit_oid:
+        raise RuntimeError(f"could not resolve {target.repo_id}@{target.revision}")
+
+    remote_paths = [file.remote_path for _, file in files]
+    remote_items = resolved_api.get_paths_info(
+        target.repo_id,
+        remote_paths,
+        repo_type="dataset",
+        revision=commit_oid,
+    )
+    remote_by_path = {getattr(item, "path", None): item for item in remote_items}
+    missing = [path for path in remote_paths if path not in remote_by_path]
+    if missing:
+        raise RuntimeError(
+            f"processed files are missing at immutable commit {commit_oid}: "
+            f"{', '.join(missing)}"
+        )
+
+    staged: list[tuple[Path, Path]] = []
+    results: list[DownloadResult] = []
+    try:
+        for unit, publication_file in files:
+            remote_path = publication_file.remote_path
+            remote = remote_by_path[remote_path]
+            expected_size = getattr(remote, "size", None)
+            expected_sha256 = _remote_lfs_sha256(remote)
+            if not isinstance(expected_size, int) or expected_size <= 0:
+                raise RuntimeError(
+                    f"processed file size missing at {commit_oid} for {remote_path}"
+                )
+            if expected_sha256 is None:
+                raise RuntimeError(
+                    f"processed file LFS SHA-256 missing at {commit_oid} "
+                    f"for {remote_path}"
+                )
+
+            destination = publication_file.local_path
+            source_name = f"{unit.name}:{remote_path}"
+            if not force and _matches_file_identity(
+                destination,
+                expected_size=expected_size,
+                expected_sha256=expected_sha256,
+            ):
+                _validate_processed_file(unit, publication_file, destination)
+                result = DownloadResult(source_name, destination, "reused")
+                results.append(result)
+                continue
+
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            temporary_path = destination.with_name(f".{destination.name}.tmp")
+            temporary_path.unlink(missing_ok=True)
+            staged.append((temporary_path, destination))
+            cached_path = Path(
+                resolved_api.hf_hub_download(
+                    target.repo_id,
+                    remote_path,
+                    repo_type="dataset",
+                    revision=commit_oid,
+                    cache_dir=artifacts.data_dir / "cache" / "huggingface",
+                    force_download=force,
+                )
+            )
+            shutil.copyfile(cached_path, temporary_path)
+            _validate_file_identity(
+                temporary_path,
+                expected_size=expected_size,
+                expected_sha256=expected_sha256,
+                description=f"downloaded processed file {remote_path}",
+            )
+            _validate_processed_file(unit, publication_file, temporary_path)
+            results.append(DownloadResult(source_name, destination, "downloaded"))
+
+        for temporary_path, destination in staged:
+            os.replace(temporary_path, destination)
+        if verbose:
+            for result in results:
+                print(f"{result.source}: {result.status} -> {result.destination}")
+    finally:
+        for temporary_path, _ in staged:
+            temporary_path.unlink(missing_ok=True)
+
+    return tuple(results)
+
+
+__all__ = ["DownloadResult", "download_processed_outputs", "download_sources"]
