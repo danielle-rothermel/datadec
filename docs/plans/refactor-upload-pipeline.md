@@ -9,7 +9,7 @@
 - [x] Add selective downloads of processed outputs from Hugging Face.
 - [x] Add shared, scoped cleanup with dry-run support.
 - [x] Implement the full pipeline coordinator in `src`.
-- [ ] Consolidate the Typer CLI in `src` and retire superseded scripts.
+- [x] Consolidate the Typer CLI in `src` and retire superseded scripts.
 - [ ] Update callers, documentation, packaging, and focused tests together.
 
 ## Implementation log
@@ -27,6 +27,8 @@
 - **Step 6 — Add shared, scoped cleanup with dry-run support:** Added shared raw/full cleanup with exact dry-run plans and all remote checks before deletion. Missing files are idempotent; subsets preserve shared caches and unrelated files; raw cleanup preserves processor staging. Symlink escapes and unexpected directories are rejected. All 370 integrated tests passed. Follow-up: full cleanup handles selected DuckDB spill directories explicitly; 23 focused cleanup/artifact tests passed.
 
 - **Step 7 — Implement the full pipeline coordinator in `src`:** Added the typed coordinator: raw download, explicit local processors, all schemas and selected checks, immutable publication, then cleanup. No-upload defaults retain files; contradictory cleanup is rejected before side effects. All 386 integrated tests passed, including failure retention and partial-publication checks.
+
+- **Step 8 — Consolidate the Typer CLI in `src` and retire superseded scripts:** Added the library-owned Typer CLI and tiny scripts/data.py launcher; removed superseded download, processing and publication scripts and tests. Shared selection, dry-run and diagnostics are covered; the installed CLI uses a working-directory-relative data root. All 374 integrated tests passed.
 
 ## Goal
 
