@@ -140,7 +140,7 @@ def test_all_data_inventory_includes_every_known_source_and_shared_cache(
     tmp_path: Path,
 ) -> None:
     artifacts = DataArtifacts(tmp_path)
-    selection = resolve_selection(all_data=True)
+    selection = resolve_selection(all_data=True, published_figures=True)
     source_manifest = load_source_manifest()
     result_manifest = load_published_results_manifest()
 

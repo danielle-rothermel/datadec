@@ -239,7 +239,7 @@ class DataArtifacts:
         self, selection: DatasetSelection
     ) -> tuple[PublishedResultFile, ...]:
         selected_units = set(selection.published_results)
-        include_figures = selection.published_figures or selection.all_data
+        include_figures = selection.published_figures
         return tuple(
             source
             for source in load_published_results_manifest().files

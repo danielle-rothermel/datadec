@@ -57,7 +57,7 @@ def main(
         if not path.is_file():
             raise typer.BadParameter(
                 f"missing preprocessed detail output: {path}; "
-                "run scripts/preprocess_olmes_details.py first",
+                f"run datadec run --olmes-details {recipe} --no-upload first",
             )
 
     result = verify_olmes_details(

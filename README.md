@@ -106,6 +106,9 @@ also removes owned intermediates and processed outputs, but first verifies
 every existing selected final output against its immutable remote copy. Both
 cleanup commands support `--dry-run` and tolerate files that are already
 missing.
+Standalone cleanup with `--all` also includes downloaded reference figures and
+the project-owned raw download caches; automatic run cleanup follows only the
+processing selection.
 
 ```bash
 uv run datadec publish --ppl --olmes --scaling-law

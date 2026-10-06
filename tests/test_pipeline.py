@@ -6,6 +6,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from datadec.config import load_published_results_manifest
 from datadec.data import pipeline
 from datadec.data.artifacts import DataArtifacts
 from datadec.data.cleanup import CleanupMode, CleanupResult
@@ -13,7 +14,7 @@ from datadec.data.download import DownloadResult
 from datadec.data.pipeline import PipelineRequest, run_pipeline
 from datadec.data.publication import PublicationUnit
 from datadec.data.publish import PublicationResult
-from datadec.data.selection import DatasetSelection
+from datadec.data.selection import DatasetSelection, resolve_selection
 from datadec.data.verify import (
     DerivationVerificationResult,
     VerificationCheck,
@@ -61,6 +62,43 @@ def _publication(name: str) -> PublicationResult:
         commit_oid=f"{name}-commit",
         remote_paths=(f"{name}.parquet",),
     )
+
+
+def test_run_all_cleanup_preserves_unselected_reference_figures(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    artifacts = DataArtifacts(tmp_path)
+    selection = resolve_selection(all_data=True)
+    figure_source = next(
+        source
+        for source in load_published_results_manifest().files
+        if source.category == "published_figures"
+    )
+    figure = artifacts.published_result_download_path(figure_source)
+    raw = artifacts.get_path("ppl_raw")
+    for path in (figure, raw):
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(b"source")
+    monkeypatch.setattr(pipeline, "download_sources", Mock(return_value=()))
+    monkeypatch.setattr(pipeline, "_process_selected", Mock())
+    monkeypatch.setattr(
+        pipeline, "publication_units", Mock(return_value=(_unit("all"),))
+    )
+    monkeypatch.setattr(pipeline, "validate_publication_unit", Mock())
+    monkeypatch.setattr(
+        pipeline, "verify_selected_outputs", Mock(return_value=_report())
+    )
+    monkeypatch.setattr(
+        pipeline, "publish_unit", Mock(return_value=_publication("all"))
+    )
+
+    result = run_pipeline(PipelineRequest(artifacts, selection))
+
+    assert result.cleanup is not None
+    assert raw in result.cleanup.removed_paths
+    assert not raw.exists()
+    assert figure.exists()
+    assert figure not in artifacts.raw_paths(selection)
 
 
 def test_request_is_immutable(tmp_path: Path) -> None:

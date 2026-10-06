@@ -284,8 +284,22 @@ def test_clean_forwards_all_and_dry_run(tmp_path: Path) -> None:
     assert selection.all_data is True
     assert selection.ppl is True
     assert selection.olmes is True
-    assert selection.published_figures is False
+    assert selection.published_figures is True
     assert clean_data.call_args.kwargs == {"dry_run": True}
+
+
+def test_raw_clean_all_selects_reference_figures(tmp_path: Path) -> None:
+    with patch(
+        "datadec.cli.cleanup_raw", return_value=CleanupResult((), (), ())
+    ) as cleanup:
+        result = runner.invoke(
+            app, ["raw-clean", "--all", "--dry-run", "--data-dir", str(tmp_path)]
+        )
+
+    assert result.exit_code == 0
+    selection = cleanup.call_args.args[1]
+    assert selection.all_data is True
+    assert selection.published_figures is True
 
 
 def test_operation_failure_is_reported_without_a_traceback() -> None:

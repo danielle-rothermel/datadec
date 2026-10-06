@@ -199,7 +199,7 @@ def raw_clean(
         scaling_law=scaling_law,
         published_results=published_results,
         units=unit,
-        published_figures=published_figures,
+        published_figures=published_figures or all_data,
         all_data=all_data,
     )
     try:
@@ -230,7 +230,7 @@ def clean(
         scaling_law=scaling_law,
         published_results=published_results,
         units=unit,
-        published_figures=published_figures,
+        published_figures=published_figures or all_data,
         all_data=all_data,
     )
     try:

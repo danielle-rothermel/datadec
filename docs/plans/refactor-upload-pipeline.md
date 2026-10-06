@@ -32,6 +32,10 @@
 
 - **Step 9 — Update callers, documentation, packaging, and focused tests together:** Updated supported commands, library ownership and cleanup guarantees; moved Typer to runtime and added the packaged datadec entry point. All 374 tests, full src type check, lockfile check, wheel build and installed-wheel CLI/configuration-resource checks passed.
 
+- **Review — one full round:** Fixed all three findings: automatic `run --all` preserves unselected figures, the manual derivation verifier uses the canonical diagnostic policy, and the detail-verifier message names the supported command. All 378 tests and `src`/`scripts` type checks passed.
+
+- **Live validation:** Reran PPL, aggregate OLMES, scaling-law, and all structured published-result processors. All 55 final files in 18 publication units matched verified Hugging Face copies at immutable commit `a7a576a27d06aaf359e12cdd69850c4a00464fba`; publication was a verified no-op. Output derivation checks passed; historical raw compute differences were diagnostic. Automatic cleanup removed all 56 selected raw source files.
+
 ## Goal
 
 Provide one library-owned lifecycle for downloading, processing, validating,
