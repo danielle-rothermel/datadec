@@ -1,10 +1,12 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
-from dataclasses import dataclass
 import hashlib
+import tempfile
+from collections.abc import Mapping
+from dataclasses import dataclass, replace
 from pathlib import Path
 
+import duckdb
 import pyarrow as pa
 import pyarrow.parquet as pq
 from dr_hf import (
@@ -14,8 +16,19 @@ from dr_hf import (
 )
 from huggingface_hub import HfApi
 
-from datadec.config import PublishingTarget, load_publishing_contract
+from datadec.config import (
+    PublishingTarget,
+    load_olmes_contract,
+    load_publishing_contract,
+)
 from datadec.data.artifacts import DataArtifacts
+from datadec.data.preprocess.duckdb import (
+    prepare_parquet_export,
+    quote_identifier,
+    remove_owned_file,
+    replace_parquet_exports,
+    sql_literal,
+)
 from datadec.data.publication import (
     ParquetLogicalType,
     PublicationColumn,
@@ -230,6 +243,10 @@ def publish_unit(
     resolved_target = target or load_publishing_contract().target
     resolved_api = api or HfApi(token=hf_token)
     expected_parent = _resolve_revision(resolved_api, resolved_target)
+    if _preserve_remote_task_recipes(
+        unit, api=resolved_api, target=resolved_target, commit_oid=expected_parent
+    ):
+        local_files = _validated_local_files(unit)
 
     org, repo_name = resolved_target.repo_id.split("/", maxsplit=1)
     commit_result = commit_dataset_files_to_hf(
@@ -259,6 +276,74 @@ def publish_unit(
         commit_oid=commit_result.commit_oid,
         remote_paths=tuple(file.remote_path for file in unit.files),
     )
+
+
+def _preserve_remote_task_recipes(
+    unit: PublicationUnit,
+    *,
+    api: HfApi,
+    target: PublishingTarget,
+    commit_oid: str,
+) -> bool:
+    """Keep published recipes absent from a locally created shared task table.
+
+    A standalone no-upload run can create only one recipe locally. Publishing
+    that table must retain other remotely published recipes, just as local
+    preprocessing retains recipes already present on disk.
+    """
+    remote_path = load_publishing_contract().olmes_details.tasks_remote_path
+    task_files = tuple(file for file in unit.files if file.remote_path == remote_path)
+    if not task_files:
+        return False
+    file = task_files[0]
+    remote = api.get_paths_info(
+        target.repo_id, [remote_path], repo_type="dataset", revision=commit_oid
+    )
+    if not remote:
+        return False
+    if _local_sha256(file.local_path) == _lfs_sha256(remote[0]):
+        return False
+
+    with tempfile.TemporaryDirectory(prefix="datadec-published-tasks-") as directory:
+        cached_path = Path(
+            api.hf_hub_download(
+                target.repo_id,
+                remote_path,
+                repo_type="dataset",
+                revision=commit_oid,
+                cache_dir=directory,
+            )
+        )
+        remote_file = _validate_local_file(replace(file, local_path=cached_path))
+        _verify_remote_files(
+            api, target=target, commit_oid=commit_oid, local_files=(remote_file,)
+        )
+        connection = duckdb.connect()
+        export = None
+        try:
+            retained = (
+                f"SELECT * FROM read_parquet({sql_literal(cached_path)}) WHERE recipe NOT IN "
+                f"(SELECT DISTINCT recipe FROM read_parquet({sql_literal(file.local_path)}))"
+            )
+            count = connection.execute(f"SELECT count(*) FROM ({retained})").fetchone()
+            assert count is not None
+            if count[0] == 0:
+                return False
+            order = ", ".join(
+                quote_identifier(key)
+                for key in load_olmes_contract().tables.detailed_tasks.sort_key
+            )
+            export = prepare_parquet_export(
+                connection,
+                select_sql=f"SELECT * FROM (SELECT * FROM read_parquet({sql_literal(file.local_path)}) UNION ALL {retained}) ORDER BY {order}",
+                output_path=file.local_path,
+            )
+            replace_parquet_exports((export,))
+        finally:
+            connection.close()
+            if export is not None:
+                remove_owned_file(export.temporary_path)
+    return True
 
 
 def publish_existing_outputs(
