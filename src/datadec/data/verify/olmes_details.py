@@ -19,8 +19,8 @@ _FLOAT_TOLERANCE = 1e-9
 
 @dataclass(frozen=True, slots=True)
 class OlmesVerificationResult:
-    overlapping_checkpoint_count: int
-    parity_row_count: int
+    overlapping_checkpoint_count: int | None
+    parity_row_count: int | None
     reconstructed_task_count: int
 
 
@@ -94,18 +94,13 @@ def verify_cross_source_parity(
     recipe: str,
     tasks_df: pd.DataFrame,
     aggregate_df: pd.DataFrame,
-    overlapping: set[tuple[str, int, int]] | None = None,
+    overlapping: set[tuple[str, int, int]],
     contract: OLMESContract | None = None,
     rtol: float = _FLOAT_TOLERANCE,
     atol: float = _FLOAT_TOLERANCE,
 ) -> int:
     contract = contract or load_olmes_contract()
-    overlap = overlapping or overlapping_checkpoints(
-        recipe=recipe,
-        detail_archive=Path(),
-        aggregate_df=aggregate_df,
-        contract=contract,
-    )
+    overlap = overlapping
     if not overlap:
         return 0
 
@@ -263,27 +258,40 @@ def verify_olmes_details(
     *,
     recipe: str,
     paths: DataArtifacts,
-    detail_archive: Path | None = None,
+    detail_archive: Path | None,
+    aggregate_path: Path | None,
     contract: OLMESContract | None = None,
 ) -> OlmesVerificationResult:
     contract = contract or load_olmes_contract()
     tasks_df = pd.read_parquet(paths.olmes_details_tasks_path(recipe))
     instances_df = pd.read_parquet(paths.olmes_details_instances_path(recipe))
     choices_df = pd.read_parquet(paths.olmes_details_choices_path(recipe))
-    aggregate_df = pd.read_parquet(paths.get_path("olmes_processed"))
-
     verify_detail_counts(
         tasks_df=tasks_df,
         instances_df=instances_df,
         choices_df=choices_df,
     )
 
-    archive = detail_archive or (
-        paths.data_dir / "raw/olmes-details/models" / f"{recipe}.tar.gz"
+    reconstructed_rows = verify_reconstructed_task_metrics(
+        tasks_df=tasks_df,
+        instances_df=instances_df,
+        contract=contract,
     )
+    if aggregate_path is None:
+        return OlmesVerificationResult(
+            overlapping_checkpoint_count=None,
+            parity_row_count=None,
+            reconstructed_task_count=reconstructed_rows,
+        )
+    if detail_archive is None:
+        raise ValueError(
+            "detail_archive is required for aggregate/detail cross-source parity"
+        )
+
+    aggregate_df = pd.read_parquet(aggregate_path)
     overlap = overlapping_checkpoints(
         recipe=recipe,
-        detail_archive=archive,
+        detail_archive=detail_archive,
         aggregate_df=aggregate_df,
         contract=contract,
     )
@@ -294,13 +302,16 @@ def verify_olmes_details(
         overlapping=overlap,
         contract=contract,
     )
-    reconstructed_rows = verify_reconstructed_task_metrics(
-        tasks_df=tasks_df,
-        instances_df=instances_df,
-        contract=contract,
-    )
-    return OlmesVerificationResult(
-        overlapping_checkpoint_count=len(overlap),
-        parity_row_count=parity_rows,
-        reconstructed_task_count=reconstructed_rows,
-    )
+    return OlmesVerificationResult(len(overlap), parity_rows, reconstructed_rows)
+
+
+__all__ = [
+    "OlmesVerificationResult",
+    "aggregate_checkpoint_keys",
+    "detail_checkpoint_keys",
+    "overlapping_checkpoints",
+    "verify_cross_source_parity",
+    "verify_detail_counts",
+    "verify_olmes_details",
+    "verify_reconstructed_task_metrics",
+]

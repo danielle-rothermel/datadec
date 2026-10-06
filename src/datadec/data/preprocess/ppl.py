@@ -1,14 +1,12 @@
 from __future__ import annotations
 
+import json
 from collections import defaultdict
 from dataclasses import dataclass
-from decimal import Decimal, InvalidOperation
-import json
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeAlias
 
 import duckdb
-import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 
@@ -18,8 +16,8 @@ from datadec.config import (
     PPL_METRIC_COLUMNS,
     PPL_OUTPUT_COLUMNS,
 )
-from datadec.data.model_utils import checkpoint_enrichment
 from datadec.data.artifacts import DataArtifacts
+from datadec.data.model_utils import checkpoint_enrichment
 from datadec.data.preprocess.duckdb import (
     duckdb_type,
     prepare_parquet_export,
@@ -27,6 +25,7 @@ from datadec.data.preprocess.duckdb import (
     replace_parquet_exports,
     sql_literal,
 )
+from datadec.data.preprocess.identity import normalize_step
 from datadec.data.preprocess.model_enrichment import (
     create_model_enrichment_table,
     enrichment_select_expressions,
@@ -41,10 +40,6 @@ PplRowsByKey: TypeAlias = dict[
     PplRunKey,
     dict[int, "PerplexityMetrics"],
 ]
-
-_INT64_MIN = -(2**63)
-_INT64_MAX = 2**63 - 1
-
 
 @dataclass(frozen=True, slots=True)
 class PplPreprocessResult:
@@ -66,7 +61,7 @@ def group_perplexity_rows(ppl_df: pd.DataFrame) -> PplRowsByKey:
             DataRecipeName(record["data"]),
             Seed(record["seed"]),
         )
-        step = _normalize_step(record["step"], row_index=row_index)
+        step = normalize_step(record["step"], row_index=row_index)
         metrics = PerplexityMetrics.model_validate(record)
         if step in grouped[run_key]:
             params, data, seed = run_key
@@ -412,40 +407,6 @@ def _assert_metric_field_parity(metrics_type: type[PerplexityMetrics]) -> None:
             "persisted PPL metric columns drift from PerplexityMetrics: "
             f"expected={PPL_METRIC_COLUMNS!r}, actual={actual!r}"
         )
-
-
-def _normalize_step(value: Any, *, row_index: int) -> int:
-    invalid = isinstance(value, (bool, np.bool_)) or value is None or value is pd.NA
-    if not invalid:
-        try:
-            if not isinstance(
-                value,
-                (str, int, float, Decimal, np.integer, np.floating),
-            ):
-                raise InvalidOperation
-            text = str(value).strip()
-            if not text:
-                raise InvalidOperation
-            decimal_value = Decimal(text)
-            invalid = (
-                not decimal_value.is_finite()
-                or decimal_value != decimal_value.to_integral_value()
-            )
-        except (InvalidOperation, ValueError):
-            invalid = True
-    if invalid:
-        raise ValueError(
-            f"invalid PPL step at row {row_index}: {value!r}; "
-            "expected a finite integral int64 value"
-        )
-
-    step = int(decimal_value)
-    if not _INT64_MIN <= step <= _INT64_MAX:
-        raise ValueError(
-            f"invalid PPL step at row {row_index}: {value!r}; "
-            "expected a finite integral int64 value"
-        )
-    return step
 
 
 def _typed_output_dataframe(rows: list[dict[str, object]]) -> pd.DataFrame:

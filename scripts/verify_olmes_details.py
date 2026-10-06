@@ -7,7 +7,7 @@ import typer
 
 from datadec.config import load_olmes_contract
 from datadec.data.artifacts import DataArtifacts
-from datadec.data.preprocess.olmes_verify import verify_olmes_details
+from datadec.data.verify.olmes_details import verify_olmes_details
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 DEFAULT_RECIPE = "dolma1.7-no-math-no-code"
@@ -64,6 +64,7 @@ def main(
         recipe=recipe,
         paths=paths,
         detail_archive=archive,
+        aggregate_path=paths.get_path("olmes_processed"),
         contract=contract,
     )
     typer.echo(f"recipe: {recipe}")

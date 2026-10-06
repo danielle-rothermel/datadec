@@ -6,7 +6,8 @@ from typing import Annotated
 import typer
 
 from datadec.data.artifacts import DataArtifacts
-from datadec.data.preprocess.derivations_verify import (
+from datadec.data.selection import resolve_selection
+from datadec.data.verify.derivations import (
     verify_preprocessed_derivations,
 )
 
@@ -20,7 +21,10 @@ def main(
     data_dir: Annotated[Path, typer.Option("--data-dir")] = DEFAULT_DATA_DIR,
 ) -> None:
     """Check proposed schedule derivations against processed and raw values."""
-    result = verify_preprocessed_derivations(DataArtifacts(data_dir))
+    result = verify_preprocessed_derivations(
+        DataArtifacts(data_dir),
+        resolve_selection(ppl=True, olmes=True, scaling_law=True),
+    )
     for output in result.processed_outputs:
         typer.echo(
             f"{output.name}: rows={output.row_count}, "
@@ -32,6 +36,7 @@ def main(
             f"LR contradictions={output.lr_mismatch_count}"
         )
     raw_olmes = result.raw_olmes
+    assert raw_olmes is not None
     typer.echo(
         f"{raw_olmes.name}: rows={raw_olmes.row_count}, "
         f"token contradictions={raw_olmes.token_mismatch_count}, "
@@ -39,6 +44,7 @@ def main(
         f"{raw_olmes.exact_compute_mismatch_count}"
     )
     raw_scaling = result.raw_scaling_law
+    assert raw_scaling is not None
     typer.echo(
         f"raw scaling-law: rows={raw_scaling.row_count}, "
         f"token evidence={raw_scaling.token_evidence_count}, "

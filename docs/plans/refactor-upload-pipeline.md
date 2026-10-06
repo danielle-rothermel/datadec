@@ -4,7 +4,7 @@
 
 - [x] Split configuration and schema contracts into focused modules.
 - [x] Centralize dataset selection, artifact paths, and file ownership.
-- [ ] Keep processors local-only and separate verification from processing.
+- [x] Keep processors local-only and separate verification from processing.
 - [ ] Separate publication-unit construction from upload and remote verification.
 - [ ] Add selective downloads of processed outputs from Hugging Face.
 - [ ] Add shared, scoped cleanup with dry-run support.
@@ -17,6 +17,8 @@
 - **Step 1 — Split configuration and schema contracts into focused modules:** Split config.py into focused modules; moved PPL, checkpoint-enrichment, and published-result schemas to canonical configuration owners. All 316 tests and installed-wheel resource checks passed.
 
 - **Step 2 — Centralize dataset selection, artifact paths, and file ownership:** Added deterministic dataset selection and explicit artifact ownership; migrated all callers and removed paths.py and duplicate selectors/path mappings. Recipe-specific metadata cleanup is isolated; shared caches require --all. All 335 tests passed.
+
+- **Step 3 — Keep processors local-only and separate verification from processing:** Moved verification into data/verify and added typed selection-aware reports. Base-only derivation checks never scan detail files; cross-source prerequisites are reported explicitly. Extracted shared checkpoint identity normalization and staging ownership. All 352 tests passed.
 
 ## Goal
 

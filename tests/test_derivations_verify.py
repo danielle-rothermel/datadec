@@ -6,10 +6,22 @@ from pathlib import Path
 
 import pandas as pd
 
-from datadec.data.model_utils import checkpoint_enrichment, create_model_schedules
 from datadec.data.artifacts import DataArtifacts
-from datadec.data.preprocess.derivations_verify import (
-    verify_preprocessed_derivations,
+from datadec.data.model_utils import (
+    checkpoint_enrichment,
+    create_model_schedules,
+)
+from datadec.data.selection import DatasetSelection
+from datadec.data.verify.derivations import verify_preprocessed_derivations
+
+SELECTION = DatasetSelection(
+    ppl=True,
+    olmes=True,
+    olmes_details=("fixture",),
+    scaling_law=True,
+    published_results=(),
+    published_figures=False,
+    all_data=False,
 )
 
 
@@ -106,9 +118,10 @@ def test_verification_accepts_exact_schedule_evidence(tmp_path: Path) -> None:
         raw_scaling_uses_nominal_compute=False,
     )
 
-    result = verify_preprocessed_derivations(paths)
+    result = verify_preprocessed_derivations(paths, SELECTION)
 
     assert result.contradiction_count == 0
+    assert result.raw_scaling_law is not None
     assert result.raw_scaling_law.token_evidence_count == 3
     assert result.raw_scaling_law.compute_evidence_count == 3
     assert result.lr_raw_evidence_count == 0
@@ -122,9 +135,10 @@ def test_verification_identifies_nominal_raw_compute_semantics(
         raw_scaling_uses_nominal_compute=True,
     )
 
-    result = verify_preprocessed_derivations(paths)
+    result = verify_preprocessed_derivations(paths, SELECTION)
 
     assert result.contradiction_count == 3
+    assert result.raw_scaling_law is not None
     assert result.raw_scaling_law.exact_compute_mismatch_count == 3
     assert result.raw_scaling_law.nominal_compute_mismatch_count == 0
 
@@ -143,7 +157,7 @@ def test_verification_rejects_null_required_checkpoint_derivations(
     ppl.loc[0, "lr_at_step"] = None
     ppl.to_parquet(paths.get_path("ppl_processed"), index=False)
 
-    result = verify_preprocessed_derivations(paths)
+    result = verify_preprocessed_derivations(paths, SELECTION)
     verification = result.processed_outputs[0]
 
     assert verification.token_evidence_count == 0
@@ -152,3 +166,33 @@ def test_verification_rejects_null_required_checkpoint_derivations(
     assert verification.exact_compute_mismatch_count == 1
     assert verification.model_detail_mismatch_count == 1
     assert verification.lr_mismatch_count == 1
+
+
+def test_base_selection_does_not_require_or_discover_detail_outputs(
+    tmp_path: Path,
+) -> None:
+    paths = _verification_paths(
+        tmp_path,
+        raw_scaling_uses_nominal_compute=False,
+    )
+    unrelated_detail = paths.olmes_details_tasks_path("unrelated")
+    unrelated_detail.parent.mkdir(parents=True)
+    unrelated_detail.write_text(
+        "not a parquet file",
+        encoding="utf-8",
+    )
+    selection = DatasetSelection(
+        ppl=True,
+        olmes=True,
+        olmes_details=(),
+        scaling_law=True,
+        published_results=(),
+        published_figures=False,
+        all_data=False,
+    )
+
+    result = verify_preprocessed_derivations(paths, selection)
+
+    assert result.contradiction_count == 0
+    assert len(result.processed_outputs) == 4
+    assert result.detail_tasks == ()

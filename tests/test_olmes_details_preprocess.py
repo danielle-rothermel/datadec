@@ -12,8 +12,8 @@ import pandas as pd
 import pytest
 
 from datadec.config import load_olmes_contract
-from datadec.data.ingest.enums import DataRecipeName, ModelSizeName, Seed
 from datadec.data.artifacts import DataArtifacts
+from datadec.data.ingest.enums import DataRecipeName, ModelSizeName, Seed
 from datadec.data.preprocess import olmes_details as olmes_details_module
 from datadec.data.preprocess.olmes_details import (
     OlmesDetailsPreprocessResult,
@@ -23,7 +23,7 @@ from datadec.data.preprocess.olmes_details import (
     _parse_checkpoint_member_path,
     preprocess_olmes_details,
 )
-from datadec.data.preprocess.olmes_verify import verify_detail_counts
+from datadec.data.verify.olmes_details import verify_detail_counts
 
 CONTRACT = load_olmes_contract()
 OUTPUT_COLUMNS = tuple(column.name for column in CONTRACT.tables.detailed_tasks.columns)

@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from datadec.config import load_olmes_contract
-from datadec.data.preprocess.olmes_verify import (
+from datadec.data.verify.olmes_details import (
     verify_cross_source_parity,
     verify_detail_counts,
     verify_reconstructed_task_metrics,
