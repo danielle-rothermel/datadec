@@ -1,0 +1,13 @@
+{
+ "id": "ape-winogrande",
+ "text": "Fill each blank with the one of the two candidate names or phrases that makes the sentence most logically and contextually coherent.",
+ "meta_prompt": "I gave a friend an instruction and 5 sentences, each with a blank that one of two candidate names or phrases fills. The friend read the instruction and completed each sentence by filling its blank with the correct candidate. Here are the completed sentences, exactly as the friend saw them:\n\nJohn moved the couch from the garage to the backyard to create space. The garage is small.\n\nDennis drew up a business proposal to present to Logan because Dennis wants his investment.\n\nFelicia unexpectedly made fried eggs for breakfast in the morning for Katrina and now Katrina owes a favor.\n\nThe circuit failed to power the television but kept the radio going, as the television had a weak connection.\n\nNeil told Craig that he has to take care of the child for the day because Craig promised to do so.\n\nWrite the instruction I gave my friend. It will be placed once at the top of a prompt, before these examples and then a new sentence, so it should say how to fill this kind of blank in general. Write it as a plain statement of what to do, in at most 150 words. Reply with the instruction only.",
+ "model": "openai/gpt-5.6-sol",
+ "raw_words": 22,
+ "raw_chars": 132,
+ "final_words": 22,
+ "final_chars": 132,
+ "shortening_turns": 0,
+ "truncated": false,
+ "evidence_dir": "/Users/daniellerothermel/drotherm/data/runs/po/ape/20261006T134411Z-seed-winogrande/evidence"
+}
