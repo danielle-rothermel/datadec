@@ -19,7 +19,7 @@ def main(
     partition: Annotated[str, typer.Option("--partition")] = "a100_cilvr",
     account: Annotated[str, typer.Option("--account")] = "torch_pr_375_cilvr",
     time: Annotated[str, typer.Option("--time", help="per-task limit, HH:MM:SS")] = "01:00:00",
-    max_concurrent: Annotated[int, typer.Option("--max-concurrent", help="array throttle; never above the per-user GPU cap (4 on cilvr)")] = 4,
+    max_concurrent: Annotated[int | None, typer.Option("--max-concurrent", help="array throttle (%N); default none, the cluster's own limits apply")] = None,
     chunk_size: Annotated[int, typer.Option("--chunk-size", help="tasks per OLMES process inside a sweep")] = 14,
     concurrent: Annotated[int, typer.Option("--concurrent", help="sweeps per array task, run in parallel on one GPU (MPS); order the job list so co-located models are small")] = 1,
     mem: Annotated[str, typer.Option("--mem")] = "60G",

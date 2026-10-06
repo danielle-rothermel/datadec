@@ -33,7 +33,7 @@ class SlurmSettings:
     cpus: int = 4
     mem: str = "60G"
     time: str = "01:00:00"
-    max_concurrent: int = 4  # per-user GPU cap on cilvr; Slurm kills a running job when a 5th starts
+    max_concurrent: int | None = None  # array throttle; None = no cap on our side (decision 2026-10-06: let the cluster's limits apply)
     chunk_size: int = 14
     concurrent: int = 1  # sweeps per array task, run in parallel on the shared GPU
 
@@ -72,7 +72,7 @@ def array_script(array_dir: Path, groups: list[list[Path]], s: SlurmSettings) ->
 #SBATCH --cpus-per-task={s.cpus}
 #SBATCH --mem={s.mem}
 #SBATCH --time={s.time}
-#SBATCH --array=0-{n - 1}%{s.max_concurrent}
+#SBATCH --array=0-{n - 1}{f"%{s.max_concurrent}" if s.max_concurrent else ""}
 #SBATCH --output={array_dir}/task-%a.out
 {mps}export SCRATCH=/scratch/ddr8143
 export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True

@@ -54,9 +54,10 @@ def test_task_groups_and_mps_comment() -> None:
     with pytest.raises(ValueError):
         task_groups(dirs, 0)
     shared = array_script(Path("/arr"), task_groups(dirs, 2), SlurmSettings(concurrent=2))
-    assert "#SBATCH --comment=gpu_mps=yes" in shared and "--array=0-2%4" in shared
+    assert "#SBATCH --comment=gpu_mps=yes" in shared and "--array=0-2\n" in shared
+    assert "--array=0-2%4" in array_script(Path("/arr"), task_groups(dirs, 2), SlurmSettings(concurrent=2, max_concurrent=4))
     solo = array_script(Path("/arr"), task_groups(dirs, 1), SlurmSettings())
-    assert "gpu_mps" not in solo and "--array=0-4%4" in solo and "a100_cilvr" in solo
+    assert "gpu_mps" not in solo and "--array=0-4\n" in solo and "a100_cilvr" in solo
     assert "steps/task-$SLURM_ARRAY_TASK_ID.log" in solo
 
 
