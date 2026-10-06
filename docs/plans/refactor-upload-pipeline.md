@@ -107,7 +107,10 @@ Share `--data-dir` and applicable selectors: `--ppl`, `--olmes`, repeatable
 Preserve published-result unit selection. Require an explicit selection.
 Published figures remain download-only and are outside processing/publication.
 
-- `run --cleanup raw` is the default: remove selected raw files after success.
+- `run --cleanup default` is the default: remove selected raw and intermediate
+  files and recipe detail outputs, retaining PPL, aggregate OLMES, scaling-law
+  tables, and structured published results.
+- `run --cleanup raw` removes selected raw files after success.
 - `run --cleanup all` also removes verified published final outputs.
 - `run --cleanup none` retains raw and processed artifacts.
 - `run --no-upload` retains artifacts; reject explicitly contradictory cleanup
@@ -116,9 +119,11 @@ Published figures remain download-only and are outside processing/publication.
   their original sources.
 - `publish` uploads existing outputs without processing again.
 - `raw-clean` explicitly removes selected reproducible raw downloads.
-- `clean` additionally removes owned intermediates and processed outputs, but
-  first verifies that each existing final output has an identical remote copy.
-  Refuse to discard unpublished or changed final outputs.
+- `clean` defaults to retaining aggregate postprocessed results while removing
+  selected raw files, intermediates, and recipe details. Use `--cleanup all` to
+  also remove aggregate outputs. First verify that every final output marked
+  for deletion has an identical remote copy; refuse to discard unpublished or
+  changed final outputs.
 - Both cleanup commands support `--dry-run`, use the same deletion plan for
   preview and execution, and tolerate already-missing files.
 

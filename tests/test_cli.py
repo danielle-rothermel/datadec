@@ -114,7 +114,7 @@ def test_run_no_upload_preserves_implicit_no_cleanup_policy() -> None:
     assert request.cleanup is None
 
 
-@pytest.mark.parametrize("cleanup", ("raw", "all"))
+@pytest.mark.parametrize("cleanup", ("default", "raw", "all"))
 def test_run_rejects_cleanup_that_contradicts_no_upload(cleanup: str) -> None:
     with patch("datadec.cli.run_pipeline") as run_pipeline:
         result = runner.invoke(
@@ -285,7 +285,7 @@ def test_clean_forwards_all_and_dry_run(tmp_path: Path) -> None:
     assert selection.ppl is True
     assert selection.olmes is True
     assert selection.published_figures is True
-    assert clean_data.call_args.kwargs == {"dry_run": True}
+    assert clean_data.call_args.kwargs == {"mode": CleanupMode.DEFAULT, "dry_run": True}
 
 
 def test_raw_clean_all_selects_reference_figures(tmp_path: Path) -> None:
@@ -321,11 +321,35 @@ def test_unknown_selector_is_a_usage_error() -> None:
     assert "unknown OLMES detail recipe: missing" in result.output
 
 
-def test_cleanup_mode_values_are_accepted_by_run() -> None:
+@pytest.mark.parametrize("mode", tuple(CleanupMode))
+def test_cleanup_mode_values_are_accepted_by_run(mode: CleanupMode) -> None:
     with patch(
         "datadec.cli.run_pipeline", return_value=_pipeline_result()
     ) as run_pipeline:
-        result = runner.invoke(app, ["run", "--ppl", "--cleanup", "none"])
+        result = runner.invoke(app, ["run", "--ppl", "--cleanup", mode.value])
 
     assert result.exit_code == 0
-    assert run_pipeline.call_args.args[0].cleanup is CleanupMode.NONE
+    assert run_pipeline.call_args.args[0].cleanup is mode
+
+
+def test_clean_default_mode_dispatches_dry_run(tmp_path: Path) -> None:
+    with patch(
+        "datadec.cli.clean_data", return_value=CleanupResult((), (), ())
+    ) as clean:
+        result = runner.invoke(
+            app,
+            [
+                "clean",
+                "--all",
+                "--cleanup",
+                "default",
+                "--dry-run",
+                "--data-dir",
+                str(tmp_path),
+            ],
+        )
+    assert result.exit_code == 0
+    artifacts, selection = clean.call_args.args
+    assert artifacts.data_dir == tmp_path
+    assert selection.all_data
+    assert clean.call_args.kwargs == {"mode": CleanupMode.DEFAULT, "dry_run": True}

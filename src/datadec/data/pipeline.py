@@ -42,7 +42,7 @@ class PipelineResult:
 def _cleanup_mode(request: PipelineRequest) -> CleanupMode:
     cleanup = request.cleanup
     if cleanup is None:
-        return CleanupMode.RAW if request.upload else CleanupMode.NONE
+        return CleanupMode.DEFAULT if request.upload else CleanupMode.NONE
     if not request.upload and cleanup is not CleanupMode.NONE:
         raise ValueError("cleanup requires upload; use cleanup='none' with no-upload runs")
     return cleanup
@@ -131,6 +131,7 @@ def run_pipeline(
             cleanup_result = clean_data(
                 request.artifacts,
                 request.selection,
+                mode=cleanup_mode,
                 hf_token=hf_token,
             )
         if verbose:

@@ -75,11 +75,15 @@ uv run datadec run --ppl --olmes --no-upload
 
 `run` downloads missing raw sources, processes the selection, validates its
 outputs, publishes final Parquet files to `drotherm/dd_parsed`, verifies every
-remote copy at an immutable commit, and only then applies cleanup. Its default
-cleanup is `raw`. `--cleanup all` additionally verifies and removes the selected
-processed outputs, while `--cleanup none` retains raw and processed artifacts.
-With `--no-upload`, cleanup defaults to `none`; requesting `raw` or `all` at the
-same time is rejected before any work starts. Processing, validation, or
+remote copy at an immutable commit, and only then applies cleanup. Its `default`
+cleanup removes selected raw inputs, owned intermediates and OLMES recipe detail
+outputs, retaining aggregate postprocessed results: PPL, aggregate OLMES, both
+scaling-law tables, and structured published results. The three per-recipe detail
+tables (tasks, instances, choices) can be downloaded again when needed.
+`--cleanup raw` retains all processed outputs; `--cleanup all` removes them too;
+`--cleanup none` retains raw and processed artifacts.
+With `--no-upload`, cleanup defaults to `none`; requesting `default`, `raw` or
+`all` at the same time is rejected before any work starts. Processing, validation, or
 publication failures retain raw inputs and final outputs for diagnosis or retry.
 Cleanup itself is not transactional if a filesystem deletion fails.
 
@@ -102,8 +106,9 @@ uv run datadec download --raw --published-figures
 
 `publish` uploads and verifies existing selected outputs without processing
 them again. `raw-clean` removes selected reproducible raw downloads. `clean`
-also removes owned intermediates and processed outputs, but first verifies
-every existing selected final output against its immutable remote copy. Both
+uses the same `default` retention policy as `run`; choose `--cleanup all` to
+remove aggregate outputs too. Before any deletion, it verifies every existing
+final output marked for removal against its immutable remote copy. Both
 cleanup commands support `--dry-run` and tolerate files that are already
 missing.
 Standalone cleanup with `--all` also includes downloaded reference figures and
@@ -114,6 +119,8 @@ processing selection.
 uv run datadec publish --ppl --olmes --scaling-law
 uv run datadec raw-clean --scaling-law --dry-run
 uv run datadec clean --unit cheap-decisions --dry-run
+uv run datadec clean --all --cleanup default --dry-run
+uv run datadec clean --ppl --cleanup all --dry-run
 ```
 
 Scaling-law preprocessing requires all three local raw CSVs. It validates the

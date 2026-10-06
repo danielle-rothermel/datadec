@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
+from dataclasses import replace
 from pathlib import Path, PurePosixPath
 
 from datadec.config import (
@@ -174,6 +175,12 @@ class DataArtifacts:
                 and source.publication_unit in selected_units
             )
         return _deduplicate(paths)
+
+    def aggregate_processed_paths(
+        self, selection: DatasetSelection
+    ) -> tuple[Path, ...]:
+        """Base outputs retained by default cleanup, excluding recipe detail tables."""
+        return self.processed_paths(replace(selection, olmes_details=()))
 
     def intermediate_paths(self, selection: DatasetSelection) -> tuple[Path, ...]:
         return _deduplicate(

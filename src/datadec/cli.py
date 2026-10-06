@@ -82,7 +82,11 @@ def run(
         units=unit,
         all_data=all_data,
     )
-    if not upload and cleanup in {CleanupMode.RAW, CleanupMode.ALL}:
+    if not upload and cleanup in {
+        CleanupMode.DEFAULT,
+        CleanupMode.RAW,
+        CleanupMode.ALL,
+    }:
         raise typer.BadParameter(
             f"--cleanup {cleanup.value} requires upload; use --cleanup none with "
             "--no-upload"
@@ -220,6 +224,7 @@ def clean(
     unit: Annotated[list[str] | None, typer.Option("--unit")] = None,
     published_figures: Annotated[bool, typer.Option("--published-figures")] = False,
     all_data: Annotated[bool, typer.Option("--all")] = False,
+    cleanup: Annotated[CleanupMode, typer.Option("--cleanup")] = CleanupMode.DEFAULT,
     dry_run: Annotated[bool, typer.Option("--dry-run")] = False,
 ) -> None:
     """Verify and remove selected raw, intermediate, and final artifacts."""
@@ -234,7 +239,9 @@ def clean(
         all_data=all_data,
     )
     try:
-        result = clean_data(DataArtifacts(data_dir), selection, dry_run=dry_run)
+        result = clean_data(
+            DataArtifacts(data_dir), selection, mode=cleanup, dry_run=dry_run
+        )
     except Exception as error:
         _fail(error)
     _report_cleanup(result)
