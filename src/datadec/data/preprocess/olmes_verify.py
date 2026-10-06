@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from datadec.config import OLMESContract, load_olmes_contract
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 
 _CHECKPOINT_MEMBER_RE = re.compile(
     r"^(?P<recipe>[^/]+)/(?P<params>[^/]+)/seed-(?P<seed_value>\d+)/step-(?P<step>\d+)\.tar\.gz$"
@@ -262,7 +262,7 @@ def verify_detail_counts(
 def verify_olmes_details(
     *,
     recipe: str,
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     detail_archive: Path | None = None,
     contract: OLMESContract | None = None,
 ) -> OlmesVerificationResult:

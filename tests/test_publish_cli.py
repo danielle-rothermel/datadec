@@ -34,7 +34,7 @@ def test_cli_forwards_repeatable_detail_selection_and_cleanup_policy(
 ) -> None:
     paths = object()
     with (
-        patch.object(script, "DataDecidePaths", return_value=paths) as path_type,
+        patch.object(script, "DataArtifacts", return_value=paths) as path_type,
         patch.object(script, "publish_existing_outputs", return_value=[]) as publish,
     ):
         result = runner.invoke(

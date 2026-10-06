@@ -10,7 +10,7 @@ from unittest.mock import patch
 import pandas as pd
 from typer.testing import CliRunner
 
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.scaling_law import RAW_COLUMNS
 
 SCRIPT_PATH = Path(__file__).parents[1] / "scripts/preprocess_scaling_law.py"
@@ -58,10 +58,10 @@ def _write_fixture(data_dir: Path) -> tuple[Path, ...]:
 def test_cli_default_is_repo_data_independent_of_cwd(
     tmp_path: Path, monkeypatch
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     monkeypatch.chdir(tmp_path)
     with (
-        patch.object(script, "DataDecidePaths", return_value=paths) as path_type,
+        patch.object(script, "DataArtifacts", return_value=paths) as path_type,
         patch.object(
             script,
             "preprocess_scaling_law",
@@ -126,13 +126,13 @@ def test_cli_data_dir_prints_stable_evidence_without_network_calls(
 def test_cli_keep_sources_is_forwarded_for_atomic_scaling_unit(
     tmp_path: Path,
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     result_item = SimpleNamespace(
         evaluations_output_path=tmp_path / "custom-evaluations.parquet",
         checkpoint_losses_output_path=tmp_path / "custom-losses.parquet",
     )
     with (
-        patch.object(script, "DataDecidePaths", return_value=paths),
+        patch.object(script, "DataArtifacts", return_value=paths),
         patch.object(script, "preprocess_scaling_law", return_value=result_item),
         patch.object(script, "publish_unit") as publish,
     ):

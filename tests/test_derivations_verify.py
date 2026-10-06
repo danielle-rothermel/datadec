@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from datadec.data.model_utils import checkpoint_enrichment, create_model_schedules
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.derivations_verify import (
     verify_preprocessed_derivations,
 )
@@ -19,7 +19,7 @@ def _write_parquet(path: Path, rows: list[dict[str, object]]) -> None:
 
 
 def _write_scaling_raw(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     *,
     compute: float,
     tokens: int,
@@ -46,8 +46,8 @@ def _verification_paths(
     tmp_path: Path,
     *,
     raw_scaling_uses_nominal_compute: bool,
-) -> DataDecidePaths:
-    paths = DataDecidePaths(tmp_path)
+) -> DataArtifacts:
+    paths = DataArtifacts(tmp_path)
     schedule = next(
         schedule for schedule in create_model_schedules() if schedule.params == "1B"
     )

@@ -6,7 +6,7 @@ from typing import Annotated
 import typer
 
 from datadec.config import load_olmes_contract
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.olmes_verify import verify_olmes_details
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parents[1] / "data"
@@ -38,7 +38,7 @@ def main(
     in configs/olmes.toml and is not validated during reconstruction.
     """
     contract = load_olmes_contract()
-    paths = DataDecidePaths(data_dir)
+    paths = DataArtifacts(data_dir)
     archive = detail_archive or (
         data_dir / "raw/olmes-details/models" / f"{recipe}.tar.gz"
     )

@@ -5,7 +5,7 @@ from typing import Annotated
 
 import typer
 
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.derivations_verify import (
     verify_preprocessed_derivations,
 )
@@ -20,7 +20,7 @@ def main(
     data_dir: Annotated[Path, typer.Option("--data-dir")] = DEFAULT_DATA_DIR,
 ) -> None:
     """Check proposed schedule derivations against processed and raw values."""
-    result = verify_preprocessed_derivations(DataDecidePaths(data_dir))
+    result = verify_preprocessed_derivations(DataArtifacts(data_dir))
     for output in result.processed_outputs:
         typer.echo(
             f"{output.name}: rows={output.row_count}, "

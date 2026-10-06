@@ -11,7 +11,7 @@ import pytest
 from datadec.config import CHECKPOINT_ENRICHMENT_TYPES, load_olmes_contract
 from datadec.data.ingest.enums import DataRecipeName, ModelSizeName, Seed
 from datadec.data.model_utils import checkpoint_enrichment
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.olmes import (
     _assert_output_schema_parity,
     _source_metric_columns,
@@ -239,7 +239,7 @@ def test_unknown_enum_values_use_current_enum_validation(
 
 
 def test_empty_input_writes_exact_typed_schema(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     input_path = paths.get_path("dwn_raw")
     input_path.parent.mkdir(parents=True)
     pd.DataFrame().to_parquet(input_path, index=False)
@@ -265,7 +265,7 @@ def test_empty_input_writes_exact_typed_schema(tmp_path: Path) -> None:
 def test_preprocess_projects_sorts_and_counts_without_grouping_helpers(
     tmp_path: Path,
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     input_path = paths.get_path("dwn_raw")
     input_path.parent.mkdir(parents=True)
     records = [
@@ -377,7 +377,7 @@ def test_preprocess_rejects_malformed_or_non_object_metrics_with_row_context(
     metrics: str,
     expected: str,
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     input_path = paths.get_path("dwn_raw")
     input_path.parent.mkdir(parents=True)
     pd.DataFrame([_raw_record(metrics={}) | {"metrics": metrics}]).to_parquet(
@@ -410,7 +410,7 @@ def test_preprocess_rejects_invalid_numeric_boundaries_with_row_context(
     value: object,
     message: str,
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     input_path = paths.get_path("dwn_raw")
     input_path.parent.mkdir(parents=True)
     record = _raw_record()
@@ -427,7 +427,7 @@ def test_preprocess_rejects_invalid_numeric_boundaries_with_row_context(
 
 
 def test_preprocess_rejects_duplicate_normalized_primary_key(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     input_path = paths.get_path("dwn_raw")
     input_path.parent.mkdir(parents=True)
     records = [
@@ -461,7 +461,7 @@ def test_schema_drift_guard_rejects_mismatched_identity_columns() -> None:
 
 
 def test_preprocess_does_not_download_or_upload(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     input_path = paths.get_path("dwn_raw")
     input_path.parent.mkdir(parents=True)
     pd.DataFrame([_raw_record()]).to_parquet(input_path, index=False)

@@ -5,7 +5,7 @@ from typing import Annotated
 
 import typer
 
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.olmes import preprocess_olmes
 from datadec.data.publish import olmes_publication_unit, publish_unit
 
@@ -28,7 +28,7 @@ def main(
     keep_sources: Annotated[bool, typer.Option("--keep-sources")] = False,
 ) -> None:
     """Preprocess the local raw OLMES parquet artifact."""
-    paths = DataDecidePaths(data_dir)
+    paths = DataArtifacts(data_dir)
     result = preprocess_olmes(
         paths,
         input_path=input_path,

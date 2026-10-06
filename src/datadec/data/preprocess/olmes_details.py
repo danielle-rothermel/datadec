@@ -20,7 +20,7 @@ from fsspec.implementations.memory import MemoryFileSystem
 from datadec.config import OLMESContract, OLMESTableContract, load_olmes_contract
 from datadec.config import load_source_manifest
 from datadec.data.model_utils import checkpoint_enrichment
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.duckdb import (
     DuckDbLogicalType,
     PendingParquetExport,
@@ -127,7 +127,7 @@ def _assert_all_detailed_schema_parity(contract: OLMESContract) -> None:
     _assert_detailed_choices_schema_parity(contract)
 
 
-def _recipe_tar_path(paths: DataDecidePaths, recipe: str) -> Path:
+def _recipe_tar_path(paths: DataArtifacts, recipe: str) -> Path:
     manifest = load_source_manifest()
     filename = manifest.olmes_details.filename_template.format(recipe=recipe)
     return paths.data_dir / manifest.olmes_details.output_root / filename
@@ -1091,7 +1091,7 @@ def _remove_completed_staging_database(staging_path: Path) -> None:
 
 
 def preprocess_olmes_details(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     recipe: str,
     *,
     contract: OLMESContract | None = None,

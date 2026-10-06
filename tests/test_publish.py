@@ -14,7 +14,7 @@ from datadec.config import (
     load_published_results_manifest,
     load_publishing_contract,
 )
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.publish import (
     PublicationColumn,
     PublicationFile,
@@ -373,14 +373,14 @@ def test_commit_uses_immediately_resolved_parent_and_direct_dataset_commit(
 def test_scaling_factory_is_atomic_and_cleans_only_three_configured_sources(
     tmp_path: Path,
 ) -> None:
-    unit = scaling_law_publication_unit(DataDecidePaths(tmp_path))
+    unit = scaling_law_publication_unit(DataArtifacts(tmp_path))
 
     assert tuple(file.remote_path for file in unit.files) == (
         "scaling-law/evaluations.parquet",
         "scaling-law/checkpoint-losses.parquet",
     )
     assert len(unit.cleanup_paths) == 3
-    assert unit.cleanup_paths == DataDecidePaths(tmp_path).scaling_law_raw_paths()
+    assert unit.cleanup_paths == DataArtifacts(tmp_path).scaling_law_raw_paths()
     assert all(
         column.nullable is not None
         for file in unit.files
@@ -391,7 +391,7 @@ def test_scaling_factory_is_atomic_and_cleans_only_three_configured_sources(
 def test_published_results_factory_maps_all_manifest_units_exactly(
     tmp_path: Path,
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     manifest = load_published_results_manifest()
     units = published_results_publication_units(paths, manifest=manifest)
     expected_unit_names = (
@@ -447,7 +447,7 @@ def test_published_results_factory_selects_units_in_manifest_order(
     tmp_path: Path,
 ) -> None:
     units = published_results_publication_units(
-        DataDecidePaths(tmp_path),
+        DataArtifacts(tmp_path),
         units=("per-task-winogrande", "outputs2"),
     )
 
@@ -458,7 +458,7 @@ def test_published_results_factory_selects_units_in_manifest_order(
 
 
 def test_detail_factory_cleanup_is_isolated_to_one_recipe(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     c4 = olmes_details_publication_unit(paths, "c4")
     fineweb = olmes_details_publication_unit(paths, "fineweb-pro")
 
@@ -476,7 +476,7 @@ def test_detail_factory_cleanup_is_isolated_to_one_recipe(tmp_path: Path) -> Non
 
 def test_detail_factory_can_disable_canonical_source_cleanup(tmp_path: Path) -> None:
     unit = olmes_details_publication_unit(
-        DataDecidePaths(tmp_path),
+        DataArtifacts(tmp_path),
         "c4",
         cleanup_source=False,
     )
@@ -485,7 +485,7 @@ def test_detail_factory_can_disable_canonical_source_cleanup(tmp_path: Path) -> 
 
 
 def test_factories_publish_exact_output_overrides(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     ppl_output = tmp_path / "custom/ppl.parquet"
     scaling_evaluations = tmp_path / "custom/evaluations.parquet"
     scaling_losses = tmp_path / "custom/losses.parquet"
@@ -520,7 +520,7 @@ def test_factories_publish_exact_output_overrides(tmp_path: Path) -> None:
 def test_existing_final_output_can_be_republished_without_raw_or_preprocessing(
     tmp_path: Path,
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     publication_file = ppl_publication_unit(paths).files[0]
     output = publication_file.local_path
     _write_publication_file(publication_file)
@@ -545,7 +545,7 @@ def test_existing_final_output_can_be_republished_without_raw_or_preprocessing(
 def test_existing_published_results_can_be_retried_without_sources_or_preprocessing(
     tmp_path: Path,
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     results = [SimpleNamespace(unit_name=f"unit-{index}") for index in range(15)]
     with patch(
         "datadec.data.publish.publish_unit", side_effect=results
@@ -590,7 +590,7 @@ def test_published_results_stop_after_failed_unit_without_retry(
         ) as publish_selected_unit,
         pytest.raises(RuntimeError, match="second unit failed"),
     ):
-        publish_existing_outputs(DataDecidePaths(tmp_path), published_results=True)
+        publish_existing_outputs(DataArtifacts(tmp_path), published_results=True)
 
     assert publish_selected_unit.call_count == 2
     assert not units[0].cleanup_paths[0].exists()
@@ -600,7 +600,7 @@ def test_published_results_stop_after_failed_unit_without_retry(
 
 def test_existing_output_publication_rejects_no_selection(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="select at least one output"):
-        publish_existing_outputs(DataDecidePaths(tmp_path))
+        publish_existing_outputs(DataArtifacts(tmp_path))
 
 
 def test_existing_detail_outputs_publish_as_recipe_isolated_units(
@@ -611,7 +611,7 @@ def test_existing_detail_outputs_publish_as_recipe_isolated_units(
         "datadec.data.publish.publish_unit", side_effect=results
     ) as publish_selected_unit:
         actual = publish_existing_outputs(
-            DataDecidePaths(tmp_path),
+            DataArtifacts(tmp_path),
             olmes_details=["c4", "fineweb-pro"],
         )
 
@@ -630,7 +630,7 @@ def test_existing_detail_outputs_publish_as_recipe_isolated_units(
 def test_ppl_and_olmes_units_never_clean_sources(tmp_path: Path) -> None:
     from datadec.data.publish import olmes_publication_unit
 
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     contract = load_publishing_contract()
     assert ppl_publication_unit(paths, contract=contract).cleanup_paths == ()
     assert olmes_publication_unit(paths, contract=contract).cleanup_paths == ()
@@ -639,7 +639,7 @@ def test_ppl_and_olmes_units_never_clean_sources(tmp_path: Path) -> None:
 def test_ppl_factory_owns_exact_ordered_types_without_invented_nullability(
     tmp_path: Path,
 ) -> None:
-    schema = ppl_publication_unit(DataDecidePaths(tmp_path)).files[0].expected_schema
+    schema = ppl_publication_unit(DataArtifacts(tmp_path)).files[0].expected_schema
 
     assert schema is not None
     assert tuple(column.name for column in schema[:4]) == (

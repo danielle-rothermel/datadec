@@ -19,7 +19,7 @@ from datadec.config import (
     PPL_OUTPUT_COLUMNS,
 )
 from datadec.data.model_utils import checkpoint_enrichment
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.duckdb import (
     duckdb_type,
     prepare_parquet_export,
@@ -102,7 +102,7 @@ def flatten_perplexity_rows(grouped: PplRowsByKey) -> pd.DataFrame:
 
 
 def preprocess_ppl(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     *,
     verbose: bool = False,
 ) -> PplPreprocessResult:

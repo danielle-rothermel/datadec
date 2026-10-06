@@ -9,10 +9,10 @@ from datadec.config import (
     load_published_results_manifest,
     load_publishing_contract,
 )
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
+from datadec.data.selection import resolve_published_result_units
 from datadec.data.preprocess.published_results import (
     preprocess_published_results,
-    resolve_published_result_units,
 )
 from datadec.data.publish import (
     publish_unit,
@@ -37,7 +37,7 @@ def main(
         units = resolve_published_result_units(unit or (), manifest)
     except ValueError as exc:
         raise typer.BadParameter(str(exc), param_hint="--unit") from exc
-    paths = DataDecidePaths(data_dir)
+    paths = DataArtifacts(data_dir)
     results = preprocess_published_results(
         paths, units=units, manifest=manifest, verbose=True
     )

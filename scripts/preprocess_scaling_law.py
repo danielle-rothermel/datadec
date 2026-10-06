@@ -5,7 +5,7 @@ from typing import Annotated
 
 import typer
 
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess import preprocess_scaling_law
 from datadec.data.publish import publish_unit, scaling_law_publication_unit
 
@@ -21,7 +21,7 @@ def main(
     keep_sources: Annotated[bool, typer.Option("--keep-sources")] = False,
 ) -> None:
     """Preprocess the three local raw scaling-law CSV artifacts."""
-    paths = DataDecidePaths(data_dir)
+    paths = DataArtifacts(data_dir)
     result = preprocess_scaling_law(paths, verbose=True)
     if upload:
         publish_unit(

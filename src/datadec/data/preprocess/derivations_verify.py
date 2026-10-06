@@ -11,7 +11,7 @@ from datadec.config import (
     load_catalog,
 )
 from datadec.data.model_utils import create_model_schedules
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.duckdb import sql_literal
 from datadec.data.preprocess.model_enrichment import create_model_enrichment_table
 
@@ -357,7 +357,7 @@ def _verify_detail_tasks(
 
 
 def verify_preprocessed_derivations(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
 ) -> DerivationVerificationResult:
     detail_paths = tuple(
         sorted(paths.data_dir.glob("processed/olmes-details/*/tasks.parquet"))

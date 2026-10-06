@@ -46,7 +46,7 @@ def test_cli_default_is_repo_data_independent_of_cwd(
     paths = object()
     monkeypatch.chdir(tmp_path)
     with (
-        patch.object(script, "DataDecidePaths", return_value=paths) as path_type,
+        patch.object(script, "DataArtifacts", return_value=paths) as path_type,
         patch.object(
             script,
             "preprocess_olmes",

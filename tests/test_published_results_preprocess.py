@@ -16,11 +16,10 @@ from datadec.config import (
     PublishedResultFile,
     PublishedResultsManifest,
 )
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
+from datadec.data.selection import published_result_units, resolve_published_result_units
 from datadec.data.preprocess.published_results import (
     preprocess_published_results,
-    published_result_units,
-    resolve_published_result_units,
 )
 
 FOLDER_URL = "https://drive.google.com/drive/folders/1weYlEOlHrA_fzT2OsRa40uLc4EKTGz1D"
@@ -204,7 +203,7 @@ def test_transformed_csv_maps_one_to_one_and_preserves_repr_strings(
     tmp_path: Path,
 ) -> None:
     source = _source("outputs2/1_metric_transformed.csv")
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     input_path = paths.published_result_source_path(source)
     schema = PUBLISHED_RESULT_SCHEMAS["transformed"]
     _write_csv(
@@ -244,7 +243,7 @@ def test_prediction_nullable_numeric_blanks_become_null(tmp_path: Path) -> None:
         "outputs2/2_prediction_model_scale.csv",
         schema="prediction_model_scale",
     )
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     schema = PUBLISHED_RESULT_SCHEMAS["prediction_model_scale"]
     values = []
     for column in schema.columns:
@@ -275,7 +274,7 @@ def test_required_numeric_blank_is_rejected_without_replacing_output(
     tmp_path: Path,
 ) -> None:
     source = _source("outputs2/1_metric_transformed.csv")
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     schema = PUBLISHED_RESULT_SCHEMAS["transformed"]
     input_path = paths.published_result_source_path(source)
     _write_csv(
@@ -296,7 +295,7 @@ def test_required_numeric_blank_is_rejected_without_replacing_output(
 
 def test_wrong_header_order_and_malformed_rows_are_rejected(tmp_path: Path) -> None:
     source = _source("outputs2/1_metric_transformed.csv")
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     input_path = paths.published_result_source_path(source)
     schema = PUBLISHED_RESULT_SCHEMAS["transformed"]
     header = [column.name for column in schema.columns]
@@ -313,7 +312,7 @@ def test_target_pairs_preserve_index_order_and_orientation(tmp_path: Path) -> No
     source = _source(
         "outputs2/0_target_pairs.json", schema="target_pairs", file_id="pairs"
     )
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     input_path = paths.published_result_source_path(source)
     input_path.parent.mkdir(parents=True)
     pairs = [[f"left-{index}", f"right-{index}"] for index in range(300)]
@@ -346,7 +345,7 @@ def test_target_pairs_reject_invalid_or_empty_entries(
     tmp_path: Path, bad_pair: object
 ) -> None:
     source = _source("outputs2/0_target_pairs.json", schema="target_pairs")
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     input_path = paths.published_result_source_path(source)
     input_path.parent.mkdir(parents=True)
     pairs: list[object] = [[f"left-{index}", f"right-{index}"] for index in range(300)]
@@ -362,7 +361,7 @@ def test_second_replacement_failure_rolls_back_every_output(tmp_path: Path) -> N
         _source("outputs2/1_metric_transformed.csv", file_id="metric"),
         _source("outputs2/1_primary_transformed.csv", file_id="primary"),
     )
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     schema = PUBLISHED_RESULT_SCHEMAS["transformed"]
     header = [column.name for column in schema.columns]
     for source in sources:
@@ -408,7 +407,7 @@ def test_second_replacement_failure_rolls_back_every_output(tmp_path: Path) -> N
 
 def test_preprocessing_uses_no_network_clients(tmp_path: Path) -> None:
     source = _source("outputs2/1_metric_transformed.csv")
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     schema = PUBLISHED_RESULT_SCHEMAS["transformed"]
     _write_csv(
         paths.published_result_source_path(source),

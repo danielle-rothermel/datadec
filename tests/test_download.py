@@ -18,8 +18,9 @@ from datadec.config import (
     load_source_manifest,
 )
 from datadec.data import download
-from datadec.data.download import download_sources, resolve_olmes_detail_recipes
-from datadec.data.paths import DataDecidePaths
+from datadec.data.download import download_sources
+from datadec.data.selection import resolve_olmes_detail_recipes
+from datadec.data.artifacts import DataArtifacts
 
 PUBLISHED_RESULTS_FOLDER_URL = (
     "https://drive.google.com/drive/folders/1weYlEOlHrA_fzT2OsRa40uLc4EKTGz1D"
@@ -110,7 +111,7 @@ def write_detail_download(**kwargs: object) -> Path:
 
 
 def test_data_paths_use_exact_root_and_raw_outputs(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
 
     assert paths.data_dir == tmp_path
     assert paths.get_path("ppl_raw") == tmp_path / "raw/ppl.parquet"
@@ -122,7 +123,7 @@ def test_data_paths_use_exact_root_and_raw_outputs(tmp_path: Path) -> None:
 def test_download_sources_preserves_ppl_olmes_then_detail_order(
     tmp_path: Path,
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     ppl_dataset = MagicMock()
     olmes_dataset = MagicMock()
     ppl_dataset.to_parquet.side_effect = _write_dataset_parquet
@@ -200,7 +201,7 @@ def test_download_sources_preserves_ppl_olmes_then_detail_order(
 
 
 def test_existing_outputs_are_reused_without_network_calls(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     outputs = [
         tmp_path / "raw/ppl.parquet",
         tmp_path / "raw/olmes.parquet",
@@ -232,7 +233,7 @@ def test_existing_outputs_are_reused_without_network_calls(tmp_path: Path) -> No
 
 
 def test_force_propagates_to_dataset_and_detail_downloads(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     dataset = MagicMock()
     dataset.to_parquet.side_effect = _write_dataset_parquet
     with (
@@ -269,7 +270,7 @@ def test_force_propagates_to_dataset_and_detail_downloads(tmp_path: Path) -> Non
 
 
 def test_invalid_existing_dataset_output_is_redownloaded(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     output = paths.get_path("ppl_raw")
     output.parent.mkdir(parents=True)
     output.touch()
@@ -293,7 +294,7 @@ def test_existing_detail_archive_requires_matching_digest(tmp_path: Path) -> Non
         pytest.raises(ValueError, match="unexpected SHA-256"),
     ):
         download_sources(
-            DataDecidePaths(tmp_path),
+            DataArtifacts(tmp_path),
             olmes_details=["c4"],
             manifest=detail_manifest("c4"),
         )
@@ -316,7 +317,7 @@ def test_downloaded_detail_archive_requires_matching_digest(tmp_path: Path) -> N
         pytest.raises(ValueError, match="unexpected SHA-256"),
     ):
         download_sources(
-            DataDecidePaths(tmp_path),
+            DataArtifacts(tmp_path),
             olmes_details=["c4"],
             manifest=detail_manifest("c4"),
         )
@@ -325,7 +326,7 @@ def test_downloaded_detail_archive_requires_matching_digest(tmp_path: Path) -> N
 def test_failed_forced_dataset_export_preserves_existing_output(
     tmp_path: Path,
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     output = paths.get_path("ppl_raw")
     output.parent.mkdir(parents=True)
     pd.DataFrame({"value": [7]}).to_parquet(output, index=False)
@@ -349,8 +350,8 @@ def test_failed_forced_dataset_export_preserves_existing_output(
 def test_all_detail_recipes_use_config_order() -> None:
     source = load_source_manifest().olmes_details
 
-    assert resolve_olmes_detail_recipes(["all"], source) == list(source.recipes)
-    assert resolve_olmes_detail_recipes(["c4", "all", "c4"], source) == list(
+    assert resolve_olmes_detail_recipes(["all"], source) == tuple(source.recipes)
+    assert resolve_olmes_detail_recipes(["c4", "all", "c4"], source) == tuple(
         source.recipes
     )
 
@@ -362,7 +363,7 @@ def test_unknown_detail_recipe_is_rejected_before_download(tmp_path: Path) -> No
     ):
         with pytest.raises(ValueError, match="unknown OLMES detail recipe: missing"):
             download_sources(
-                DataDecidePaths(tmp_path), ppl=True, olmes_details=["missing"]
+                DataArtifacts(tmp_path), ppl=True, olmes_details=["missing"]
             )
 
     load_dataset.assert_not_called()
@@ -371,7 +372,7 @@ def test_unknown_detail_recipe_is_rejected_before_download(tmp_path: Path) -> No
 
 def test_download_sources_requires_an_explicit_selection(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="select at least one source"):
-        download_sources(DataDecidePaths(tmp_path))
+        download_sources(DataArtifacts(tmp_path))
 
 
 def test_verbose_status_identifies_source_destination_and_reuse(
@@ -381,7 +382,7 @@ def test_verbose_status_identifies_source_destination_and_reuse(
     output.parent.mkdir(parents=True)
     _write_dataset_parquet(output)
 
-    download_sources(DataDecidePaths(tmp_path), ppl=True, verbose=True)
+    download_sources(DataArtifacts(tmp_path), ppl=True, verbose=True)
 
     assert capsys.readouterr().out == f"ppl: reused -> {output}\n"
 
@@ -393,16 +394,16 @@ def test_download_implementation_does_not_use_snapshot_download() -> None:
 def test_published_result_destinations_preserve_category_mapping(
     tmp_path: Path,
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     raw = published_file(path="raw_data/results_ladder.csv", category="scaling_law")
     reference = published_file(
         path="per_task_out/arc/figure.pdf", category="published_figures"
     )
 
-    assert download._published_result_destination(paths, raw) == (
+    assert paths.published_result_download_path(raw) == (
         tmp_path / "raw/scaling-law/results_ladder.csv"
     )
-    assert download._published_result_destination(paths, reference) == (
+    assert paths.published_result_download_path(reference) == (
         tmp_path / "reference/published-results/per_task_out/arc/figure.pdf"
     )
 
@@ -414,7 +415,7 @@ def test_fresh_published_result_download_streams_and_atomically_completes(
     response = FakeResponse(b"abc", b"def")
     with patch("datadec.data.download.urlopen", return_value=response) as open_url:
         result = download._download_published_result_file(
-            DataDecidePaths(tmp_path), source, force=False
+            DataArtifacts(tmp_path), source, force=False
         )
 
     destination = (
@@ -455,7 +456,7 @@ def test_published_result_download_resumes_valid_partial_with_range(
 
     with patch("datadec.data.download.urlopen", return_value=response) as open_url:
         download._download_published_result_file(
-            DataDecidePaths(tmp_path), source, force=False
+            DataArtifacts(tmp_path), source, force=False
         )
 
     request = open_url.call_args.args[0]
@@ -480,7 +481,7 @@ def test_published_result_download_restarts_when_server_ignores_range(
         return_value=FakeResponse(b"abcdef", status=200),
     ):
         download._download_published_result_file(
-            DataDecidePaths(tmp_path), source, force=False
+            DataArtifacts(tmp_path), source, force=False
         )
 
     assert destination.read_bytes() == b"abcdef"
@@ -498,7 +499,7 @@ def test_published_result_reuses_expected_size_and_force_redownloads(
 
     with patch("datadec.data.download.urlopen") as open_url:
         reused = download._download_published_result_file(
-            DataDecidePaths(tmp_path), source, force=False
+            DataArtifacts(tmp_path), source, force=False
         )
     open_url.assert_not_called()
     assert reused.status == "reused"
@@ -509,7 +510,7 @@ def test_published_result_reuses_expected_size_and_force_redownloads(
     ):
         source = published_file(content=b"forced")
         forced = download._download_published_result_file(
-            DataDecidePaths(tmp_path), source, force=True
+            DataArtifacts(tmp_path), source, force=True
         )
     assert forced.status == "downloaded"
     assert destination.read_bytes() == b"forced"
@@ -528,7 +529,7 @@ def test_published_result_rejects_mismatched_complete_file(
     with patch("datadec.data.download.urlopen") as open_url:
         with pytest.raises(ValueError, match="existing file.*unexpected size"):
             download._download_published_result_file(
-                DataDecidePaths(tmp_path), source, force=False
+                DataArtifacts(tmp_path), source, force=False
             )
 
     open_url.assert_not_called()
@@ -548,7 +549,7 @@ def test_published_result_rejects_same_size_wrong_digest(tmp_path: Path) -> None
         pytest.raises(ValueError, match="unexpected SHA-256"),
     ):
         download._download_published_result_file(
-            DataDecidePaths(tmp_path), source, force=False
+            DataArtifacts(tmp_path), source, force=False
         )
 
     open_url.assert_not_called()
@@ -570,7 +571,7 @@ def test_published_result_rejects_complete_partial_with_wrong_digest(
         pytest.raises(ValueError, match="unexpected SHA-256"),
     ):
         download._download_published_result_file(
-            DataDecidePaths(tmp_path), source, force=False
+            DataArtifacts(tmp_path), source, force=False
         )
 
     open_url.assert_not_called()
@@ -585,7 +586,7 @@ def test_published_result_download_digest_mismatch_keeps_partial(
     with patch("datadec.data.download.urlopen", return_value=FakeResponse(b"abcdef")):
         with pytest.raises(RuntimeError, match="failed to download") as exc_info:
             download._download_published_result_file(
-                DataDecidePaths(tmp_path), source, force=False
+                DataArtifacts(tmp_path), source, force=False
             )
 
     destination = (
@@ -604,7 +605,7 @@ def test_published_result_size_mismatch_keeps_only_partial_file(
     with patch("datadec.data.download.urlopen", return_value=FakeResponse(b"short")):
         with pytest.raises(RuntimeError, match="failed to download") as exc_info:
             download._download_published_result_file(
-                DataDecidePaths(tmp_path), source, force=False
+                DataArtifacts(tmp_path), source, force=False
             )
 
     destination = (
@@ -632,7 +633,7 @@ def test_published_result_failure_preserves_cause_and_completed_destination(
     with patch("datadec.data.download.urlopen", return_value=response):
         with pytest.raises(RuntimeError) as exc_info:
             download._download_published_result_file(
-                DataDecidePaths(tmp_path), source, force=True
+                DataArtifacts(tmp_path), source, force=True
             )
 
     assert exc_info.value.__cause__ is network_error
@@ -677,30 +678,28 @@ def test_drive_selectors_are_disjoint_complete_and_deterministic(
         folder_url=PUBLISHED_RESULTS_FOLDER_URL, files=files
     )
     for file in files:
-        destination = download._published_result_destination(
-            DataDecidePaths(tmp_path), file
-        )
+        destination = DataArtifacts(tmp_path).published_result_download_path(file)
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(b"x")
 
     scaling = download_sources(
-        DataDecidePaths(tmp_path),
+        DataArtifacts(tmp_path),
         scaling_law=True,
         published_results_manifest=manifest,
     )
     published = download_sources(
-        DataDecidePaths(tmp_path),
+        DataArtifacts(tmp_path),
         published_results=True,
         published_results_manifest=manifest,
     )
     combined = download_sources(
-        DataDecidePaths(tmp_path),
+        DataArtifacts(tmp_path),
         scaling_law=True,
         published_results=True,
         published_results_manifest=manifest,
     )
     figures = download_sources(
-        DataDecidePaths(tmp_path),
+        DataArtifacts(tmp_path),
         published_figures=True,
         published_results_manifest=manifest,
     )
@@ -732,12 +731,12 @@ def test_real_manifest_drive_selectors_pin_counts_bytes_and_use_no_network(
     manifest = load_published_results_manifest()
 
     def selected_result(
-        paths: DataDecidePaths, source: PublishedResultFile, *, force: bool
+        paths: DataArtifacts, source: PublishedResultFile, *, force: bool
     ) -> download.DownloadResult:
         assert force is False
         return download.DownloadResult(
             source.category,
-            download._published_result_destination(paths, source),
+            paths.published_result_download_path(source),
             "reused",
         )
 
@@ -749,12 +748,12 @@ def test_real_manifest_drive_selectors_pin_counts_bytes_and_use_no_network(
         patch("datadec.data.download.urlopen") as urlopen,
     ):
         structured = download_sources(
-            DataDecidePaths(tmp_path),
+            DataArtifacts(tmp_path),
             published_results=True,
             published_results_manifest=manifest,
         )
         figures = download_sources(
-            DataDecidePaths(tmp_path),
+            DataArtifacts(tmp_path),
             published_figures=True,
             published_results_manifest=manifest,
         )

@@ -6,8 +6,8 @@ from typing import Annotated
 import typer
 
 from datadec.config import load_source_manifest
-from datadec.data.download import resolve_olmes_detail_recipes
-from datadec.data.paths import DataDecidePaths
+from datadec.data.selection import resolve_olmes_detail_recipes
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.olmes_details import preprocess_olmes_details
 from datadec.data.publish import olmes_details_publication_unit, publish_unit
 
@@ -54,7 +54,7 @@ def main(
             "path overrides require exactly one --recipe",
             param_hint="--recipe",
         )
-    paths = DataDecidePaths(data_dir)
+    paths = DataArtifacts(data_dir)
     for detail_recipe in recipes:
         result = preprocess_olmes_details(
             paths,

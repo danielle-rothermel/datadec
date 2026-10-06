@@ -5,7 +5,7 @@ from typing import Annotated
 
 import typer
 
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.publish import publish_existing_outputs
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parents[1] / "data"
@@ -47,7 +47,7 @@ def main(
 
     try:
         results = publish_existing_outputs(
-            DataDecidePaths(data_dir),
+            DataArtifacts(data_dir),
             ppl=ppl,
             olmes=olmes,
             olmes_details=details,

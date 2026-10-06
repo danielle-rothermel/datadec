@@ -32,9 +32,8 @@ from datadec.config import (
     load_scaling_law_contract,
     load_source_manifest,
 )
-from datadec.data.download import resolve_olmes_detail_recipes
-from datadec.data.paths import DataDecidePaths
-from datadec.data.preprocess.published_results import resolve_published_result_units
+from datadec.data.selection import resolve_olmes_detail_recipes, resolve_published_result_units
+from datadec.data.artifacts import DataArtifacts
 
 type ParquetLogicalType = Literal["string", "int64", "float64", "bool"]
 
@@ -106,7 +105,7 @@ def _ppl_publication_schema() -> tuple[PublicationColumn, ...]:
 
 
 def ppl_publication_unit(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     *,
     contract: PublishingContract | None = None,
     output_path: Path | None = None,
@@ -126,7 +125,7 @@ def ppl_publication_unit(
 
 
 def olmes_publication_unit(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     *,
     contract: PublishingContract | None = None,
     output_path: Path | None = None,
@@ -147,7 +146,7 @@ def olmes_publication_unit(
 
 
 def scaling_law_publication_unit(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     *,
     contract: PublishingContract | None = None,
     evaluations_output_path: Path | None = None,
@@ -182,7 +181,7 @@ def scaling_law_publication_unit(
 
 
 def olmes_details_publication_unit(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     recipe: str,
     *,
     contract: PublishingContract | None = None,
@@ -237,7 +236,7 @@ def olmes_details_publication_unit(
 
 
 def published_results_publication_units(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     *,
     units: Sequence[str] = (),
     contract: PublishingContract | None = None,
@@ -279,7 +278,7 @@ def published_results_publication_units(
 
 
 def _published_result_publication_file(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     source: PublishedResultFile,
     *,
     remote_root: str,
@@ -484,7 +483,7 @@ def publish_unit(
 
 
 def publish_existing_outputs(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     *,
     ppl: bool = False,
     olmes: bool = False,

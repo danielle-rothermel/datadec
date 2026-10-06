@@ -20,7 +20,7 @@ from datadec.config import (
     load_scaling_law_contract,
 )
 from datadec.data.model_utils import create_model_schedules
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.duckdb import (
     PendingParquetExport,
     duckdb_type,
@@ -92,7 +92,7 @@ class ScalingLawPreprocessResult:
 
 
 def preprocess_scaling_law(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     *,
     verbose: bool = False,
 ) -> ScalingLawPreprocessResult:

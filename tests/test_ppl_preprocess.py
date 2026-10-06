@@ -15,7 +15,7 @@ from datadec.config import (
     PPL_OUTPUT_COLUMNS,
 )
 from datadec.data.ingest.enums import DataRecipeName, ModelSizeName, Seed
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.ppl import (
     flatten_perplexity_rows,
     group_perplexity_rows,
@@ -151,7 +151,7 @@ def test_unknown_enum_values_use_current_enum_validation(
 
 
 def test_empty_input_writes_exact_typed_schema(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     input_path = paths.get_path("ppl_raw")
     input_path.parent.mkdir(parents=True)
     pd.DataFrame().to_parquet(input_path, index=False)
@@ -175,7 +175,7 @@ def test_empty_input_writes_exact_typed_schema(tmp_path: Path) -> None:
 def test_preprocess_projects_sorts_and_counts_without_grouping_helpers(
     tmp_path: Path,
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     input_path = paths.get_path("ppl_raw")
     input_path.parent.mkdir(parents=True)
     records = [
@@ -233,7 +233,7 @@ def test_preprocess_projects_sorts_and_counts_without_grouping_helpers(
 def test_preprocess_rejects_duplicate_normalized_key_with_row_context(
     tmp_path: Path,
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     input_path = paths.get_path("ppl_raw")
     input_path.parent.mkdir(parents=True)
     pd.DataFrame([_raw_record(step=1250), _raw_record(step=1250.0)]).to_parquet(
@@ -247,7 +247,7 @@ def test_preprocess_rejects_duplicate_normalized_key_with_row_context(
 
 
 def test_preprocess_rejects_unknown_enum_with_row_context(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     input_path = paths.get_path("ppl_raw")
     input_path.parent.mkdir(parents=True)
     pd.DataFrame([_raw_record(data="unknown recipe")]).to_parquet(
@@ -284,14 +284,14 @@ def test_typed_ingest_calls_the_shared_perplexity_grouping_helper(
         patch.object(ingest_module, "_group_task_rows", return_value={}),
         patch.object(ingest_module, "_build_checkpoints", return_value=[]),
     ):
-        assert ingest_module.ingest_from_hf(DataDecidePaths(tmp_path)) == []
+        assert ingest_module.ingest_from_hf(DataArtifacts(tmp_path)) == []
 
     shared_group.assert_called_once_with(ppl_df)
 
 
 def test_typed_ingest_downloads_missing_raw_sources_directly(tmp_path: Path) -> None:
     ingest_module = importlib.import_module("datadec.data.ingest.ingest")
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
 
     with patch.object(ingest_module, "download_sources") as download_sources:
         ingest_module._ensure_raw_parquets_exist(paths, verbose=True)

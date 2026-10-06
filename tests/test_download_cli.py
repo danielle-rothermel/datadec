@@ -33,7 +33,7 @@ def test_cli_requires_an_explicit_selection() -> None:
 def test_cli_forwards_mixed_repeatable_options_and_force(tmp_path: Path) -> None:
     paths = object()
     with (
-        patch.object(script, "DataDecidePaths", return_value=paths) as path_type,
+        patch.object(script, "DataArtifacts", return_value=paths) as path_type,
         patch.object(script, "download_sources") as download_sources,
     ):
         result = runner.invoke(
@@ -75,7 +75,7 @@ def test_cli_default_is_repo_data_independent_of_cwd(
     paths = object()
     monkeypatch.chdir(tmp_path)
     with (
-        patch.object(script, "DataDecidePaths", return_value=paths) as path_type,
+        patch.object(script, "DataArtifacts", return_value=paths) as path_type,
         patch.object(script, "download_sources"),
     ):
         result = runner.invoke(app, ["--ppl"])
@@ -87,7 +87,7 @@ def test_cli_default_is_repo_data_independent_of_cwd(
 
 def test_cli_reports_unknown_detail_recipe_as_usage_error() -> None:
     with (
-        patch.object(script, "DataDecidePaths", return_value=object()),
+        patch.object(script, "DataArtifacts", return_value=object()),
         patch.object(
             script,
             "download_sources",

@@ -35,7 +35,7 @@ def test_cli_defaults_to_all_manifest_units_independent_of_cwd(
         patch.object(
             script, "resolve_published_result_units", return_value=units
         ) as resolve,
-        patch.object(script, "DataDecidePaths", return_value=paths) as path_type,
+        patch.object(script, "DataArtifacts", return_value=paths) as path_type,
         patch.object(
             script,
             "preprocess_published_results",
@@ -164,7 +164,7 @@ def test_cli_forwards_keep_sources_and_publishes_only_returned_units(
             "resolve_published_result_units",
             return_value=("outputs2", "per-task-winogrande"),
         ),
-        patch.object(script, "DataDecidePaths", return_value=paths),
+        patch.object(script, "DataArtifacts", return_value=paths),
         patch.object(
             script,
             "preprocess_published_results",

@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from typer.testing import CliRunner
 
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 
 SCRIPT_PATH = Path(__file__).parents[1] / "scripts/preprocess_olmes_details.py"
 SCRIPT_MODULE = "datadec_preprocess_olmes_details_script"
@@ -35,10 +35,10 @@ def _preprocess_result(tmp_path: Path, recipe: str) -> SimpleNamespace:
 def test_cli_default_is_repo_data_independent_of_cwd(
     tmp_path: Path, monkeypatch
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     monkeypatch.chdir(tmp_path)
     with (
-        patch.object(script, "DataDecidePaths", return_value=paths) as path_type,
+        patch.object(script, "DataArtifacts", return_value=paths) as path_type,
         patch.object(
             script,
             "preprocess_olmes_details",
@@ -73,7 +73,7 @@ def test_cli_default_is_repo_data_independent_of_cwd(
 def test_cli_data_dir_invokes_preprocess_for_each_recipe(tmp_path: Path) -> None:
     paths = object()
     with (
-        patch.object(script, "DataDecidePaths", return_value=paths),
+        patch.object(script, "DataArtifacts", return_value=paths),
         patch.object(script, "preprocess_olmes_details") as preprocess,
         patch("datadec.data.download.download_sources") as download_sources,
     ):
@@ -116,7 +116,7 @@ def test_cli_data_dir_invokes_preprocess_for_each_recipe(tmp_path: Path) -> None
 def test_cli_preprocesses_and_publishes_each_recipe_sequentially(
     tmp_path: Path,
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     events: list[str] = []
 
     def preprocess_side_effect(
@@ -130,7 +130,7 @@ def test_cli_preprocesses_and_publishes_each_recipe_sequentially(
         events.append(f"publish:{getattr(unit, 'name')}")
 
     with (
-        patch.object(script, "DataDecidePaths", return_value=paths),
+        patch.object(script, "DataArtifacts", return_value=paths),
         patch.object(
             script,
             "preprocess_olmes_details",
@@ -153,13 +153,13 @@ def test_cli_preprocesses_and_publishes_each_recipe_sequentially(
 
 
 def test_cli_path_overrides_are_forwarded(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     input_path = tmp_path / "custom-input.tar.gz"
     output_tasks = tmp_path / "tasks.parquet"
     output_instances = tmp_path / "instances.parquet"
     output_choices = tmp_path / "choices.parquet"
     with (
-        patch.object(script, "DataDecidePaths", return_value=paths),
+        patch.object(script, "DataArtifacts", return_value=paths),
         patch.object(
             script,
             "preprocess_olmes_details",
@@ -231,7 +231,7 @@ def test_cli_rejects_path_override_for_multiple_recipes(tmp_path: Path) -> None:
 
 
 def test_cli_publish_failure_stops_before_next_recipe(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
 
     def preprocess_side_effect(
         paths_arg: object, recipe: str, **kwargs: object
@@ -240,7 +240,7 @@ def test_cli_publish_failure_stops_before_next_recipe(tmp_path: Path) -> None:
         return _preprocess_result(tmp_path, recipe)
 
     with (
-        patch.object(script, "DataDecidePaths", return_value=paths),
+        patch.object(script, "DataArtifacts", return_value=paths),
         patch.object(
             script,
             "preprocess_olmes_details",

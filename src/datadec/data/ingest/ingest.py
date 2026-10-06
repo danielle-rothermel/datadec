@@ -18,7 +18,7 @@ from datadec.data.ingest.registries.model_details import (
     load_model_registry,
 )
 from datadec.data.ingest.run import TrainingRun
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.ppl import group_perplexity_rows
 
 type RunKey = tuple[ModelSizeName, DataRecipeName, Seed]
@@ -26,11 +26,11 @@ type TaskRowsByKey = dict[RunKey, dict[int, dict[Task, TaskEvalMetrics]]]
 
 
 def ingest_from_hf(
-    paths: DataDecidePaths | None = None,
+    paths: DataArtifacts | None = None,
     *,
     verbose: bool = False,
 ) -> list[TrainingRun]:
-    paths = paths or DataDecidePaths()
+    paths = paths or DataArtifacts()
     _ensure_raw_parquets_exist(paths, verbose=verbose)
 
     ppl_df = pd.read_parquet(paths.get_path("ppl_raw"))
@@ -69,7 +69,7 @@ def ingest_from_hf(
     return runs
 
 
-def _ensure_raw_parquets_exist(paths: DataDecidePaths, *, verbose: bool) -> None:
+def _ensure_raw_parquets_exist(paths: DataArtifacts, *, verbose: bool) -> None:
     missing_types = [
         raw_type
         for raw_type in ("ppl", "dwn")
@@ -146,8 +146,8 @@ _CHECKPOINT_COMPUTED_FIELDS: set[str] = {
 }
 
 
-def cache_path(paths: DataDecidePaths | None = None) -> Path:
-    paths = paths or DataDecidePaths()
+def cache_path(paths: DataArtifacts | None = None) -> Path:
+    paths = paths or DataArtifacts()
     return paths.data_dir / DEFAULT_CACHE_FILENAME
 
 

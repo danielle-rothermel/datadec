@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import hashlib
 import os
-from pathlib import Path, PurePosixPath
+from pathlib import Path
 import re
 import tempfile
 from typing import Protocol, cast
@@ -24,7 +24,8 @@ from datadec.config import (
     load_published_results_manifest,
     load_source_manifest,
 )
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
+from datadec.data.selection import resolve_olmes_detail_recipes
 
 _GOOGLE_DRIVE_DOWNLOAD_URL = (
     "https://drive.usercontent.google.com/download?id={file_id}"
@@ -84,12 +85,12 @@ def _validate_file_identity(
 
 
 def _download_dataset_source(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     source: DatasetSource,
     *,
     force: bool,
 ) -> DownloadResult:
-    destination = paths.data_dir / source.output
+    destination = paths.dataset_source_path(source)
     if destination.exists() and not force and _is_valid_dataset_parquet(destination):
         return DownloadResult(source.id, destination, "reused")
 
@@ -123,23 +124,10 @@ def _download_dataset_source(
     return DownloadResult(source.id, destination, "downloaded")
 
 
-def resolve_olmes_detail_recipes(
-    requested: Sequence[str], source: DetailSource
-) -> list[str]:
-    allowed = set(source.recipes)
-    unknown = [
-        recipe for recipe in requested if recipe != "all" and recipe not in allowed
-    ]
-    if unknown:
-        names = ", ".join(dict.fromkeys(unknown))
-        raise ValueError(f"unknown OLMES detail recipe: {names}")
-    if "all" in requested:
-        return list(source.recipes)
-    return list(dict.fromkeys(requested))
 
 
 def _download_detail_source(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     source: DetailSource,
     recipe: str,
     *,
@@ -148,7 +136,7 @@ def _download_detail_source(
     artifact = source.file_for_recipe(recipe)
     filename = source.filename_template.format(recipe=recipe)
     output_root = paths.data_dir / source.output_root
-    destination = output_root / filename
+    destination = paths.olmes_detail_source_path(recipe, source)
     result_source = f"{source.id}:{recipe}"
     if destination.exists() and not force:
         _validate_file_identity(
@@ -180,15 +168,6 @@ def _download_detail_source(
     return DownloadResult(result_source, destination, "downloaded")
 
 
-def _published_result_destination(
-    paths: DataDecidePaths, source: PublishedResultFile
-) -> Path:
-    relative_path = PurePosixPath(source.path)
-    if source.category == "scaling_law":
-        return paths.data_dir / "raw" / "scaling-law" / relative_path.name
-    return (
-        paths.data_dir / "reference" / "published-results" / Path(*relative_path.parts)
-    )
 
 
 def _response_status(response: object) -> int:
@@ -200,12 +179,12 @@ def _response_status(response: object) -> int:
 
 
 def _download_published_result_file(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     source: PublishedResultFile,
     *,
     force: bool,
 ) -> DownloadResult:
-    destination = _published_result_destination(paths, source)
+    destination = paths.published_result_download_path(source)
     result_source = f"{source.category.replace('_', '-')}:{source.path}"
     if destination.exists() and not force:
         _validate_file_identity(
@@ -283,7 +262,7 @@ def _download_published_result_file(
 
 
 def download_sources(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     *,
     ppl: bool = False,
     olmes: bool = False,

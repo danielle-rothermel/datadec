@@ -8,8 +8,6 @@ from datadec.data.preprocess.published_results import (
     PublishedResultPreprocessFile,
     PublishedResultsPreprocessResult,
     preprocess_published_results,
-    published_result_units,
-    resolve_published_result_units,
 )
 from datadec.data.preprocess.scaling_law import (
     RAW_COLUMNS as SCALING_LAW_RAW_COLUMNS,
@@ -38,8 +36,6 @@ __all__ = [
     "preprocess_scaling_law",
     "SCALING_LAW_RAW_COLUMNS",
     "ScalingLawPreprocessResult",
-    "published_result_units",
-    "resolve_published_result_units",
 ]
 
 

@@ -21,7 +21,7 @@ from datadec.config import (
 )
 from datadec.data import constants as consts
 from datadec.data.model_utils import checkpoint_enrichment
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.duckdb import (
     duckdb_type,
     prepare_parquet_export,
@@ -270,7 +270,7 @@ def flatten_olmes_rows(
 
 
 def preprocess_olmes(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     *,
     input_path: Path | None = None,
     output_path: Path | None = None,

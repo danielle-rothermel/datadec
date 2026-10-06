@@ -17,7 +17,8 @@ from datadec.config import (
     PublishedResultsManifest,
     load_published_results_manifest,
 )
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
+from datadec.data.selection import resolve_published_result_units
 from datadec.data.preprocess.duckdb import (
     PendingParquetExport,
     duckdb_type,
@@ -43,31 +44,8 @@ class PublishedResultsPreprocessResult:
     files: tuple[PublishedResultPreprocessFile, ...]
 
 
-def published_result_units(
-    manifest: PublishedResultsManifest,
-) -> tuple[PublishedResultUnit, ...]:
-    units: list[PublishedResultUnit] = []
-    for source in manifest.files:
-        unit = source.publication_unit
-        if source.category == "published_results" and unit is not None:
-            if unit not in units:
-                units.append(unit)
-    return tuple(units)
 
 
-def resolve_published_result_units(
-    requested: Sequence[str], manifest: PublishedResultsManifest
-) -> tuple[PublishedResultUnit, ...]:
-    available = published_result_units(manifest)
-    allowed = set(available)
-    unknown = [unit for unit in requested if unit != "all" and unit not in allowed]
-    if unknown:
-        names = ", ".join(dict.fromkeys(unknown))
-        raise ValueError(f"unknown published-results unit: {names}")
-    if not requested or "all" in requested:
-        return available
-    requested_set = set(requested)
-    return tuple(unit for unit in available if unit in requested_set)
 
 
 def _validate_csv_header(path: Path, schema: PublishedResultTableSchema) -> None:
@@ -232,7 +210,7 @@ def _prepare_target_pairs(
 
 
 def preprocess_published_results(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     *,
     units: Sequence[str] = (),
     manifest: PublishedResultsManifest | None = None,
@@ -316,6 +294,4 @@ __all__ = [
     "PublishedResultPreprocessFile",
     "PublishedResultsPreprocessResult",
     "preprocess_published_results",
-    "published_result_units",
-    "resolve_published_result_units",
 ]

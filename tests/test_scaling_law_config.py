@@ -17,7 +17,7 @@ from datadec.config import (
     load_published_results_manifest,
     load_scaling_law_contract,
 )
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 
 SOURCE_PRECEDENCE = (
     "results_ladder_5xC_seeds.csv",
@@ -201,7 +201,7 @@ def test_scaling_law_checkpoint_losses_pin_nullable_metrics_and_identity() -> No
 def test_scaling_law_paths_follow_contract_without_creating_directories(
     tmp_path: Path,
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
 
     assert list(tmp_path.iterdir()) == []
     assert paths.scaling_law_raw_paths() == tuple(

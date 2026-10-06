@@ -6,7 +6,7 @@ from typing import Annotated
 import typer
 
 from datadec.data.download import download_sources
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
@@ -40,7 +40,7 @@ def main(
         )
     try:
         download_sources(
-            DataDecidePaths(data_dir),
+            DataArtifacts(data_dir),
             ppl=ppl,
             olmes=olmes,
             olmes_details=details,
