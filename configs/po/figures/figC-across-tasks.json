@@ -1,0 +1,251 @@
+{
+ "title": "Across tasks (canonical prompt, RC)",
+ "rows": 1,
+ "cols": 2,
+ "metric_mode": "value",
+ "panel_size": [
+  5.2,
+  2.4
+ ],
+ "legend": "first",
+ "panels": [
+  {
+   "title": "Score per task",
+   "tasks": [
+    "arc_easy",
+    "arc_challenge",
+    "hellaswag",
+    "csqa",
+    "socialiqa",
+    "openbookqa",
+    "piqa",
+    "winogrande"
+   ],
+   "role": "test",
+   "x": {
+    "field": "task"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM 150M",
+     "filter": {
+      "family": "datadecide",
+      "recipe": "dclm",
+      "size_label": "150M",
+      "seed_label": "default",
+      "checkpoint_kind": "final"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "DCLM 1B",
+     "filter": {
+      "family": "datadecide",
+      "recipe": "dclm",
+      "size_label": "1B",
+      "seed_label": "default",
+      "checkpoint_kind": "final"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "Pythia 1B",
+     "filter": {
+      "family": "pythia",
+      "size_label": "1B",
+      "checkpoint_kind": "final"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-2 1B",
+     "filter": {
+      "family": "olmo2",
+      "variant": "base"
+     },
+     "color": "olmo2",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Qwen3 1.7B Base",
+     "filter": {
+      "family": "qwen3",
+      "size_label": "1.7B",
+      "variant": "base"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Qwen3 1.7B Instruct",
+     "filter": {
+      "family": "qwen3",
+      "size_label": "1.7B",
+      "variant": "instruct"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "family": "olmo3",
+      "size_label": "7B",
+      "variant": "base",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmo3",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-3 7B Instruct",
+     "filter": {
+      "family": "olmo3",
+      "size_label": "7B",
+      "variant": "instruct",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmo3",
+     "band": null,
+     "marker": "s"
+    }
+   ],
+   "chance_line": true,
+   "arrows": {
+    "contrast_type": "gepa"
+   }
+  },
+  {
+   "title": "Margin over chance",
+   "tasks": [
+    "arc_easy",
+    "arc_challenge",
+    "hellaswag",
+    "csqa",
+    "socialiqa",
+    "openbookqa",
+    "piqa",
+    "winogrande"
+   ],
+   "role": "test",
+   "x": {
+    "field": "task"
+   },
+   "metrics": [
+    "margin_accuracy",
+    "margin_likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM 150M",
+     "filter": {
+      "family": "datadecide",
+      "recipe": "dclm",
+      "size_label": "150M",
+      "seed_label": "default",
+      "checkpoint_kind": "final"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "DCLM 1B",
+     "filter": {
+      "family": "datadecide",
+      "recipe": "dclm",
+      "size_label": "1B",
+      "seed_label": "default",
+      "checkpoint_kind": "final"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "Pythia 1B",
+     "filter": {
+      "family": "pythia",
+      "size_label": "1B",
+      "checkpoint_kind": "final"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-2 1B",
+     "filter": {
+      "family": "olmo2",
+      "variant": "base"
+     },
+     "color": "olmo2",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Qwen3 1.7B Base",
+     "filter": {
+      "family": "qwen3",
+      "size_label": "1.7B",
+      "variant": "base"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Qwen3 1.7B Instruct",
+     "filter": {
+      "family": "qwen3",
+      "size_label": "1.7B",
+      "variant": "instruct"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "family": "olmo3",
+      "size_label": "7B",
+      "variant": "base",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmo3",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-3 7B Instruct",
+     "filter": {
+      "family": "olmo3",
+      "size_label": "7B",
+      "variant": "instruct",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmo3",
+     "band": null,
+     "marker": "s"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  }
+ ]
+}

@@ -1,0 +1,641 @@
+{
+ "title": "Adjacent sizes: larger \u2212 smaller",
+ "rows": 2,
+ "cols": 4,
+ "metric_mode": "delta",
+ "legend": "first",
+ "panels": [
+  {
+   "title": "arc_easy",
+   "task": "arc_easy",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true,
+    "label": "Parameters (larger model)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dclm",
+     "band": "seed",
+     "marker": "o"
+    },
+    {
+     "label": "Dolma",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    },
+    {
+     "label": "Pythia",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "pythia",
+      "checkpoint_kind": "final"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "D"
+    },
+    {
+     "label": "Qwen3 Base",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "qwen3",
+      "variant": "base"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "v"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "arc_challenge",
+   "task": "arc_challenge",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true,
+    "label": "Parameters (larger model)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dclm",
+     "band": "seed",
+     "marker": "o"
+    },
+    {
+     "label": "Dolma",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    },
+    {
+     "label": "Pythia",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "pythia",
+      "checkpoint_kind": "final"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "D"
+    },
+    {
+     "label": "Qwen3 Base",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "qwen3",
+      "variant": "base"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "v"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "hellaswag",
+   "task": "hellaswag",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true,
+    "label": "Parameters (larger model)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dclm",
+     "band": "seed",
+     "marker": "o"
+    },
+    {
+     "label": "Dolma",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    },
+    {
+     "label": "Pythia",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "pythia",
+      "checkpoint_kind": "final"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "D"
+    },
+    {
+     "label": "Qwen3 Base",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "qwen3",
+      "variant": "base"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "v"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "csqa",
+   "task": "csqa",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true,
+    "label": "Parameters (larger model)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dclm",
+     "band": "seed",
+     "marker": "o"
+    },
+    {
+     "label": "Dolma",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    },
+    {
+     "label": "Pythia",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "pythia",
+      "checkpoint_kind": "final"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "D"
+    },
+    {
+     "label": "Qwen3 Base",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "qwen3",
+      "variant": "base"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "v"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "socialiqa",
+   "task": "socialiqa",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true,
+    "label": "Parameters (larger model)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dclm",
+     "band": "seed",
+     "marker": "o"
+    },
+    {
+     "label": "Dolma",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    },
+    {
+     "label": "Pythia",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "pythia",
+      "checkpoint_kind": "final"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "D"
+    },
+    {
+     "label": "Qwen3 Base",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "qwen3",
+      "variant": "base"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "v"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "openbookqa",
+   "task": "openbookqa",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true,
+    "label": "Parameters (larger model)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dclm",
+     "band": "seed",
+     "marker": "o"
+    },
+    {
+     "label": "Dolma",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    },
+    {
+     "label": "Pythia",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "pythia",
+      "checkpoint_kind": "final"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "D"
+    },
+    {
+     "label": "Qwen3 Base",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "qwen3",
+      "variant": "base"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "v"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "piqa",
+   "task": "piqa",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true,
+    "label": "Parameters (larger model)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dclm",
+     "band": "seed",
+     "marker": "o"
+    },
+    {
+     "label": "Dolma",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    },
+    {
+     "label": "Pythia",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "pythia",
+      "checkpoint_kind": "final"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "D"
+    },
+    {
+     "label": "Qwen3 Base",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "qwen3",
+      "variant": "base"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "v"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "winogrande",
+   "task": "winogrande",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true,
+    "label": "Parameters (larger model)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dclm",
+     "band": "seed",
+     "marker": "o"
+    },
+    {
+     "label": "Dolma",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    },
+    {
+     "label": "Pythia",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "pythia",
+      "checkpoint_kind": "final"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "D"
+    },
+    {
+     "label": "Qwen3 Base",
+     "filter": {
+      "contrast_type": "size-adjacent",
+      "family": "qwen3",
+      "variant": "base"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "v"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  }
+ ]
+}

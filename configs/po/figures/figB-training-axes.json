@@ -1,0 +1,280 @@
+{
+ "title": "Training axis on ARC-Easy: norm-peak, mid-training and final checkpoints",
+ "rows": 1,
+ "cols": 4,
+ "metric_mode": "value",
+ "panels": [
+  {
+   "title": "DataDecide 14M, Pythia 14M",
+   "task": "arc_easy",
+   "role": "test",
+   "x": {
+    "field": "checkpoint_fraction",
+    "label": "Fraction of training (peak, mid, final)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM",
+     "filter": {
+      "family": "datadecide",
+      "size_label": "14M",
+      "seed_label": "default",
+      "precision": "fp32-tf32",
+      "recipe": "dclm"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Dolma",
+     "filter": {
+      "family": "datadecide",
+      "size_label": "14M",
+      "seed_label": "default",
+      "precision": "fp32-tf32",
+      "recipe": "dolma"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "C4",
+     "filter": {
+      "family": "datadecide",
+      "size_label": "14M",
+      "seed_label": "default",
+      "precision": "fp32-tf32",
+      "recipe": "c4"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "Pythia 14M",
+     "filter": {
+      "family": "pythia",
+      "size_label": "14M"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "D"
+    }
+   ],
+   "chance_line": true,
+   "arrows": {
+    "contrast_type": "gepa"
+   }
+  },
+  {
+   "title": "DataDecide 150M, Pythia 160M",
+   "task": "arc_easy",
+   "role": "test",
+   "x": {
+    "field": "checkpoint_fraction",
+    "label": "Fraction of training (peak, mid, final)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM",
+     "filter": {
+      "family": "datadecide",
+      "size_label": "150M",
+      "seed_label": "default",
+      "precision": "fp32-tf32",
+      "recipe": "dclm"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Dolma",
+     "filter": {
+      "family": "datadecide",
+      "size_label": "150M",
+      "seed_label": "default",
+      "precision": "fp32-tf32",
+      "recipe": "dolma"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "C4",
+     "filter": {
+      "family": "datadecide",
+      "size_label": "150M",
+      "seed_label": "default",
+      "precision": "fp32-tf32",
+      "recipe": "c4"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "Pythia 160M",
+     "filter": {
+      "family": "pythia",
+      "size_label": "160M"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "D"
+    }
+   ],
+   "chance_line": true,
+   "arrows": {
+    "contrast_type": "gepa"
+   }
+  },
+  {
+   "title": "DataDecide 300M, Pythia 410M",
+   "task": "arc_easy",
+   "role": "test",
+   "x": {
+    "field": "checkpoint_fraction",
+    "label": "Fraction of training (peak, mid, final)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM",
+     "filter": {
+      "family": "datadecide",
+      "size_label": "300M",
+      "seed_label": "default",
+      "precision": "fp32-tf32",
+      "recipe": "dclm"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Dolma",
+     "filter": {
+      "family": "datadecide",
+      "size_label": "300M",
+      "seed_label": "default",
+      "precision": "fp32-tf32",
+      "recipe": "dolma"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "C4",
+     "filter": {
+      "family": "datadecide",
+      "size_label": "300M",
+      "seed_label": "default",
+      "precision": "fp32-tf32",
+      "recipe": "c4"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "Pythia 410M",
+     "filter": {
+      "family": "pythia",
+      "size_label": "410M"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "D"
+    }
+   ],
+   "chance_line": true,
+   "arrows": {
+    "contrast_type": "gepa"
+   }
+  },
+  {
+   "title": "DataDecide 1B, Pythia 1B",
+   "task": "arc_easy",
+   "role": "test",
+   "x": {
+    "field": "checkpoint_fraction",
+    "label": "Fraction of training (peak, mid, final)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM",
+     "filter": {
+      "family": "datadecide",
+      "size_label": "1B",
+      "seed_label": "default",
+      "precision": "fp32-tf32",
+      "recipe": "dclm"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Dolma",
+     "filter": {
+      "family": "datadecide",
+      "size_label": "1B",
+      "seed_label": "default",
+      "precision": "fp32-tf32",
+      "recipe": "dolma"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "C4",
+     "filter": {
+      "family": "datadecide",
+      "size_label": "1B",
+      "seed_label": "default",
+      "precision": "fp32-tf32",
+      "recipe": "c4"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "Pythia 1B",
+     "filter": {
+      "family": "pythia",
+      "size_label": "1B"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "D"
+    }
+   ],
+   "chance_line": true,
+   "arrows": {
+    "contrast_type": "gepa"
+   }
+  }
+ ]
+}

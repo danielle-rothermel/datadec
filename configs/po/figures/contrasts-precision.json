@@ -1,0 +1,513 @@
+{
+ "title": "Weight precision vs fp32 (TF32), OLMo-3 7B",
+ "rows": 2,
+ "cols": 4,
+ "metric_mode": "delta",
+ "legend": "first",
+ "panels": [
+  {
+   "title": "arc_easy",
+   "task": "arc_easy",
+   "role": "test",
+   "x": {
+    "field": "precision",
+    "order": [
+     "bf16",
+     "int8",
+     "nf4"
+    ],
+    "connect": false,
+    "label": "Precision \u2212 fp32 (TF32)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-1025-7B"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-3 7B SFT",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-SFT"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMo-3 7B DPO",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-DPO"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "v"
+    },
+    {
+     "label": "OLMo-3 7B Instruct",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "s"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "arc_challenge",
+   "task": "arc_challenge",
+   "role": "test",
+   "x": {
+    "field": "precision",
+    "order": [
+     "bf16",
+     "int8",
+     "nf4"
+    ],
+    "connect": false,
+    "label": "Precision \u2212 fp32 (TF32)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-1025-7B"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-3 7B SFT",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-SFT"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMo-3 7B DPO",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-DPO"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "v"
+    },
+    {
+     "label": "OLMo-3 7B Instruct",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "s"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "hellaswag",
+   "task": "hellaswag",
+   "role": "test",
+   "x": {
+    "field": "precision",
+    "order": [
+     "bf16",
+     "int8",
+     "nf4"
+    ],
+    "connect": false,
+    "label": "Precision \u2212 fp32 (TF32)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-1025-7B"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-3 7B SFT",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-SFT"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMo-3 7B DPO",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-DPO"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "v"
+    },
+    {
+     "label": "OLMo-3 7B Instruct",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "s"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "csqa",
+   "task": "csqa",
+   "role": "test",
+   "x": {
+    "field": "precision",
+    "order": [
+     "bf16",
+     "int8",
+     "nf4"
+    ],
+    "connect": false,
+    "label": "Precision \u2212 fp32 (TF32)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-1025-7B"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-3 7B SFT",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-SFT"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMo-3 7B DPO",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-DPO"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "v"
+    },
+    {
+     "label": "OLMo-3 7B Instruct",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "s"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "socialiqa",
+   "task": "socialiqa",
+   "role": "test",
+   "x": {
+    "field": "precision",
+    "order": [
+     "bf16",
+     "int8",
+     "nf4"
+    ],
+    "connect": false,
+    "label": "Precision \u2212 fp32 (TF32)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-1025-7B"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-3 7B SFT",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-SFT"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMo-3 7B DPO",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-DPO"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "v"
+    },
+    {
+     "label": "OLMo-3 7B Instruct",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "s"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "openbookqa",
+   "task": "openbookqa",
+   "role": "test",
+   "x": {
+    "field": "precision",
+    "order": [
+     "bf16",
+     "int8",
+     "nf4"
+    ],
+    "connect": false,
+    "label": "Precision \u2212 fp32 (TF32)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-1025-7B"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-3 7B SFT",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-SFT"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMo-3 7B DPO",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-DPO"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "v"
+    },
+    {
+     "label": "OLMo-3 7B Instruct",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "s"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "piqa",
+   "task": "piqa",
+   "role": "test",
+   "x": {
+    "field": "precision",
+    "order": [
+     "bf16",
+     "int8",
+     "nf4"
+    ],
+    "connect": false,
+    "label": "Precision \u2212 fp32 (TF32)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-1025-7B"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-3 7B SFT",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-SFT"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMo-3 7B DPO",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-DPO"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "v"
+    },
+    {
+     "label": "OLMo-3 7B Instruct",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "s"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "winogrande",
+   "task": "winogrande",
+   "role": "test",
+   "x": {
+    "field": "precision",
+    "order": [
+     "bf16",
+     "int8",
+     "nf4"
+    ],
+    "connect": false,
+    "label": "Precision \u2212 fp32 (TF32)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-1025-7B"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-3 7B SFT",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-SFT"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMo-3 7B DPO",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct-DPO"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "v"
+    },
+    {
+     "label": "OLMo-3 7B Instruct",
+     "filter": {
+      "contrast_type": "precision",
+      "model": "allenai/Olmo-3-7B-Instruct"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "s"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  }
+ ]
+}
