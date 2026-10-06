@@ -5,6 +5,11 @@ job files and ``gepa`` pool items, builds the per-run Test eval sweep and its ``
 follow-up), and aggregates the paired optimized-minus-canonical effects into the tidy tables with a hierarchical
 bootstrap (runs, then items within runs).
 
+The GEPA search device is a job field: ``cuda`` for cluster pool runs, ``mps`` for the Mac lane
+(``scripts/po_gepa_local.py``), which writes jobs without pool items, runs them locally and pushes finished runs to
+the cluster. The Test eval sweep is always ``cuda`` whatever device searched, because Test evaluation is canonical on
+the cluster; the per-run ``gepa_runs`` table records the search device.
+
 Paths follow the contracts: runs at ``ROOT/gepa/<cell_id>/<run_id>/``, jobs at ``ROOT/gepa/<cell_id>/<run_id>.job.json``,
 eval sweeps at ``ROOT/sweeps/ge-<run_id>``, pool items as ``<pool>/pending/<NNNN>-<name>.json`` (po-pool-item/1).
 Items are written straight into the pool directories (atomic rename into ``pending/``); nothing here depends on
@@ -61,6 +66,8 @@ POOL_ITEM_SCHEMA = "po-pool-item/1"
 POOL_STATE_DIRS = ("pending", "claimed", "done", "failed")
 SMALL_MAX_PARAMS = 4e9  # strictly below -> small (eval class, shorter gepa estimate)
 BIG_MAX_PARAMS = 30e9  # strictly below -> big; at or above -> 32b (eval) and bfloat16 weights
+DEFAULT_DEVICE = "cuda"  # GEPA search device of cluster pool runs; the Mac lane writes "mps"
+EVAL_DEVICE = "cuda"  # Test eval sweeps run on the cluster regardless of the search device
 GEPA_CLASS = "gepa"  # one worker class for every gepa item (pool-item and gepa-run contracts)
 GEPA_EST_MINUTES_SMALL, GEPA_EST_MINUTES_BIG = 180, 360
 EVAL_EST_MINUTES = {"small": 30, "big": 90, "32b": 180}
@@ -172,8 +179,8 @@ def seed_instruction(start: Start, task: str, repo: Path) -> dict:
 
 
 def build_job(*, model: str, revision: str | None, dtype: str, batch_size: int, task: str, start: Start, seed: int,
-              root: Path, repo: Path) -> dict:
-    """One GEPA job in the contract's field set."""
+              root: Path, repo: Path, device: str = DEFAULT_DEVICE) -> dict:
+    """One GEPA job in the contract's field set; ``device`` is the GEPA search device the fork driver loads onto."""
     key = model_key(model, revision, dtype)
     cell = cell_id(key, task)
     rid = run_id(cell, start, seed)
@@ -184,7 +191,7 @@ def build_job(*, model: str, revision: str | None, dtype: str, batch_size: int, 
         raise ValueError(f"{task}: Train and Train-Dev overlap")
     return {
         "job_id": rid, "cell_id": cell, "start": str(start), "seed": seed,
-        "model": model, "revision": revision, "device": "cuda", "dtype": dtype, "batch_size": batch_size,
+        "model": model, "revision": revision, "device": device, "dtype": dtype, "batch_size": batch_size,
         "task": task, "formulation": FORMULATION, "prompt_format": dict(CANONICAL), "format_id": format_id(CANONICAL),
         "num_shots": NUM_SHOTS, "score_metric": SCORE_METRIC,
         "seed_instruction": seed_instruction(start, task, repo),
@@ -239,25 +246,41 @@ def gepa_item(job: dict, *, job_file: Path, pool_dir: Path, repo: Path, olmes_re
     }
 
 
-def write_cell(*, model: str, revision: str | None, task: str, pool_dir: Path, root: Path, repo: Path, olmes_repo: Path,
-               dtype: str | None = None, batch_size: int | None = None) -> list[Path]:
-    """The cell's 6 job files and 6 gepa items (empty starts first, then ape; seeds in order). Returns the item
-    paths written; items already present in the pool (any state) are not written again."""
+def write_jobs(*, model: str, revision: str | None, task: str, root: Path, repo: Path, dtype: str | None = None,
+               batch_size: int | None = None, device: str = DEFAULT_DEVICE) -> list[tuple[Path, dict]]:
+    """The cell's 6 job files (empty starts first, then ape; seeds in order) as (path, job) in that order. An existing
+    identical job file is reused; a different one is an error."""
     if task not in CELL_SUBSETS:
         raise ValueError(f"task must be one of {sorted(CELL_SUBSETS)}")
     dtype = dtype or default_dtype(model)
     if dtype not in PRECISION:
         raise ValueError(f"dtype must be one of {sorted(PRECISION)}")
     batch_size = batch_size or default_batch_size(model)
-    items = []
+    jobs = []
     for start in Start:
         for seed in GEPA_SEEDS:
             job = build_job(model=model, revision=revision, dtype=dtype, batch_size=batch_size, task=task, start=start,
-                            seed=seed, root=root, repo=repo)
+                            seed=seed, root=root, repo=repo, device=device)
             path = job_path(root, job["cell_id"], job["job_id"])
             _write_job(path, job)
-            items.append(gepa_item(job, job_file=path, pool_dir=pool_dir, repo=repo, olmes_repo=olmes_repo))
-    return append_items(pool_dir, items)
+            jobs.append((path, job))
+    return jobs
+
+
+def write_cell(*, model: str, revision: str | None, task: str, pool_dir: Path | None, root: Path, repo: Path,
+               olmes_repo: Path | None = None, dtype: str | None = None, batch_size: int | None = None,
+               device: str = DEFAULT_DEVICE) -> list[Path]:
+    """The cell's 6 job files and, when ``pool_dir`` is given, its 6 gepa items in the same order. Returns the item
+    paths written; items already present in the pool (any state) are not written again. With ``pool_dir=None``
+    (the Mac lane) only the job files are written and the result is empty."""
+    jobs = write_jobs(model=model, revision=revision, task=task, root=root, repo=repo, dtype=dtype,
+                      batch_size=batch_size, device=device)
+    if pool_dir is None:
+        return []
+    if olmes_repo is None:
+        raise ValueError("olmes_repo is required when writing pool items")
+    return append_items(pool_dir, [gepa_item(job, job_file=path, pool_dir=pool_dir, repo=repo, olmes_repo=olmes_repo)
+                                   for path, job in jobs])
 
 
 # --- pool item files ------------------------------------------------------------------------------------------
@@ -308,14 +331,15 @@ def best_text(result: dict) -> str | None:
 
 
 def eval_sweep_spec(job: dict, best: str | None, repo: Path) -> SweepSpec:
-    """Test subsets of the task, RC, canonical format x [none, gepa-<run_id>] (both ids always present)."""
+    """Test subsets of the task, RC, canonical format x [none, gepa-<run_id>] (both ids always present). The sweep runs
+    on ``cuda`` whatever device the GEPA search used: Test evaluation is canonical on the cluster."""
     fmt = dict(CANONICAL)
     pairs = tuple({"format": fmt, "format_id": format_id(fmt), "instruction": instr}
                   for instr in (dict(NONE_INSTRUCTION), {"id": GEPA_INSTRUCTION_PREFIX + job["job_id"], "text": best}))
     return SweepSpec(
         name=EVAL_SWEEP_PREFIX + job["job_id"], subset_paths=tuple(repo / p for p in CELL_SUBSETS[job["task"]].test),
         model=job["model"], revision=job["revision"], task=job["task"], formulations=(FORMULATION,), pairs=pairs,
-        num_shots=NUM_SHOTS, device="cuda", batch_size=int(job["batch_size"]), dtype=job["dtype"],
+        num_shots=NUM_SHOTS, device=EVAL_DEVICE, batch_size=int(job["batch_size"]), dtype=job["dtype"],
     )
 
 
@@ -413,18 +437,19 @@ def _load_items(sweep_dir: Path) -> pd.DataFrame:
     return load_sweep(sweep_dir)["items"]
 
 
-def _proposals(run_dir: Path, result: dict) -> int | None:
+def proposal_count(run_dir: Path, result: dict | None = None) -> int | None:
+    """Proposal rows (kind "proposal") in the run's proposals.jsonl; without the file, result.json's reflection_calls."""
     path = run_dir / "proposals.jsonl"
     if path.exists():
         rows = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
         return sum(r.get("kind") == "proposal" for r in rows)
-    return result.get("reflection_calls")
+    return (result or {}).get("reflection_calls")
 
 
 def collect_runs(gepa_root: Path, sweeps_dir: Path, load_items: Callable[[Path], pd.DataFrame] = _load_items
                  ) -> tuple[pd.DataFrame, dict[str, RunDiffs], list[str]]:
-    """Every finished run under gepa_root whose eval sweep pairs every Test item in both arms: one gepa_runs row each,
-    plus its diffs. Runs with result.json whose eval sweep is not written yet, empty or only partly covered are
+    """Every finished run under gepa_root whose eval sweep pairs every Test item in both arms: one gepa_runs row each
+    (including the job's GEPA search ``device``), plus its diffs. Runs with result.json whose eval sweep is not written yet, empty or only partly covered are
     returned as incomplete run ids and contribute nothing."""
     rows, diffs, incomplete = [], {}, []
     for job_file in sorted(Path(gepa_root).glob("*/*.job.json")):
@@ -447,9 +472,9 @@ def collect_runs(gepa_root: Path, sweeps_dir: Path, load_items: Callable[[Path],
         usage = result.get("reflection_usage") or {}
         row = {
             "run_id": rid, "cell_id": job["cell_id"], "model_key": model_key(job["model"], job["revision"], job["dtype"]),
-            "task": job["task"], "start": job["start"], "seed": job["seed"],
+            "task": job["task"], "start": job["start"], "seed": job["seed"], "device": job["device"],
             "seed_val_score": result.get("seed_val_score"), "best_val_score": result.get("best_val_score"),
-            "proposals": _proposals(run_dir, result), "num_candidates": result.get("num_candidates"),
+            "proposals": proposal_count(run_dir, result), "num_candidates": result.get("num_candidates"),
             "total_metric_calls": result.get("total_metric_calls"),
             "reflection_calls": usage.get("calls", result.get("reflection_calls")),
             "reflection_prompt_tokens": usage.get("prompt_tokens"), "reflection_completion_tokens": usage.get("completion_tokens"),

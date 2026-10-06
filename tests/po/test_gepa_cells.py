@@ -114,6 +114,19 @@ def test_gepa_items_match_pool_contract(tmp_path):
     assert item["class"] == "gepa" and item["est_minutes"] == 360 and item["meta"]["dtype"] == "bfloat16"
 
 
+def test_mps_jobs_without_pool_keep_cuda_eval_sweep(tmp_path):
+    root, pool = tmp_path / "root", tmp_path / "root" / "pool" / "p"
+    assert write_cell(model=DD, revision=DD_REV, task="arc_easy", pool_dir=None, root=root, repo=REPO, device="mps") == []
+    jobs = sorted((root / "gepa" / CELL).glob("*.job.json"))
+    assert len(jobs) == 6 and not pool.exists()
+    assert {json.loads(p.read_text())["device"] for p in jobs} == {"mps"}
+    rid = f"{CELL}__empty__s0"
+    (root / "gepa" / CELL / rid).mkdir()
+    (root / "gepa" / CELL / rid / "result.json").write_text(json.dumps({"best_candidate": {"system_prompt": "Be exact."}}))
+    sweep_dir, paths = write_eval_item(root / "gepa" / CELL / rid, pool, REPO)
+    assert json.loads((sweep_dir / "sweep.json").read_text())["device"] == "cuda" and len(paths) == 1
+
+
 def test_eval_item_writes_sweep_pairs_and_continues_sequence(tmp_path):
     root, pool, _ = _write(tmp_path)
     (pool / "done").mkdir()
@@ -140,7 +153,7 @@ def test_eval_item_writes_sweep_pairs_and_continues_sequence(tmp_path):
 def _fake_run(gepa_root, sweeps, rid, start, best, gepa_text):
     (gepa_root / CELL).mkdir(parents=True, exist_ok=True)
     job = {"job_id": rid, "cell_id": CELL, "model": DD, "revision": DD_REV, "dtype": "float32", "task": "arc_easy",
-           "start": start, "seed": 0}
+           "start": start, "seed": 0, "device": "mps" if start == "ape" else "cuda"}
     (gepa_root / CELL / f"{rid}.job.json").write_text(json.dumps(job))
     (gepa_root / CELL / rid).mkdir()
     (gepa_root / CELL / rid / "result.json").write_text(json.dumps(
@@ -186,6 +199,7 @@ def test_aggregate_known_deltas_same_text_and_idempotent(tmp_path):
     assert len(runs) == 2 and (tidy / "gepa_runs.csv").exists() and (tidy / "contrasts.csv").exists()
     assert runs.loc[a, "accuracy_delta"] == pytest.approx(0.25) and runs.loc[a, "likelihood_delta"] == pytest.approx(0.1)
     assert not runs.loc[a, "same_text"] and runs.loc[b, "same_text"]
+    assert (runs.loc[a, "device"], runs.loc[b, "device"]) == ("mps", "cuda")
     assert runs.loc[b, "accuracy_delta"] == 0 and runs.loc[b, "accuracy_lo"] == 0 and runs.loc[b, "n_items"] == 4
 
     c = pd.read_parquet(tidy / "contrasts.parquet")
