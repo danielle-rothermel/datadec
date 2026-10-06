@@ -18,7 +18,7 @@
 
 - **Step 2 — Centralize dataset selection, artifact paths, and file ownership:** Added deterministic dataset selection and explicit artifact ownership; migrated all callers and removed paths.py and duplicate selectors/path mappings. Recipe-specific metadata cleanup is isolated; shared caches require --all. All 335 tests passed.
 
-- **Step 3 — Keep processors local-only and separate verification from processing:** Moved verification into data/verify and added typed selection-aware reports. Base-only derivation checks never scan detail files; cross-source prerequisites are reported explicitly. Extracted shared checkpoint identity normalization and staging ownership. All 352 tests passed.
+- **Step 3 — Keep processors local-only and separate verification from processing:** Moved verification into data/verify and added typed selection-aware reports. Base-only derivation checks never scan detail files; cross-source prerequisites are reported explicitly. Extracted shared checkpoint identity normalization and staging ownership. All 352 tests passed. Live-data follow-up: the pinned scaling-law inputs encode nominal compute in 489,258 rows; those differences are diagnostic while exact-compute checks on generated outputs remain blocking.
 
 - **Step 4 — Separate publication-unit construction from upload and remote verification:** Separated publication units from CAS upload and immutable size/hash verification. Publishing never deletes local files; added read-only verification for cleanup. Updated tests to prove raw/output retention on success and failure. All 347 integrated tests passed.
 
@@ -76,7 +76,8 @@ processing stages may recompute on retry without a new persistent run ledger.
 Verification uses the requested selection, not unrelated files discovered
 locally. Report checks skipped because their cross-source prerequisites are
 outside the selection. All applicable raw-dependent checks finish before
-cleanup.
+cleanup. Historical nominal-compute values in raw scaling-law inputs are reported
+as diagnostics; generated tables must satisfy the exact-compute contract.
 
 ## CLI and cleanup
 

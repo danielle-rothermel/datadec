@@ -19,6 +19,7 @@ from datadec.data.verify.olmes_details import (
 class VerificationOutcome(StrEnum):
     PASSED = auto()
     SKIPPED = auto()
+    DIAGNOSTIC = auto()
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,6 +57,14 @@ class VerificationReport:
             if check.outcome is VerificationOutcome.SKIPPED
         )
 
+    @property
+    def diagnostic_checks(self) -> tuple[VerificationCheck, ...]:
+        return tuple(
+            check
+            for check in self.checks
+            if check.outcome is VerificationOutcome.DIAGNOSTIC
+        )
+
 
 def _require_no_contradictions(result: DerivationVerificationResult) -> None:
     contradictions = [
@@ -67,13 +76,13 @@ def _require_no_contradictions(result: DerivationVerificationResult) -> None:
         contradictions.append(
             (result.raw_olmes.name, result.raw_olmes.contradiction_count)
         )
-    if (
-        result.raw_scaling_law is not None
-        and result.raw_scaling_law.contradiction_count
-    ):
-        contradictions.append(
-            ("raw scaling-law", result.raw_scaling_law.contradiction_count)
-        )
+    if result.raw_scaling_law is not None:
+        raw = result.raw_scaling_law
+        # Raw scaling-law compute records nominal parameter counts; processors
+        # derive exact architectural compute for the supported output tables.
+        invalid_inputs = raw.contradiction_count - raw.exact_compute_mismatch_count
+        if invalid_inputs:
+            contradictions.append(("raw scaling-law", invalid_inputs))
     contradictions.extend(
         (f"OLMES detail tasks {verification.path.parent.name}", count)
         for verification in result.detail_tasks
@@ -90,8 +99,8 @@ def verify_selected_outputs(
 ) -> VerificationReport:
     """Verify only outputs and raw prerequisites named by ``selection``.
 
-    Verification mismatches raise immediately. The returned checks therefore
-    record completed checks and intentional skips only.
+    Output mismatches raise immediately. Historical raw scaling-law compute
+    differences are reported as diagnostics because processing corrects them.
     """
     derivations = verify_preprocessed_derivations(artifacts, selection)
     _require_no_contradictions(derivations)
@@ -116,8 +125,19 @@ def verify_selected_outputs(
         checks.append(
             VerificationCheck(
                 name="derivations:raw scaling-law",
-                outcome=VerificationOutcome.PASSED,
-                detail=f"verified {derivations.raw_scaling_law.row_count} rows",
+                outcome=(
+                    VerificationOutcome.DIAGNOSTIC
+                    if derivations.raw_scaling_law.exact_compute_mismatch_count
+                    else VerificationOutcome.PASSED
+                ),
+                detail=(
+                    f"checked {derivations.raw_scaling_law.row_count} raw rows; "
+                    f"{derivations.raw_scaling_law.exact_compute_mismatch_count} "
+                    "exact-parameter compute differences and "
+                    f"{derivations.raw_scaling_law.nominal_compute_mismatch_count} "
+                    "nominal-parameter compute differences; final outputs "
+                    "are checked against exact architectural compute"
+                ),
             )
         )
 

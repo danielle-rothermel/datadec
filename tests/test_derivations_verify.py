@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import csv
+from dataclasses import replace
 import json
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from datadec.data.artifacts import DataArtifacts
 from datadec.data.model_utils import (
@@ -13,6 +15,7 @@ from datadec.data.model_utils import (
 )
 from datadec.data.selection import DatasetSelection
 from datadec.data.verify.derivations import verify_preprocessed_derivations
+from datadec.data.verify import verify_selected_outputs
 
 SELECTION = DatasetSelection(
     ppl=True,
@@ -196,3 +199,30 @@ def test_base_selection_does_not_require_or_discover_detail_outputs(
     assert result.contradiction_count == 0
     assert len(result.processed_outputs) == 4
     assert result.detail_tasks == ()
+
+
+def test_selected_verification_reports_nominal_raw_compute_as_diagnostic(
+    tmp_path: Path,
+) -> None:
+    artifacts = _verification_paths(tmp_path, raw_scaling_uses_nominal_compute=True)
+    report = verify_selected_outputs(artifacts, replace(SELECTION, olmes_details=()))
+    assert len(report.diagnostic_checks) == 1
+    assert "3 exact-parameter compute differences" in report.diagnostic_checks[0].detail
+    assert (
+        "0 nominal-parameter compute differences" in report.diagnostic_checks[0].detail
+    )
+    assert all(
+        result.contradiction_count == 0
+        for result in report.derivations.processed_outputs
+    )
+
+
+def test_selected_verification_rejects_processed_compute_mismatch(
+    tmp_path: Path,
+) -> None:
+    artifacts = _verification_paths(tmp_path, raw_scaling_uses_nominal_compute=True)
+    ppl = pd.read_parquet(artifacts.get_path("ppl_processed"))
+    ppl.loc[0, "compute"] = 1.0
+    ppl.to_parquet(artifacts.get_path("ppl_processed"), index=False)
+    with pytest.raises(AssertionError, match="ppl=1"):
+        verify_selected_outputs(artifacts, replace(SELECTION, olmes_details=()))
