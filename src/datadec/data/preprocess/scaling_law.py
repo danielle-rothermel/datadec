@@ -12,6 +12,7 @@ import duckdb
 from duckdb import func
 
 from datadec.config import (
+    CHECKPOINT_ENRICHMENT_COLUMNS,
     OLMESContract,
     ScalingLawContract,
     ScalingLawTableContract,
@@ -29,10 +30,7 @@ from datadec.data.preprocess.duckdb import (
     replace_parquet_exports,
     sql_literal,
 )
-from datadec.data.preprocess.model_enrichment import (
-    CHECKPOINT_ENRICHMENT_COLUMNS,
-    create_model_enrichment_table,
-)
+from datadec.data.preprocess.model_enrichment import create_model_enrichment_table
 
 RAW_COLUMNS: tuple[str, ...] = (
     "group",

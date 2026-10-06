@@ -8,7 +8,7 @@ import orjson
 import pandas as pd
 import pytest
 
-from datadec.config import load_olmes_contract
+from datadec.config import CHECKPOINT_ENRICHMENT_TYPES, load_olmes_contract
 from datadec.data.ingest.enums import DataRecipeName, ModelSizeName, Seed
 from datadec.data.model_utils import checkpoint_enrichment
 from datadec.data.paths import DataDecidePaths
@@ -19,7 +19,6 @@ from datadec.data.preprocess.olmes import (
     group_olmes_rows,
     preprocess_olmes,
 )
-from datadec.data.preprocess.model_enrichment import CHECKPOINT_ENRICHMENT_TYPES
 
 CONTRACT = load_olmes_contract()
 OUTPUT_COLUMNS = tuple(column.name for column in CONTRACT.tables.aggregate.columns)

@@ -12,6 +12,12 @@ import numpy as np
 import pandas as pd
 import pyarrow.parquet as pq
 
+from datadec.config import (
+    CHECKPOINT_ENRICHMENT_TYPES,
+    PPL_IDENTITY_COLUMNS,
+    PPL_METRIC_COLUMNS,
+    PPL_OUTPUT_COLUMNS,
+)
 from datadec.data.model_utils import checkpoint_enrichment
 from datadec.data.paths import DataDecidePaths
 from datadec.data.preprocess.duckdb import (
@@ -22,8 +28,6 @@ from datadec.data.preprocess.duckdb import (
     sql_literal,
 )
 from datadec.data.preprocess.model_enrichment import (
-    CHECKPOINT_ENRICHMENT_COLUMNS,
-    CHECKPOINT_ENRICHMENT_TYPES,
     create_model_enrichment_table,
     enrichment_select_expressions,
 )
@@ -31,24 +35,6 @@ from datadec.data.preprocess.model_enrichment import (
 if TYPE_CHECKING:
     from datadec.data.ingest.enums import DataRecipeName, ModelSizeName, Seed
     from datadec.data.ingest.metrics import PerplexityMetrics
-
-PPL_IDENTITY_COLUMNS: tuple[str, ...] = ("params", "data", "seed", "step")
-PPL_METRIC_COLUMNS: tuple[str, ...] = (
-    "wikitext_103_valppl",
-    "pile_valppl",
-    "c4_en_valppl",
-    "m2d2_s2orc_valppl",
-    "ice_valppl",
-    "dolma_wiki_valppl",
-    "dolma_stack_valppl",
-    "dolma_reddit_valppl",
-    "dolma_pes2o_valppl",
-    "dolma_common_crawl_valppl",
-    "dolma_books_valppl",
-)
-PPL_OUTPUT_COLUMNS: tuple[str, ...] = (
-    PPL_IDENTITY_COLUMNS + CHECKPOINT_ENRICHMENT_COLUMNS + PPL_METRIC_COLUMNS
-)
 
 PplRunKey: TypeAlias = tuple["ModelSizeName", "DataRecipeName", "Seed"]
 PplRowsByKey: TypeAlias = dict[

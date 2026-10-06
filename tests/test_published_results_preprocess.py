@@ -11,10 +11,13 @@ import pyarrow.parquet as pq
 import pytest
 from pydantic import ValidationError
 
-from datadec.config import PublishedResultFile, PublishedResultsManifest
+from datadec.config import (
+    PUBLISHED_RESULT_SCHEMAS,
+    PublishedResultFile,
+    PublishedResultsManifest,
+)
 from datadec.data.paths import DataDecidePaths
 from datadec.data.preprocess.published_results import (
-    PUBLISHED_RESULT_SCHEMAS,
     preprocess_published_results,
     published_result_units,
     resolve_published_result_units,

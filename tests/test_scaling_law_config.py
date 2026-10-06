@@ -7,6 +7,7 @@ import pytest
 from pydantic import ValidationError
 
 from datadec.config import (
+    CHECKPOINT_ENRICHMENT_TYPES,
     OLMESContract,
     PublishedResultsManifest,
     ScalingLawContract,
@@ -17,7 +18,6 @@ from datadec.config import (
     load_scaling_law_contract,
 )
 from datadec.data.paths import DataDecidePaths
-from datadec.data.preprocess.model_enrichment import CHECKPOINT_ENRICHMENT_TYPES
 
 SOURCE_PRECEDENCE = (
     "results_ladder_5xC_seeds.csv",

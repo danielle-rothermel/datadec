@@ -10,15 +10,15 @@ import duckdb
 import pyarrow as pa
 
 from datadec.config import (
+    PUBLISHED_RESULT_SCHEMAS,
     PublishedResultFile,
-    PublishedResultSchema,
+    PublishedResultTableSchema,
     PublishedResultUnit,
     PublishedResultsManifest,
     load_published_results_manifest,
 )
 from datadec.data.paths import DataDecidePaths
 from datadec.data.preprocess.duckdb import (
-    DuckDbLogicalType,
     PendingParquetExport,
     duckdb_type,
     prepare_parquet_export,
@@ -27,128 +27,6 @@ from datadec.data.preprocess.duckdb import (
     replace_parquet_exports,
     sql_literal,
 )
-
-
-@dataclass(frozen=True, slots=True)
-class PublishedResultColumn:
-    name: str
-    logical_type: DuckDbLogicalType
-    nullable: bool = False
-
-
-@dataclass(frozen=True, slots=True)
-class PublishedResultTableSchema:
-    columns: tuple[PublishedResultColumn, ...]
-
-
-def _columns(
-    *definitions: tuple[str, DuckDbLogicalType, bool],
-) -> tuple[PublishedResultColumn, ...]:
-    return tuple(PublishedResultColumn(*definition) for definition in definitions)
-
-
-PUBLISHED_RESULT_SCHEMAS: dict[PublishedResultSchema, PublishedResultTableSchema] = {
-    "transformed": PublishedResultTableSchema(
-        _columns(
-            ("model", "string", False),
-            ("group", "string", False),
-            ("seed", "int64", False),
-            ("metric", "string", False),
-            ("models", "string", False),
-            ("compute_latest", "float64", False),
-            ("token_latest", "float64", False),
-            ("raw_values", "string", False),
-            ("value", "float64", False),
-        )
-    ),
-    "prediction_model_scale": PublishedResultTableSchema(
-        _columns(
-            ("binary_accuracy", "float64", True),
-            ("magnitude_correlation", "float64", True),
-            ("pearson_correlation", "float64", True),
-            ("weighted_pearson_correlation", "float64", True),
-            ("NDCG", "float64", True),
-            ("correct_count", "float64", True),
-            ("incorrect_count", "float64", True),
-            ("abstain_count", "float64", True),
-            ("total_count", "float64", True),
-            ("primary_abstain", "float64", True),
-            ("mix1_better", "float64", True),
-            ("mix2_better", "float64", True),
-            ("actual_mix1_better", "float64", True),
-            ("actual_mix2_better", "float64", True),
-            ("mix_pairs_incorrect", "string", False),
-            ("mix_pairs_correct", "string", False),
-            ("metric", "string", False),
-            ("model", "string", False),
-            ("seed", "int64", False),
-            ("compute_limit", "float64", True),
-            ("compute_latest", "float64", True),
-            ("proportion", "float64", False),
-            ("tokens", "float64", False),
-            ("three_way_accuracy", "float64", True),
-            ("compute", "float64", True),
-            ("proportion_target", "float64", True),
-        )
-    ),
-    "processed_ladder": PublishedResultTableSchema(
-        _columns(
-            ("model", "string", False),
-            ("group", "string", False),
-            ("task", "string", False),
-            ("step", "int64", False),
-            ("seed", "int64", False),
-            ("chinchilla", "string", False),
-            ("tokens", "int64", False),
-            ("compute", "float64", False),
-            ("metrics", "string", False),
-        )
-    ),
-    "cheap_decisions": PublishedResultTableSchema(
-        _columns(
-            ("task", "string", False),
-            ("mix", "string", False),
-            ("metric", "string", False),
-            ("setup", "string", False),
-            ("step_1_y", "float64", False),
-            ("step_2_y", "float64", False),
-            ("stacked_y", "float64", False),
-            ("step_1_pred", "float64", False),
-            ("step_2_pred", "float64", False),
-            ("stacked_pred", "float64", False),
-            ("abs_error_step_1", "float64", False),
-            ("abs_error_step_2", "float64", False),
-            ("abs_error_stacked", "float64", False),
-            ("rel_error_stacked", "float64", False),
-        )
-    ),
-    "new_eval_decision_accuracy": PublishedResultTableSchema(
-        _columns(
-            ("size", "string", False),
-            ("task", "string", False),
-            ("target_ranking", "string", False),
-            ("logits_per_byte_corr", "float64", False),
-            ("logits_per_char_corr", "float64", False),
-            ("primary_score", "float64", False),
-        )
-    ),
-    "new_eval_means": PublishedResultTableSchema(
-        _columns(
-            ("size", "string", False),
-            ("task", "string", False),
-            ("primary_score", "float64", False),
-            ("logits_per_byte_corr", "float64", False),
-            ("logits_per_char_corr", "float64", False),
-        )
-    ),
-    "target_pairs": PublishedResultTableSchema(
-        _columns(
-            ("pair_index", "int64", False),
-            ("model_1", "string", False),
-            ("model_2", "string", False),
-        )
-    ),
-}
 
 
 @dataclass(frozen=True, slots=True)
@@ -435,11 +313,8 @@ def preprocess_published_results(
 
 
 __all__ = [
-    "PUBLISHED_RESULT_SCHEMAS",
-    "PublishedResultColumn",
     "PublishedResultPreprocessFile",
     "PublishedResultsPreprocessResult",
-    "PublishedResultTableSchema",
     "preprocess_published_results",
     "published_result_units",
     "resolve_published_result_units",

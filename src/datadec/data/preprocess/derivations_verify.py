@@ -5,15 +5,15 @@ from pathlib import Path
 
 import duckdb
 
-from datadec.config import load_catalog
+from datadec.config import (
+    CHECKPOINT_ENRICHMENT_COLUMNS,
+    MODEL_DETAIL_TYPES,
+    load_catalog,
+)
 from datadec.data.model_utils import create_model_schedules
 from datadec.data.paths import DataDecidePaths
 from datadec.data.preprocess.duckdb import sql_literal
-from datadec.data.preprocess.model_enrichment import (
-    CHECKPOINT_ENRICHMENT_COLUMNS,
-    MODEL_DETAIL_TYPES,
-    create_model_enrichment_table,
-)
+from datadec.data.preprocess.model_enrichment import create_model_enrichment_table
 
 _RELATIVE_TOLERANCE = 1e-12
 _ABSOLUTE_TOLERANCE = 1e-6

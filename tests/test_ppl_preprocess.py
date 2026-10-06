@@ -8,17 +8,19 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from datadec.data.ingest.enums import DataRecipeName, ModelSizeName, Seed
-from datadec.data.paths import DataDecidePaths
-from datadec.data.preprocess.ppl import (
+from datadec.config import (
+    CHECKPOINT_ENRICHMENT_TYPES,
     PPL_IDENTITY_COLUMNS,
     PPL_METRIC_COLUMNS,
     PPL_OUTPUT_COLUMNS,
+)
+from datadec.data.ingest.enums import DataRecipeName, ModelSizeName, Seed
+from datadec.data.paths import DataDecidePaths
+from datadec.data.preprocess.ppl import (
     flatten_perplexity_rows,
     group_perplexity_rows,
     preprocess_ppl,
 )
-from datadec.data.preprocess.model_enrichment import CHECKPOINT_ENRICHMENT_TYPES
 
 WIKITEXT_RAW = "eval/wikitext_103-validation/Perplexity"
 PILE_RAW = "eval/pile-validation/Perplexity"

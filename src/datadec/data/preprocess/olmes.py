@@ -14,7 +14,11 @@ import pandas as pd
 import pyarrow.parquet as pq
 from dr_ds import coerce_float
 
-from datadec.config import OLMESContract, load_olmes_contract
+from datadec.config import (
+    CHECKPOINT_ENRICHMENT_COLUMNS,
+    OLMESContract,
+    load_olmes_contract,
+)
 from datadec.data import constants as consts
 from datadec.data.model_utils import checkpoint_enrichment
 from datadec.data.paths import DataDecidePaths
@@ -26,7 +30,6 @@ from datadec.data.preprocess.duckdb import (
     sql_literal,
 )
 from datadec.data.preprocess.model_enrichment import (
-    CHECKPOINT_ENRICHMENT_COLUMNS,
     create_model_enrichment_table,
     enrichment_select_expressions,
 )

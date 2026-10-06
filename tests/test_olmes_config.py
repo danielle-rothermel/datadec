@@ -6,13 +6,13 @@ import pytest
 from pydantic import ValidationError
 
 from datadec.config import (
+    CHECKPOINT_ENRICHMENT_TYPES,
     OLMESContract,
     OLMESTableContract,
     load_catalog,
     load_olmes_contract,
     load_source_manifest,
 )
-from datadec.data.preprocess.model_enrichment import CHECKPOINT_ENRICHMENT_TYPES
 
 EXPECTED_RECIPE_MAP = {
     "c4": "C4",

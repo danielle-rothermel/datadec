@@ -2,7 +2,7 @@
 
 ## Core steps
 
-- [ ] Split configuration and schema contracts into focused modules.
+- [x] Split configuration and schema contracts into focused modules.
 - [ ] Centralize dataset selection, artifact paths, and file ownership.
 - [ ] Keep processors local-only and separate verification from processing.
 - [ ] Separate publication-unit construction from upload and remote verification.
@@ -11,6 +11,10 @@
 - [ ] Implement the full pipeline coordinator in `src`.
 - [ ] Consolidate the Typer CLI in `src` and retire superseded scripts.
 - [ ] Update callers, documentation, packaging, and focused tests together.
+
+## Implementation log
+
+- **Step 1 — Split configuration and schema contracts into focused modules:** Split config.py into focused modules; moved PPL, checkpoint-enrichment, and published-result schemas to canonical configuration owners. All 316 tests and installed-wheel resource checks passed.
 
 ## Goal
 

@@ -1,12 +1,10 @@
 from datadec.data.preprocess.ppl import (
-    PPL_OUTPUT_COLUMNS,
     PplPreprocessResult,
     flatten_perplexity_rows,
     group_perplexity_rows,
     preprocess_ppl,
 )
 from datadec.data.preprocess.published_results import (
-    PUBLISHED_RESULT_SCHEMAS,
     PublishedResultPreprocessFile,
     PublishedResultsPreprocessResult,
     preprocess_published_results,
@@ -30,9 +28,7 @@ _OLMES_EXPORTS = {
 
 __all__ = [
     *sorted(_OLMES_EXPORTS),
-    "PPL_OUTPUT_COLUMNS",
     "PplPreprocessResult",
-    "PUBLISHED_RESULT_SCHEMAS",
     "PublishedResultPreprocessFile",
     "PublishedResultsPreprocessResult",
     "flatten_perplexity_rows",

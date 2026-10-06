@@ -10,6 +10,7 @@ import pyarrow.parquet as pq
 import pytest
 
 from datadec.config import (
+    PUBLISHED_RESULT_SCHEMAS,
     load_published_results_manifest,
     load_publishing_contract,
 )
@@ -25,7 +26,6 @@ from datadec.data.publish import (
     published_results_publication_units,
     scaling_law_publication_unit,
 )
-from datadec.data.preprocess.published_results import PUBLISHED_RESULT_SCHEMAS
 
 
 def _write_parquet(path: Path, values: list[int] | None = None) -> None:
