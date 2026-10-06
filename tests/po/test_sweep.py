@@ -1,4 +1,4 @@
-"""Sweep task construction: several subsets per sweep, RC-only default, and array task grouping."""
+"""Sweep task construction: several subsets per sweep, RC-only default."""
 
 from __future__ import annotations
 
@@ -8,7 +8,6 @@ from pathlib import Path
 import pytest
 
 from datadec.po.formats import CANONICAL
-from datadec.po.slurm import SlurmSettings, array_script, task_groups
 from datadec.po.subsets import ItemSubset
 from datadec.po.sweep import SweepSpec, build_tasks, subset_label, write_sweep
 
@@ -45,20 +44,6 @@ def test_write_sweep_records_every_subset(tmp_path: Path, monkeypatch: pytest.Mo
     assert manifest["num_tasks"] == 2
     with pytest.raises(ValueError):
         write_sweep(SweepSpec(name="t", subset_paths=(), model="m", revision=None), root=tmp_path / "sweeps")
-
-
-def test_task_groups_and_mps_comment() -> None:
-    dirs = [Path(f"/s/{i}") for i in range(5)]
-    assert task_groups(dirs, 2) == [dirs[0:2], dirs[2:4], dirs[4:5]]
-    assert task_groups(dirs, 1) == [[d] for d in dirs]
-    with pytest.raises(ValueError):
-        task_groups(dirs, 0)
-    shared = array_script(Path("/arr"), task_groups(dirs, 2), SlurmSettings(concurrent=2))
-    assert "#SBATCH --comment=gpu_mps=yes" in shared and "--array=0-2\n" in shared
-    assert "--array=0-2%4" in array_script(Path("/arr"), task_groups(dirs, 2), SlurmSettings(concurrent=2, max_concurrent=4))
-    solo = array_script(Path("/arr"), task_groups(dirs, 1), SlurmSettings())
-    assert "gpu_mps" not in solo and "--array=0-4\n" in solo and "a100_cilvr" in solo
-    assert "steps/task-$SLURM_ARRAY_TASK_ID.log" in solo
 
 
 def test_quant_and_dtype_recorded_on_tasks(tmp_path: Path) -> None:

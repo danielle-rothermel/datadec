@@ -218,6 +218,28 @@ def chunk_complete(sweep_dir: Path, run_dir: Path, chunk_len: int) -> bool:
     return present + _moved_baseline_count(sweep_dir, run_dir) == chunk_len
 
 
+def _task_key(task: dict) -> str:
+    return json.dumps(task, sort_keys=True)
+
+
+def sweep_complete(sweep_dir: Path) -> bool:
+    """Every task in tasks.jsonl is covered by a complete chunk run dir (see chunk_complete).
+
+    Chunks are the tasks-chunkNNN.jsonl files run_sweep wrote under <sweep_dir>/chunks; a chunk counts when some
+    run dir under <sweep_dir>/olmes named after it passes chunk_complete. A sweep that never ran is incomplete.
+    """
+    sweep_dir = Path(sweep_dir)
+    lines = (sweep_dir / "tasks.jsonl").read_text().splitlines()
+    needed = {_task_key(json.loads(line)) for line in lines if line.strip()}
+    covered: set[str] = set()
+    for chunk_file in sorted((sweep_dir / "chunks").glob("tasks-chunk*.jsonl")):
+        chunk = [json.loads(line) for line in chunk_file.read_text().splitlines() if line.strip()]
+        run_dirs = (sweep_dir / "olmes").rglob(f"*-{chunk_file.stem}")
+        if any(chunk_complete(sweep_dir, d, len(chunk)) for d in run_dirs):
+            covered |= {_task_key(t) for t in chunk}
+    return needed <= covered
+
+
 def run_sweep(sweep_dir: Path, *, olmes_repo: Path = OLMES_REPO, chunk_size: int | None = 10) -> int:
     """Run every task in tasks.jsonl through the fork's runner.
 
