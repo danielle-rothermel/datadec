@@ -12,16 +12,20 @@ and workers never read a half-written file (workers and status.sh only look at `
 Sweep items come from job lists: {"jobs": [{"name", "model", "revision"?, "subsets": [...], "task"?,
 "formulations"?, "pairs"?, "formats"?, "instructions"?, "num_shots"?, "batch_size"?, "dtype"?, "quant"? (int8|nf4,
 with dtype bfloat16), "use_cache"?}, ...]}. Each job becomes one sweep directory under <root>/sweeps/<name>
-(reused as is when it exists, since run_sweep resumes chunk-wise) and one item running scripts/po_run_sweep.py.
+(reused when it exists, since run_sweep resumes chunk-wise, after checking its sweep.json matches the job) and one
+item running scripts/po_run_sweep.py. A sweep that an old Slurm array is still running is incomplete and so goes to
+pending, where a pool worker would run it a second time in parallel: cancel such arrays before `create`.
 """
 
 from __future__ import annotations
 
 import datetime as dt
+import hashlib
 import json
 import os
 import re
 import subprocess
+import time
 import uuid
 from collections.abc import Callable, Iterable, Sequence
 from dataclasses import dataclass
@@ -42,6 +46,8 @@ STATUS_SCRIPT = "status.sh"
 SQUEUE_USER = "ddr8143"
 DEFAULT_CHUNK_SIZE = 14
 MAX_SEQ = 9999
+STRANDED_AFTER_S = 600.0  # `requeue --stale` recovers claimed items without an open attempt older than this
+STAGING_TAG = "staging"
 
 SqueueRunner = Callable[[list[str]], str]
 """Runs one squeue argv and returns its stdout (injected in tests)."""
@@ -226,7 +232,7 @@ def move_item(src: Path, dest_dir: Path, item: PoolItem | None = None) -> Path |
     The file is first renamed to a hidden staging name (atomic; a FileNotFoundError means another process moved it
     and None is returned), rewritten there, then renamed into dest_dir.
     """
-    stage = _hidden(src, "staging")
+    stage = _hidden(src, STAGING_TAG)
     try:
         os.rename(src, stage)
     except FileNotFoundError:
@@ -327,12 +333,34 @@ def sweep_item(spec: SweepSpec, sweep_dir: Path, *, repo: Path, worker_class: Wo
     )
 
 
+def sweep_mismatches(spec: SweepSpec, sweep_dir: Path) -> list[str]:
+    """Fields where an existing sweep.json differs from `spec` (model, revision, task, batch size, dtype, quant, and
+    the subset files by content hash when the sweep recorded them)."""
+    have = json.loads((sweep_dir / "sweep.json").read_text())
+    diffs = [f"{f}: sweep has {have.get(f)!r}, job has {getattr(spec, f)!r}"
+             for f in ("model", "revision", "task", "batch_size", "dtype", "quant") if have.get(f) != getattr(spec, f)]
+    if "subsets" in have:
+        want = [hashlib.sha1(Path(p).read_bytes()).hexdigest() for p in spec.subset_paths]
+        if [s["sha1"] for s in have["subsets"]] != want:
+            diffs.append("subsets: subset files differ from the sweep's")
+    return diffs
+
+
 def create(pool_path: Path, *, root: Path, repo: Path, worker_class: WorkerClass, est_minutes: int,
            job_lists: Iterable[Path], chunk_size: int = DEFAULT_CHUNK_SIZE) -> PlaceCounts:
-    """Write (or reuse) every job's sweep under <root>/sweeps and place one sweep item per job."""
+    """Write (or reuse) every job's sweep under <root>/sweeps and place one sweep item per job.
+
+    An existing sweep dir is reused only when its sweep.json matches the job (see sweep_mismatches); otherwise
+    nothing is placed and a ValueError names the differences.
+    """
     jobs = [j for jl in job_lists for j in json.loads(Path(jl).read_text())["jobs"]]
-    pool = init_pool(pool_path, root=root, repo=repo)
     specs = build_specs(jobs, repo)
+    mismatched = {s.name: d for s in specs if (root / "sweeps" / s.name).exists()
+                  and (d := sweep_mismatches(s, root / "sweeps" / s.name))}
+    if mismatched:
+        raise ValueError("existing sweeps differ from their jobs: " + "; ".join(
+            f"{name} ({', '.join(d)})" for name, d in mismatched.items()))
+    pool = init_pool(pool_path, root=root, repo=repo)
     items = []
     for spec, job in zip(specs, jobs):
         sweep_dir = root / "sweeps" / spec.name
@@ -356,17 +384,23 @@ def add_items(pool_path: Path, items_file: Path) -> PlaceCounts:
 
 
 def claim(pool: Pool, worker_class: WorkerClass, attempt: Attempt,
-          fits: Callable[[PoolItem], bool] = lambda _: True) -> tuple[Path, PoolItem] | None:
+          fits: Callable[[PoolItem], bool] = lambda _: True,
+          on_invalid: Callable[[Path, Exception], None] | None = None) -> tuple[Path, PoolItem] | None:
     """Claim the first pending item of `worker_class` (lexical order) by renaming it into claimed/.
 
     Returns None when no item of the class is pending, or when the first one does not `fit` (the deadline check):
     claim order is priority order, so a worker never skips ahead. A FileNotFoundError on read or rename means
-    another worker won that item; the loop moves on to the next file.
+    another worker won that item; the loop moves on to the next file. A pending file that fails to parse or
+    validate is left in place, reported to `on_invalid`, and skipped.
     """
     for src in pool.items(PoolDir.PENDING):
         try:
             item = PoolItem.load(src)
         except FileNotFoundError:
+            continue
+        except ValueError as e:  # pydantic ValidationError (bad JSON included) and UnicodeDecodeError
+            if on_invalid is not None:
+                on_invalid(src, e)
             continue
         if item.worker_class != worker_class:
             continue
@@ -409,29 +443,40 @@ def live_job_ids(user: str, runner: SqueueRunner = run_squeue) -> set[str]:
     return {line.strip() for line in out.splitlines() if line.strip()}
 
 
-def requeue_stale(pool: Pool, runner: SqueueRunner = run_squeue) -> list[str]:
+class UntrustedSqueueError(RuntimeError):
+    """squeue output omitted a job known to be alive, so it cannot decide which jobs are gone."""
+
+
+def requeue_stale(pool: Pool, runner: SqueueRunner = run_squeue, *, must_contain: str | None = None,
+                  stranded_after_s: float | None = None) -> list[str]:
     """Move claimed items whose worker job is gone back to pending, closing the open attempt as orphaned.
 
-    Only items with an open attempt are considered: a just-claimed file has no open attempt until its worker has
-    written one, and is left alone. Returns the moved filenames.
+    Items with an open attempt are moved when its job id is missing from squeue. With `must_contain` (the calling
+    worker's own job id), an squeue answer that omits it raises UntrustedSqueueError and nothing moves. Items with
+    no open attempt are normally left alone (a just-claimed file has none until its worker writes it); with
+    `stranded_after_s` (operator `requeue --stale`), those whose file is older than that are moved too, with an
+    orphaned attempt appended. Returns the moved filenames.
     """
-    candidates = []
+    open_items, to_move = [], []
+    now = time.time()
     for f in pool.items(PoolDir.CLAIMED):
         try:
             item = PoolItem.load(f)
+            age = now - f.stat().st_mtime
         except FileNotFoundError:
             continue
-        if item.open_attempt is not None:
-            candidates.append((f, item))
-    if not candidates:
-        return []
-    user = pool.meta.get("settings", {}).get("squeue_user", SQUEUE_USER)
-    live = live_job_ids(user, runner)
+        if (attempt := item.open_attempt) is not None:
+            open_items.append((f, item, attempt.job_id))
+        elif stranded_after_s is not None and age > stranded_after_s:
+            to_move.append((f, item))
+    if open_items:
+        user = pool.meta.get("settings", {}).get("squeue_user", SQUEUE_USER)
+        live = live_job_ids(user, runner)
+        if must_contain is not None and must_contain not in live:
+            raise UntrustedSqueueError(f"squeue output omits this worker's own job {must_contain}")
+        to_move += [(f, item) for f, item, job_id in open_items if job_id not in live]
     moved = []
-    for f, item in candidates:
-        attempt = item.open_attempt
-        if attempt is not None and attempt.job_id in live:
-            continue
+    for f, item in sorted(to_move, key=lambda fi: fi[0].name):
         closed = item.close_attempt(AttemptStatus.ORPHANED, ended_utc=utc_now())
         if move_item(f, pool.dir(PoolDir.PENDING), closed) is not None:
             moved.append(f.name)
@@ -458,7 +503,9 @@ def requeue_failed(pool: Pool, statuses: Iterable[AttemptStatus] | None = None) 
 
 
 def status_text(pool: Pool) -> str:
-    """Counts per item directory, then each failed item with its last attempt status (same output as status.sh)."""
+    """Counts per item directory, each failed item with its last attempt status, then (only when there are any)
+    claimed items without an open attempt and leftover staging files from interrupted moves. Same output as
+    status.sh."""
     lines = [f"{d} {len(pool.items(d))}" for d in ITEM_DIRS]
     lines.append("failed items:")
     for f in pool.items(PoolDir.FAILED):
@@ -467,12 +514,25 @@ def status_text(pool: Pool) -> str:
         except FileNotFoundError:
             continue
         lines.append(f"{f.stem} {status or ''}")
+    no_attempt = []
+    for f in pool.items(PoolDir.CLAIMED):
+        try:
+            if PoolItem.load(f).open_attempt is None:
+                no_attempt.append(f.stem)
+        except FileNotFoundError:
+            continue
+    if no_attempt:
+        lines += ["claimed without open attempt:", *no_attempt]
+    staging = sorted(f"{d}/{p.name}" for d in ITEM_DIRS for p in pool.dir(d).glob(f".*.{STAGING_TAG}"))
+    if staging:
+        lines += ["staging leftovers:", *staging]
     return "\n".join(lines) + "\n"
 
 
 def status_script(pool_path: Path) -> str:
     """Shell-only status for login nodes. The last "status" key in an item file is its last attempt's status,
-    because attempts is the item's final key."""
+    because attempts is the item's final key; an attempt is open when its object (the last "{" after "attempts")
+    has no "status" key."""
     dirs = " ".join(str(d) for d in ITEM_DIRS)
     return f"""#!/bin/bash
 # Pool status without Python: counts per directory, then failed items with their last attempt status.
@@ -488,6 +548,19 @@ for f in "$P"/failed/*.json; do
   s=$(grep -o '"status": *"[^"]*"' "$f" | tail -n 1 | sed 's/.*"\\([^"]*\\)"$/\\1/')
   echo "$(basename "$f" .json) $s"
 done
+open_attempt() {{
+  awk '/"attempts"/ {{a = 1}} a && /[{{]/ {{o = 1; s = 0}} a && /"status"/ {{s = 1}} END {{exit !(o && !s)}}' "$1"
+}}
+na=""
+for f in "$P"/claimed/*.json; do
+  [ -e "$f" ] || continue
+  open_attempt "$f" || na="$na$(basename "$f" .json)
+"
+done
+[ -n "$na" ] && printf 'claimed without open attempt:\\n%s' "$na"
+st=$(cd "$P" && for d in {dirs}; do find "$d" -maxdepth 1 -name '.*.{STAGING_TAG}'; done | sort)
+[ -n "$st" ] && printf 'staging leftovers:\\n%s\\n' "$st"
+exit 0
 """
 
 
@@ -542,7 +615,7 @@ source {CLUSTER_ENV}
 export PATH=/home/ddr8143/.local/bin:$SCRATCH/.local/bin:$PATH
 export HOME=/scratch/ddr8143 UV_MANAGED_PYTHON=1 UV_CACHE_DIR=$SCRATCH/.cache/uv UV_LINK_MODE=copy HF_HOME=$SCRATCH/.huggingface
 cd {repo}
-exec uv run python -m datadec.po.worker --pool {pool.path} --class {worker_class} --slots {s.slots}
+exec uv run python -m datadec.po.worker --pool {pool.path} --class {worker_class} --slots {s.slots} --time {s.time}
 """
 
 

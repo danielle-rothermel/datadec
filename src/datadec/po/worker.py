@@ -1,17 +1,24 @@
 """Pool worker: claim items of one class from a pool, run them, record each attempt, exit when nothing fits.
 
-Run as `python -m datadec.po.worker --pool DIR --class C --slots K` (one per Slurm array task; see
+Run as `python -m datadec.po.worker --pool DIR --class C --slots K --time HH:MM:SS` (one per Slurm array task; see
 `scripts/po_pool.py submit`). Contract: po-pool-item/1, see datadec.po.pool.
 
-- Deadline: from SLURM_JOB_END_TIME, else `squeue -h -j $SLURM_JOB_ID -o %L`; none outside Slurm. A slot claims the
-  next item of its class only when est_minutes * 60 < remaining seconds, and otherwise exits.
-- Orphan requeue (claimed items whose job is gone go back to pending) runs on start and every 10 claims.
-- Each of the `slots` threads claims independently and runs one item at a time on the shared GPU.
-- An item's command runs without a shell, stdout and stderr to the attempt log, with a timeout of the deadline
-  minus 60 s (the whole process group is killed on timeout). Env files are sourced by a bash wrapper with
-  `set -a`, so their contents never reach the log or the item file.
-- Outcome: done (exit 0, completion check passes, followup if any exits 0), failed (non-zero exit), no-output
-  (exit 0, check fails), followup-failed, timeout.
+- Deadline: from SLURM_JOB_END_TIME, else `squeue -h -j $SLURM_JOB_ID -o %L`, else (under Slurm, when neither gives
+  one) worker start plus the submitted --time; none outside Slurm. The worker log records which source was used.
+  A slot claims the next item of its class only when est_minutes * 60 < remaining seconds, and otherwise exits.
+- Orphan requeue (claimed items whose job is gone go back to pending) runs on start and before every 10th claim.
+  An squeue answer that omits this worker's own job is not trusted, and an squeue error is logged; neither stops
+  the worker.
+- Each of the `slots` threads claims independently and runs one item at a time on the shared GPU. Pending files
+  that fail validation are logged and skipped.
+- An item's command is skipped when its completion check already passes (a requeued item whose output exists goes
+  straight to its followup). Otherwise it runs without a shell, stdout and stderr to the attempt log, with a
+  timeout of the deadline minus 60 s (the whole process group is killed on timeout). Env files are sourced by a
+  bash wrapper with `set -a`, so their contents never reach the log or the item file.
+- Outcome: done (exit 0, completion check passes, followup if any exits 0), failed (non-zero exit, or an exception
+  while running the item; exit_code null, traceback in the worker log), no-output (exit 0, check fails),
+  followup-failed, timeout.
+- Exit code: 1 when any slot hit an exception, else 0.
 """
 
 from __future__ import annotations
@@ -25,8 +32,10 @@ import socket
 import subprocess
 import threading
 import time
+import traceback
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from enum import StrEnum, unique
 from pathlib import Path
 from typing import IO
 
@@ -44,6 +53,7 @@ from datadec.po.pool import (
     requeue_stale,
     run_squeue,
     utc_now,
+    walltime_seconds,
 )
 
 TIMEOUT_MARGIN_S = 60
@@ -59,6 +69,14 @@ ENV_WRAPPER = (
 Clock = Callable[[], float]
 
 
+@unique
+class DeadlineSource(StrEnum):
+    JOB_END_TIME = "SLURM_JOB_END_TIME"
+    SQUEUE = "squeue"
+    WALLTIME = "walltime"
+    NONE = "none"
+
+
 def parse_time_left(text: str) -> float | None:
     """squeue %L ([D-][HH:]MM:SS) in seconds; None for UNLIMITED / NOT_SET / INVALID."""
     text = text.strip()
@@ -72,15 +90,27 @@ def parse_time_left(text: str) -> float | None:
     return float(((int(days or 0) * 24 + h) * 60 + m) * 60 + s)
 
 
-def remaining_seconds(env: Mapping[str, str], now: float, squeue: SqueueRunner | None) -> float | None:
-    """Seconds left in this Slurm job, or None when not running under Slurm (no deadline)."""
+def remaining_seconds(env: Mapping[str, str], now: float, squeue: SqueueRunner | None,
+                      walltime_s: float | None = None) -> tuple[float | None, DeadlineSource]:
+    """Seconds left in this Slurm job and where that came from; None (no deadline) only outside Slurm, or under
+    Slurm when neither SLURM_JOB_END_TIME, squeue %L nor `walltime_s` gives one. An squeue error counts as no
+    answer."""
     end = env.get("SLURM_JOB_END_TIME")
     if end:
-        return float(end) - now
+        return float(end) - now, DeadlineSource.JOB_END_TIME
     job_id = env.get("SLURM_JOB_ID")
-    if job_id and squeue is not None:
-        return parse_time_left(squeue(["squeue", "-h", "-j", job_id, "-o", "%L"]))
-    return None
+    if not job_id:
+        return None, DeadlineSource.NONE
+    if squeue is not None:
+        try:
+            left = parse_time_left(squeue(["squeue", "-h", "-j", job_id, "-o", "%L"]))
+        except Exception:
+            left = None
+        if left is not None:
+            return left, DeadlineSource.SQUEUE
+    if walltime_s is not None:
+        return walltime_s, DeadlineSource.WALLTIME
+    return None, DeadlineSource.NONE
 
 
 def wrap_env_files(argv: list[str], env_files: list[str]) -> list[str]:
@@ -123,16 +153,21 @@ class Outcome:
 
 
 def execute(item: PoolItem, log_path: Path, timeout: Callable[[], float | None]) -> Outcome:
-    """Run command, completion check and followup; `timeout()` gives the seconds allowed from now."""
+    """Run command (skipped when the completion check already passes), completion check and followup;
+    `timeout()` gives the seconds allowed from now."""
     log_path.parent.mkdir(parents=True, exist_ok=True)
     with open(log_path, "a") as log:
-        rc = run_logged(item.command, cwd=item.cwd, env_files=item.env_files, log=log, timeout=timeout())
-        if rc is None:
-            return Outcome(AttemptStatus.TIMEOUT, None)
-        if rc != 0:
-            return Outcome(AttemptStatus.FAILED, rc)
-        if not is_complete(item):
-            return Outcome(AttemptStatus.NO_OUTPUT, 0)
+        if is_complete(item):
+            log.write(f"# {utc_now()} command skipped: complete\n")
+            log.flush()
+        else:
+            rc = run_logged(item.command, cwd=item.cwd, env_files=item.env_files, log=log, timeout=timeout())
+            if rc is None:
+                return Outcome(AttemptStatus.TIMEOUT, None)
+            if rc != 0:
+                return Outcome(AttemptStatus.FAILED, rc)
+            if not is_complete(item):
+                return Outcome(AttemptStatus.NO_OUTPUT, 0)
         if item.followup:
             frc = run_logged(item.followup, cwd=item.followup_cwd or item.cwd, env_files=item.env_files, log=log,
                              timeout=timeout())
@@ -145,7 +180,8 @@ def execute(item: PoolItem, log_path: Path, timeout: Callable[[], float | None])
 
 class Worker:
     def __init__(self, pool: Pool, worker_class: WorkerClass, *, slots: int = 1, env: Mapping[str, str] = os.environ,
-                 clock: Clock = time.time, squeue: SqueueRunner | None = run_squeue, node: str | None = None) -> None:
+                 clock: Clock = time.time, squeue: SqueueRunner | None = run_squeue, node: str | None = None,
+                 walltime_s: float | None = None) -> None:
         if slots < 1:
             raise ValueError("slots must be >= 1")
         self.pool, self.worker_class, self.slots = pool, worker_class, slots
@@ -153,9 +189,11 @@ class Worker:
         self.node = node or socket.gethostname()
         self.job_id = env.get("SLURM_JOB_ID")
         self.array_task_id = env.get("SLURM_ARRAY_TASK_ID")
-        left = remaining_seconds(env, clock(), squeue)
+        left, self.deadline_source = remaining_seconds(env, clock(), squeue, walltime_s)
         self.deadline = None if left is None else clock() + left
         self.claims = 0
+        self._requeued_at = 0  # claim count at the last periodic orphan requeue
+        self.slot_errors = 0
         self._lock = threading.Lock()
         log_id = (f"{env.get('SLURM_ARRAY_JOB_ID', self.job_id)}_{self.array_task_id or 0}" if self.job_id
                   else f"local-{os.getpid()}")
@@ -177,48 +215,72 @@ class Worker:
         return None if left is None else left - TIMEOUT_MARGIN_S
 
     def requeue_orphans(self) -> None:
+        """Requeue orphans; an squeue error or an answer omitting this worker's own job is logged, not raised."""
         if self.squeue is None:
             self.log("orphan requeue skipped: no squeue")
             return
-        moved = requeue_stale(self.pool, self.squeue)
+        try:
+            moved = requeue_stale(self.pool, self.squeue, must_contain=self.job_id)
+        except Exception as e:
+            self.log(f"orphan requeue failed: {e!r}")
+            return
         if moved:
             self.log(f"requeued orphans: {' '.join(moved)}")
 
     def claim_next(self) -> tuple[Path, PoolItem] | None:
+        with self._lock:
+            due = self.claims - self._requeued_at >= REQUEUE_EVERY
+            if due:
+                self._requeued_at = self.claims
+        if due:
+            self.requeue_orphans()
         attempt = Attempt(job_id=self.job_id, array_task_id=self.array_task_id, node=self.node, started_utc=utc_now())
-        got = claim(self.pool, self.worker_class, attempt, self.fits)
+        got = claim(self.pool, self.worker_class, attempt, self.fits,
+                    on_invalid=lambda f, e: self.log(f"skipped invalid pending file {f.name}: {e!r}"))
         if got is not None:
             with self._lock:
                 self.claims += 1
-                due = self.claims % REQUEUE_EVERY == 0
-            if due:
-                self.requeue_orphans()
         return got
 
-    def run_slot(self, slot: int) -> None:
-        while (got := self.claim_next()) is not None:
-            path, item = got
-            attempt = item.open_attempt
-            assert attempt is not None and attempt.log is not None
-            self.log(f"slot {slot} claimed {path.name}")
-            t0 = self.clock()
+    def run_item(self, slot: int, path: Path, item: PoolItem) -> None:
+        """Execute one claimed item and finish it; an exception while executing finishes it as failed."""
+        attempt = item.open_attempt
+        assert attempt is not None and attempt.log is not None
+        self.log(f"slot {slot} claimed {path.name}")
+        t0 = self.clock()
+        try:
             outcome = execute(item, Path(attempt.log), self.command_timeout)
-            dest = finish(self.pool, path, item, outcome.status, exit_code=outcome.exit_code,
-                          duration_s=self.clock() - t0)
-            self.log(f"slot {slot} {outcome.status} {path.name} -> {dest.parent.name}")
+        except Exception:
+            self.log(f"slot {slot} exception running {path.name}:\n{traceback.format_exc()}")
+            with self._lock:
+                self.slot_errors += 1
+            outcome = Outcome(AttemptStatus.FAILED, None)
+        dest = finish(self.pool, path, item, outcome.status, exit_code=outcome.exit_code,
+                      duration_s=self.clock() - t0)
+        self.log(f"slot {slot} {outcome.status} {path.name} -> {dest.parent.name}")
+
+    def run_slot(self, slot: int) -> None:
+        try:
+            while (got := self.claim_next()) is not None:
+                self.run_item(slot, *got)
+        except Exception:
+            self.log(f"slot {slot} stopped by an exception:\n{traceback.format_exc()}")
+            with self._lock:
+                self.slot_errors += 1
+            return
         self.log(f"slot {slot} exits (no {self.worker_class} item pending that fits; remaining={self.remaining()})")
 
     def run(self) -> int:
         self.log(f"start class={self.worker_class} slots={self.slots} node={self.node} job={self.job_id} "
-                 f"remaining={self.remaining()}")
+                 f"remaining={self.remaining()} deadline_source={self.deadline_source}")
         self.requeue_orphans()
         threads = [threading.Thread(target=self.run_slot, args=(i,), name=f"slot-{i}") for i in range(self.slots)]
         for t in threads:
             t.start()
         for t in threads:
             t.join()
-        self.log(f"exit after {self.claims} claims")
-        return 0
+        self.log(f"exit after {self.claims} claims, {self.slot_errors} slot exceptions")
+        return 1 if self.slot_errors else 0
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -226,9 +288,13 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--pool", type=Path, required=True, help="pool directory (ROOT/pool/<name>)")
     ap.add_argument("--class", dest="worker_class", required=True, choices=[c.value for c in WorkerClass])
     ap.add_argument("--slots", type=int, default=1, help="items run at once on this worker's GPU")
+    ap.add_argument("--time", dest="walltime", default=None,
+                    help="submitted walltime [D-]HH:MM:SS; the deadline fallback when Slurm gives none")
     args = ap.parse_args(argv)
     squeue = run_squeue if shutil.which("squeue") else None
-    worker = Worker(Pool(args.pool), WorkerClass(args.worker_class), slots=args.slots, squeue=squeue)
+    walltime_s = None if args.walltime is None else float(walltime_seconds(args.walltime))
+    worker = Worker(Pool(args.pool), WorkerClass(args.worker_class), slots=args.slots, squeue=squeue,
+                    walltime_s=walltime_s)
     return worker.run()
 
 

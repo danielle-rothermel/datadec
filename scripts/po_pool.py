@@ -12,6 +12,7 @@ import typer
 
 from datadec.po.pool import (
     DEFAULT_CHUNK_SIZE,
+    STRANDED_AFTER_S,
     AttemptStatus,
     Pool,
     PlaceCounts,
@@ -46,9 +47,16 @@ def create_cmd(
     chunk_size: Annotated[int, typer.Option("--chunk-size", help="tasks per OLMES process inside a sweep")] = DEFAULT_CHUNK_SIZE,
 ) -> None:
     """Write (or reuse) the sweeps of one or more job lists and place one item per job; completed sweeps go
-    straight to done/ as skipped. Also (re)writes <pool>/status.sh."""
-    _echo_counts(create(pool.resolve(), root=root.resolve(), repo=repo.resolve(), worker_class=worker_class,
-                        est_minutes=est_minutes, job_lists=jobs, chunk_size=chunk_size))
+    straight to done/ as skipped. Also (re)writes <pool>/status.sh.
+
+    An existing sweep is reused only when its sweep.json matches the job; any mismatch refuses the whole create.
+    Cancel old Slurm arrays still running these sweeps first, or pool workers run them a second time in parallel."""
+    try:
+        counts = create(pool.resolve(), root=root.resolve(), repo=repo.resolve(), worker_class=worker_class,
+                        est_minutes=est_minutes, job_lists=jobs, chunk_size=chunk_size)
+    except ValueError as e:
+        raise typer.BadParameter(str(e)) from e
+    _echo_counts(counts)
 
 
 @app.command("add-items")
@@ -84,14 +92,16 @@ def submit_cmd(
 
 @app.command("status")
 def status_cmd(pool: PoolOpt) -> None:
-    """Counts per directory and failed items with their status (same output as <pool>/status.sh)."""
+    """Counts per directory, failed items with their status, claimed items without an open attempt and staging
+    leftovers (same output as <pool>/status.sh)."""
     typer.echo(status_text(Pool(pool)), nl=False)
 
 
 @app.command("requeue")
 def requeue_cmd(
     pool: PoolOpt,
-    stale: Annotated[bool, typer.Option("--stale", help="claimed items whose Slurm job is gone (one squeue call)")] = False,
+    stale: Annotated[bool, typer.Option("--stale", help="claimed items whose Slurm job is gone (one squeue call), and "
+                                                    f"claimed items without an open attempt older than {STRANDED_AFTER_S:.0f} s")] = False,
     failed: Annotated[bool, typer.Option("--failed", help="every failed item")] = False,
     status: Annotated[list[AttemptStatus] | None, typer.Option("--status", help="failed items whose last attempt has this status; repeatable")] = None,
 ) -> None:
@@ -101,7 +111,7 @@ def requeue_cmd(
     p = Pool(pool)
     moved: list[str] = []
     if stale:
-        moved += requeue_stale(p)
+        moved += requeue_stale(p, stranded_after_s=STRANDED_AFTER_S)
     if failed or status:
         moved += requeue_failed(p, None if failed else status)
     typer.echo(f"requeued {len(moved)}")

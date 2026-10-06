@@ -1,8 +1,10 @@
-"""Pull-based worker pool: item files, claim race, deadline, orphan requeue, create, worker outcomes, status, sbatch."""
+"""Pull-based worker pool: item files, claim race, deadline, orphan requeue, create, worker outcomes, poison items,
+status, sbatch."""
 
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import threading
@@ -21,6 +23,7 @@ from datadec.po.pool import (
     PoolItem,
     SubmitSettings,
     SweepCompletion,
+    UntrustedSqueueError,
     WorkerClass,
     add_items,
     claim,
@@ -34,7 +37,7 @@ from datadec.po.pool import (
 )
 from datadec.po.subsets import ItemSubset
 from datadec.po.sweep import sweep_complete
-from datadec.po.worker import Worker, parse_time_left, remaining_seconds, run_logged
+from datadec.po.worker import REQUEUE_EVERY, DeadlineSource, Worker, parse_time_left, remaining_seconds, run_logged
 
 PY = sys.executable
 
@@ -104,17 +107,26 @@ def test_claim_respects_class_and_order_and_stops_when_first_does_not_fit(tmp_pa
 
 
 def test_deadline_from_env_and_squeue_fallback() -> None:
-    assert remaining_seconds({"SLURM_JOB_END_TIME": "2000"}, 1500.0, None) == 500.0
+    assert remaining_seconds({"SLURM_JOB_END_TIME": "2000"}, 1500.0, None) == (500.0, DeadlineSource.JOB_END_TIME)
     calls: list[list[str]] = []
 
     def squeue(argv: list[str]) -> str:
         calls.append(argv)
         return "1-02:03:04\n"
 
-    assert remaining_seconds({"SLURM_JOB_ID": "77"}, 0.0, squeue) == float(((24 + 2) * 60 + 3) * 60 + 4)
+    assert remaining_seconds({"SLURM_JOB_ID": "77"}, 0.0, squeue) == (float(((24 + 2) * 60 + 3) * 60 + 4),
+                                                                     DeadlineSource.SQUEUE)
     assert calls == [["squeue", "-h", "-j", "77", "-o", "%L"]]
-    assert remaining_seconds({}, 0.0, squeue) is None
+    assert remaining_seconds({}, 0.0, squeue, 3600.0) == (None, DeadlineSource.NONE)
     assert parse_time_left("05:07") == 307.0 and parse_time_left("UNLIMITED") is None
+
+    def broken(argv: list[str]) -> str:
+        raise subprocess.CalledProcessError(1, argv)
+
+    # under Slurm with no usable answer, the submitted walltime is the deadline
+    for runner in (lambda argv: "INVALID\n", broken, None):
+        assert remaining_seconds({"SLURM_JOB_ID": "77"}, 0.0, runner, 3600.0) == (3600.0, DeadlineSource.WALLTIME)
+    assert remaining_seconds({"SLURM_JOB_ID": "77"}, 0.0, broken) == (None, DeadlineSource.NONE)
 
 
 def test_worker_fits_uses_injected_clock(tmp_path: Path) -> None:
@@ -134,6 +146,45 @@ def _claimed(pool: Pool, name: str, seq: int, attempt: Attempt | None) -> Path:
     path = pool.dir(PoolDir.CLAIMED) / f"{seq:04d}-{name}.json"
     path.write_text(item.to_json())
     return path
+
+
+def test_requeue_distrusts_squeue_without_own_job_and_survives_errors(tmp_path: Path) -> None:
+    pool = _pool(tmp_path)
+    _claimed(pool, "running", 1, Attempt(job_id="222", started_utc="t0"))
+    with pytest.raises(UntrustedSqueueError):
+        requeue_stale(pool, lambda argv: "", must_contain="222")
+    assert [p.name for p in pool.items(PoolDir.CLAIMED)] == ["0001-running.json"]
+    replies: list = ["", subprocess.CalledProcessError(1, "squeue")]
+
+    def squeue(argv: list[str]) -> str:
+        reply = replies.pop(0)
+        if isinstance(reply, Exception):
+            raise reply
+        return reply
+
+    place_items(pool, [_item("next")])
+    w = Worker(pool, WorkerClass.SMALL, env={"SLURM_JOB_ID": "222", "SLURM_JOB_END_TIME": "1e12"}, squeue=squeue)
+    w.requeue_orphans()  # empty squeue answer omits the worker's own job: not trusted
+    w.claims = REQUEUE_EVERY  # the next claim is preceded by the periodic requeue, whose squeue call fails
+    got = w.claim_next()
+    assert got is not None and got[0].name == "0002-next.json" and replies == []
+    assert [p.name for p in pool.items(PoolDir.CLAIMED)] == ["0001-running.json", "0002-next.json"]
+    log = w.log_path.read_text()
+    assert "omits this worker's own job 222" in log and "orphan requeue failed: CalledProcessError" in log
+
+
+def test_operator_requeue_recovers_stranded_claimed_items(tmp_path: Path) -> None:
+    pool = _pool(tmp_path)
+    old = _claimed(pool, "old", 1, None)  # worker died between the claim rename and its attempt write
+    closed = _claimed(pool, "closed", 2, Attempt(job_id="1", status=AttemptStatus.DONE))  # finish crashed mid-way
+    _claimed(pool, "fresh", 3, None)
+    for f in (old, closed):
+        os.utime(f, (0, 0))
+    assert requeue_stale(pool, lambda argv: "") == []  # workers never move items without an open attempt
+    assert requeue_stale(pool, lambda argv: "", stranded_after_s=600) == ["0001-old.json", "0002-closed.json"]
+    assert [p.name for p in pool.items(PoolDir.CLAIMED)] == ["0003-fresh.json"]
+    moved = PoolItem.load(pool.dir(PoolDir.PENDING) / "0002-closed.json")
+    assert [a.status for a in moved.attempts] == [AttemptStatus.DONE, AttemptStatus.ORPHANED]
 
 
 def test_orphan_requeue_with_fake_squeue(tmp_path: Path) -> None:
@@ -170,6 +221,19 @@ def _complete_sweep(sweep_dir: Path) -> None:
     run.mkdir(parents=True)
     for i in range(len(tasks.splitlines())):
         (run / f"task-{i:03d}-metrics.json").write_text("{}")
+
+
+def test_create_refuses_a_sweep_that_differs_from_its_job(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("datadec.po.sweep.subprocess.run", lambda *a, **k: type("R", (), {"stdout": "deadbeef\n"})())
+    repo, root = tmp_path / "repo", tmp_path / "root"
+    sub = _subset(repo, "arc_easy-test-n2-seed0")
+    jobs = tmp_path / "a.json"
+    jobs.write_text(json.dumps({"jobs": [{"name": "s", "model": "m", "subsets": [sub]}]}))
+    create(root / "pool" / "p", root=root, repo=repo, worker_class=WorkerClass.SMALL, est_minutes=20, job_lists=[jobs])
+    jobs.write_text(json.dumps({"jobs": [{"name": "s", "model": "m", "subsets": [sub], "batch_size": 8}]}))
+    with pytest.raises(ValueError, match="batch_size: sweep has 64, job has 8"):
+        create(root / "pool" / "q", root=root, repo=repo, worker_class=WorkerClass.SMALL, est_minutes=20, job_lists=[jobs])
+    assert not (root / "pool" / "q").exists()
 
 
 def test_create_reuses_sweeps_and_skips_completed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -259,6 +323,36 @@ def test_worker_runs_items_to_their_outcomes(tmp_path: Path) -> None:
     assert squeue_calls == []  # nothing claimed at start, so no squeue call was needed
 
 
+def test_worker_skips_command_when_output_is_complete(tmp_path: Path) -> None:
+    pool = _pool(tmp_path)
+    out = tmp_path / "out.txt"
+    out.write_text("ok")
+    place_items(pool, [_item("x", command=[PY, "-c", "import sys; sys.exit(3)"], out=tmp_path / "later.txt",
+                             followup=[PY, "-c", "import pathlib; pathlib.Path('f.txt').write_text('x')"],
+                             followup_cwd=str(tmp_path))])
+    (tmp_path / "later.txt").write_text("ok")  # output appears after placing, as for a requeued followup-failed item
+    assert Worker(pool, WorkerClass.SMALL, env={}, squeue=None).run() == 0
+    attempt = PoolItem.load(pool.dir(PoolDir.DONE) / "0001-x.json").attempts[-1]
+    assert attempt.status == AttemptStatus.DONE and (tmp_path / "f.txt").read_text() == "x"
+    assert "command skipped: complete" in Path(attempt.log or "").read_text()
+
+
+def test_poison_items_fail_once_and_do_not_block_the_queue(tmp_path: Path) -> None:
+    pool = _pool(tmp_path)
+    ok = tmp_path / "ok.txt"
+    place_items(pool, [_item("bad-cwd", cwd=tmp_path / "missing"), _item("good", command=_write_out(ok), out=ok)])
+    (pool.dir(PoolDir.PENDING) / "0000-garbled.json").write_text("{not json")
+    w = Worker(pool, WorkerClass.SMALL, env={}, squeue=None)
+    assert w.run() == 1
+    bad = PoolItem.load(pool.dir(PoolDir.FAILED) / "0001-bad-cwd.json").attempts[-1]
+    assert (bad.status, bad.exit_code) == (AttemptStatus.FAILED, None)
+    assert [p.name for p in pool.items(PoolDir.DONE)] == ["0002-good.json"]
+    assert pool.items(PoolDir.CLAIMED) == [] and [p.name for p in pool.items(PoolDir.PENDING)] == ["0000-garbled.json"]
+    log = w.log_path.read_text()
+    assert "exception running 0001-bad-cwd.json" in log and "FileNotFoundError" in log
+    assert "skipped invalid pending file 0000-garbled.json" in log
+
+
 def test_worker_kills_command_at_deadline(tmp_path: Path) -> None:
     pool = _pool(tmp_path)
     place_items(pool, [_item("slow", est=0, command=[PY, "-c", "import time; time.sleep(600)"])])
@@ -285,6 +379,16 @@ def test_status_text_and_status_sh_agree(tmp_path: Path) -> None:
     assert sh == expected
     assert requeue_failed(pool, [AttemptStatus.TIMEOUT]) == ["0002-b.json"]
     assert status_text(pool).startswith("pending 3\nclaimed 0\ndone 1\nfailed 1\n")
+    _claimed(pool, "running", 6, Attempt(job_id="1", started_utc="t0"))
+    _claimed(pool, "stranded", 7, None)
+    _claimed(pool, "closed", 8, Attempt(job_id="1", status=AttemptStatus.DONE))
+    (pool.dir(PoolDir.PENDING) / ".0005-e.json.abc.staging").write_text("{}")  # a move interrupted mid-way
+    expected = ("pending 3\nclaimed 3\ndone 1\nfailed 1\nfailed items:\n0003-c no-output\n"
+                "claimed without open attempt:\n0007-stranded\n0008-closed\n"
+                "staging leftovers:\npending/.0005-e.json.abc.staging\n")
+    assert status_text(pool) == expected
+    sh = subprocess.run(["bash", str(pool.path / "status.sh")], capture_output=True, text=True, check=True).stdout
+    assert sh == expected
 
 
 def test_worker_sbatch_content(tmp_path: Path) -> None:
@@ -294,7 +398,7 @@ def test_worker_sbatch_content(tmp_path: Path) -> None:
     assert "--dependency" not in solo and "gpu_mps" not in solo
     assert "#SBATCH --account=torch_pr_375_cilvr" in solo and "#SBATCH --partition=a100_cilvr" in solo
     assert "#SBATCH --time=22:00:00" in solo and "#SBATCH --gres=gpu:1" in solo
-    assert f"--pool {pool.path} --class small --slots 1" in solo and f"cd {tmp_path / 'repo'}" in solo
+    assert f"--pool {pool.path} --class small --slots 1 --time 22:00:00\n" in solo and f"cd {tmp_path / 'repo'}" in solo
     assert "source /scratch/ddr8143/.config/shell/cluster_env.sh" in solo and "HF_HOME=$SCRATCH/.huggingface" in solo
     shared = worker_script(pool, WorkerClass.SMALL, 2, SubmitSettings(slots=3))
     assert "#SBATCH --comment=gpu_mps=yes" in shared and "--slots 3" in shared
