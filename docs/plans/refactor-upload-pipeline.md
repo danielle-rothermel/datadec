@@ -8,7 +8,7 @@
 - [x] Separate publication-unit construction from upload and remote verification.
 - [x] Add selective downloads of processed outputs from Hugging Face.
 - [x] Add shared, scoped cleanup with dry-run support.
-- [ ] Implement the full pipeline coordinator in `src`.
+- [x] Implement the full pipeline coordinator in `src`.
 - [ ] Consolidate the Typer CLI in `src` and retire superseded scripts.
 - [ ] Update callers, documentation, packaging, and focused tests together.
 
@@ -25,6 +25,8 @@
 - **Step 5 — Add selective downloads of processed outputs from Hugging Face:** Added exact selected processed downloads from an immutable Hugging Face commit, with size/hash/schema verification before replacing any existing outputs. Raw downloads now use the same resolved selection and support published-result units. All 356 integrated tests passed.
 
 - **Step 6 — Add shared, scoped cleanup with dry-run support:** Added shared raw/full cleanup with exact dry-run plans and all remote checks before deletion. Missing files are idempotent; subsets preserve shared caches and unrelated files; raw cleanup preserves processor staging. Symlink escapes and unexpected directories are rejected. All 370 integrated tests passed. Follow-up: full cleanup handles selected DuckDB spill directories explicitly; 23 focused cleanup/artifact tests passed.
+
+- **Step 7 — Implement the full pipeline coordinator in `src`:** Added the typed coordinator: raw download, explicit local processors, all schemas and selected checks, immutable publication, then cleanup. No-upload defaults retain files; contradictory cleanup is rejected before side effects. All 386 integrated tests passed, including failure retention and partial-publication checks.
 
 ## Goal
 
