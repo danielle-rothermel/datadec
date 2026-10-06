@@ -4,7 +4,9 @@
    "name": "obqafull-dd-dclm-1b",
    "model": "allenai/DataDecide-dclm-baseline-1B",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 64,
@@ -14,7 +16,9 @@
    "name": "obqafull-dd-dolma-1b",
    "model": "allenai/DataDecide-dolma1_7-1B",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 64,
@@ -24,7 +28,9 @@
    "name": "obqafull-dd-c4-1b",
    "model": "allenai/DataDecide-c4-1B",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 64,
@@ -34,7 +40,9 @@
    "name": "obqafull-qwen3-0.6b-base",
    "model": "Qwen/Qwen3-0.6B-Base",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 16
@@ -43,7 +51,9 @@
    "name": "obqafull-qwen3-0.6b",
    "model": "Qwen/Qwen3-0.6B",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 16
@@ -52,7 +62,9 @@
    "name": "obqafull-qwen3-1.7b-base",
    "model": "Qwen/Qwen3-1.7B-Base",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 16
@@ -61,7 +73,9 @@
    "name": "obqafull-qwen3-1.7b",
    "model": "Qwen/Qwen3-1.7B",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 16
@@ -70,7 +84,9 @@
    "name": "obqafull-qwen3-4b-base",
    "model": "Qwen/Qwen3-4B-Base",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 16
@@ -79,7 +95,9 @@
    "name": "obqafull-qwen3-4b",
    "model": "Qwen/Qwen3-4B",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 16
@@ -88,7 +106,9 @@
    "name": "obqafull-qwen3-8b-base",
    "model": "Qwen/Qwen3-8B-Base",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 8
@@ -97,7 +117,9 @@
    "name": "obqafull-qwen3-8b",
    "model": "Qwen/Qwen3-8B",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 8
@@ -106,7 +128,9 @@
    "name": "obqafull-qwen3-14b-base",
    "model": "Qwen/Qwen3-14B-Base",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 4
@@ -115,7 +139,9 @@
    "name": "obqafull-qwen3-14b",
    "model": "Qwen/Qwen3-14B",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 4
@@ -124,7 +150,9 @@
    "name": "obqafull-olmo3-7b-base",
    "model": "allenai/Olmo-3-1025-7B",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 16
@@ -133,7 +161,9 @@
    "name": "obqafull-olmo3-7b-sft",
    "model": "allenai/Olmo-3-7B-Instruct-SFT",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 16
@@ -142,7 +172,9 @@
    "name": "obqafull-olmo3-7b-dpo",
    "model": "allenai/Olmo-3-7B-Instruct-DPO",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 16
@@ -151,7 +183,9 @@
    "name": "obqafull-olmo3-7b-instruct",
    "model": "allenai/Olmo-3-7B-Instruct",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 16
@@ -160,7 +194,9 @@
    "name": "obqafull-olmo3-32b-base",
    "model": "allenai/Olmo-3-1125-32B",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 2,
@@ -170,7 +206,9 @@
    "name": "obqafull-olmo3-32b-sft",
    "model": "allenai/Olmo-3.1-32B-Instruct-SFT",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 2,
@@ -180,7 +218,9 @@
    "name": "obqafull-olmo3-32b-dpo",
    "model": "allenai/Olmo-3.1-32B-Instruct-DPO",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 2,
@@ -190,7 +230,9 @@
    "name": "obqafull-olmo3-32b-instruct",
    "model": "allenai/Olmo-3.1-32B-Instruct",
    "subsets": [
-    "configs/po/subsets/openbookqa-validation-n500-seed0.json"
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
    ],
    "task": "openbookqa",
    "batch_size": 2,
