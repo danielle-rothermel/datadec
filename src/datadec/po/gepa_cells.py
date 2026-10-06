@@ -48,6 +48,15 @@ class Start(StrEnum):
     APE = "ape"
 
 
+@unique
+class ReflectionPromptVersion(StrEnum):
+    """The fork driver's reflection meta-prompt (job field ``reflection_prompt_version``; values fixed by the fork)."""
+
+    V1 = "v1"
+    V2 = "v2"
+
+
+DEFAULT_REFLECTION_PROMPT_VERSION = ReflectionPromptVersion.V1
 GEPA_SEEDS = (0, 1, 2)
 MAX_PROPOSALS = 12
 METRIC_CALLS_PER_TRAIN_DEV_ITEM = 40  # max_metric_calls = 40 x |Train-Dev|, a high cap; the proposal count stops runs
@@ -186,8 +195,10 @@ def seed_instruction(start: Start, task: str, repo: Path) -> dict:
 
 
 def build_job(*, model: str, revision: str | None, dtype: str, batch_size: int, task: str, start: Start, seed: int,
-              root: Path, repo: Path, device: str = DEFAULT_DEVICE) -> dict:
-    """One GEPA job in the contract's field set; ``device`` is the GEPA search device the fork driver loads onto."""
+              root: Path, repo: Path, device: str = DEFAULT_DEVICE,
+              reflection_prompt_version: ReflectionPromptVersion = DEFAULT_REFLECTION_PROMPT_VERSION) -> dict:
+    """One GEPA job in the contract's field set; ``device`` is the GEPA search device the fork driver loads onto and
+    ``reflection_prompt_version`` selects the driver's reflection meta-prompt."""
     key = model_key(model, revision, dtype)
     cell = cell_id(key, task)
     rid = run_id(cell, start, seed)
@@ -210,6 +221,7 @@ def build_job(*, model: str, revision: str | None, dtype: str, batch_size: int, 
         "reflection_model": SOL_SETTINGS.model, "reflection_reasoning": SOL_SETTINGS.reasoning,
         "reflection_token_limit": SOL_SETTINGS.token_limit,
         "prompt_cap": {"words": PROMPT_CAP.words, "chars": PROMPT_CAP.chars, "shortening_turns": PROMPT_CAP.shortening_turns},
+        "reflection_prompt_version": str(ReflectionPromptVersion(reflection_prompt_version)),
         "model_card": model_card(model, revision),
         "run_dir": str(root / "gepa" / cell / rid),
     }
@@ -254,7 +266,9 @@ def gepa_item(job: dict, *, job_file: Path, pool_dir: Path, repo: Path, olmes_re
 
 
 def write_jobs(*, model: str, revision: str | None, task: str, root: Path, repo: Path, dtype: str | None = None,
-               batch_size: int | None = None, device: str = DEFAULT_DEVICE) -> list[tuple[Path, dict]]:
+               batch_size: int | None = None, device: str = DEFAULT_DEVICE,
+               reflection_prompt_version: ReflectionPromptVersion = DEFAULT_REFLECTION_PROMPT_VERSION,
+               ) -> list[tuple[Path, dict]]:
     """The cell's 6 job files (empty starts first, then ape; seeds in order) as (path, job) in that order. An existing
     identical job file is reused; a different one is an error."""
     if task not in CELL_SUBSETS:
@@ -267,7 +281,8 @@ def write_jobs(*, model: str, revision: str | None, task: str, root: Path, repo:
     for start in Start:
         for seed in GEPA_SEEDS:
             job = build_job(model=model, revision=revision, dtype=dtype, batch_size=batch_size, task=task, start=start,
-                            seed=seed, root=root, repo=repo, device=device)
+                            seed=seed, root=root, repo=repo, device=device,
+                            reflection_prompt_version=reflection_prompt_version)
             path = job_path(root, job["cell_id"], job["job_id"])
             _write_job(path, job)
             jobs.append((path, job))
@@ -276,12 +291,13 @@ def write_jobs(*, model: str, revision: str | None, task: str, root: Path, repo:
 
 def write_cell(*, model: str, revision: str | None, task: str, pool_dir: Path | None, root: Path, repo: Path,
                olmes_repo: Path | None = None, dtype: str | None = None, batch_size: int | None = None,
-               device: str = DEFAULT_DEVICE) -> list[Path]:
+               device: str = DEFAULT_DEVICE,
+               reflection_prompt_version: ReflectionPromptVersion = DEFAULT_REFLECTION_PROMPT_VERSION) -> list[Path]:
     """The cell's 6 job files and, when ``pool_dir`` is given, its 6 gepa items in the same order. Returns the item
     paths written; items already present in the pool (any state) are not written again. With ``pool_dir=None``
     (the Mac lane) only the job files are written and the result is empty."""
     jobs = write_jobs(model=model, revision=revision, task=task, root=root, repo=repo, dtype=dtype,
-                      batch_size=batch_size, device=device)
+                      batch_size=batch_size, device=device, reflection_prompt_version=reflection_prompt_version)
     if pool_dir is None:
         return []
     if olmes_repo is None:

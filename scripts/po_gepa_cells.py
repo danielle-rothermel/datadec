@@ -14,7 +14,12 @@ from typing import Annotated
 import typer
 
 from datadec.po.gepa_cells import aggregate as aggregate_cells
-from datadec.po.gepa_cells import write_cell, write_eval_item
+from datadec.po.gepa_cells import (
+    DEFAULT_REFLECTION_PROMPT_VERSION,
+    ReflectionPromptVersion,
+    write_cell,
+    write_eval_item,
+)
 
 app = typer.Typer(no_args_is_help=True)
 
@@ -30,9 +35,13 @@ def write(
     revision: Annotated[str | None, typer.Option("--revision")] = None,
     dtype: Annotated[str | None, typer.Option("--dtype", help="float32 (default) or bfloat16 (default for 32B)")] = None,
     batch_size: Annotated[int | None, typer.Option("--batch-size", help="default by model family and size")] = None,
+    reflection_prompt_version: Annotated[
+        ReflectionPromptVersion, typer.Option("--reflection-prompt-version", help="fork driver reflection meta-prompt")
+    ] = DEFAULT_REFLECTION_PROMPT_VERSION,
 ) -> None:
     paths = write_cell(model=model, revision=revision, task=task, pool_dir=pool_dir, root=root, repo=repo,
-                       olmes_repo=olmes_repo, dtype=dtype, batch_size=batch_size)
+                       olmes_repo=olmes_repo, dtype=dtype, batch_size=batch_size,
+                       reflection_prompt_version=reflection_prompt_version)
     typer.echo(f"{len(paths)} gepa items written to {pool_dir / 'pending'}")
     for p in paths:
         typer.echo(f"  {p.name}")

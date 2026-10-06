@@ -19,7 +19,7 @@ from typing import Annotated
 
 import typer
 
-from datadec.po.gepa_cells import write_jobs
+from datadec.po.gepa_cells import DEFAULT_REFLECTION_PROMPT_VERSION, ReflectionPromptVersion, write_jobs
 from datadec.po.gepa_local import (
     DEFAULT_LOCAL_ROOT,
     DEFAULT_OLMES_REPO,
@@ -50,9 +50,12 @@ def write(
     revision: Annotated[str | None, typer.Option("--revision")] = None,
     dtype: Annotated[str | None, typer.Option("--dtype", help="float32 (default) or bfloat16 (default for 32B)")] = None,
     batch_size: Annotated[int | None, typer.Option("--batch-size", help="default by model family and size")] = None,
+    reflection_prompt_version: Annotated[
+        ReflectionPromptVersion, typer.Option("--reflection-prompt-version", help="fork driver reflection meta-prompt")
+    ] = DEFAULT_REFLECTION_PROMPT_VERSION,
 ) -> None:
     jobs = write_jobs(model=model, revision=revision, task=task, root=root.resolve(), repo=repo.resolve(), dtype=dtype,
-                      batch_size=batch_size, device=LOCAL_DEVICE)
+                      batch_size=batch_size, device=LOCAL_DEVICE, reflection_prompt_version=reflection_prompt_version)
     typer.echo(f"{len(jobs)} {LOCAL_DEVICE} jobs in {jobs[0][0].parent}")
     for _, job in jobs:
         typer.echo(f"  {job['job_id']}")

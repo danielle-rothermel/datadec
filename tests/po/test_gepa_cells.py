@@ -18,6 +18,7 @@ from datadec.po.ape import (
 )
 from datadec.po.formats import CANONICAL
 from datadec.po.gepa_cells import (
+    ReflectionPromptVersion,
     aggregate,
     cell_id,
     default_dtype,
@@ -73,7 +74,7 @@ def test_job_files_match_contract(tmp_path):
                          "train_dev": str(REPO / "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json")},
         "max_metric_calls": 40 * 748, "max_proposals": 12, "reflection_minibatch_size": 3,
         "reflection_model": "openai/gpt-5.6-sol", "reflection_reasoning": "medium", "reflection_token_limit": 32000,
-        "prompt_cap": {"words": 150, "chars": 1000, "shortening_turns": 2},
+        "prompt_cap": {"words": 150, "chars": 1000, "shortening_turns": 2}, "reflection_prompt_version": "v1",
         "run_dir": str(root / "gepa" / CELL / rid),
     }
     assert {k: job[k] for k in golden} == golden
@@ -128,6 +129,13 @@ def test_mps_jobs_without_pool_keep_cuda_eval_sweep(tmp_path):
     (root / "gepa" / CELL / rid / "result.json").write_text(json.dumps({"best_candidate": {"system_prompt": "Be exact."}}))
     sweep_dir, paths = write_eval_item(root / "gepa" / CELL / rid, pool, REPO)
     assert json.loads((sweep_dir / "sweep.json").read_text())["device"] == "cuda" and len(paths) == 1
+
+
+def test_reflection_prompt_version_passes_through(tmp_path):
+    root, _, _ = _write(tmp_path, reflection_prompt_version=ReflectionPromptVersion.V2)
+    jobs = sorted((root / "gepa" / CELL).glob("*.job.json"))
+    assert {json.loads(p.read_text())["reflection_prompt_version"] for p in jobs} == {"v2"}
+    assert [v.value for v in ReflectionPromptVersion] == ["v1", "v2"]
 
 
 def test_eval_item_writes_sweep_pairs_and_continues_sequence(tmp_path):
