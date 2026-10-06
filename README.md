@@ -189,6 +189,10 @@ logic, but not full live archives.
 - cross-source parity on the 482 overlapping checkpoints between aggregate and detail for a recipe such as `dolma1.7-no-math-no-code`
 - reconstruction of task metrics from instance rows
 
+Manual raw-dependent verification requires its source files locally. After raw
+cleanup, redownload the applicable sources with `download --raw` before running
+these checks; the full pipeline performs them before cleanup.
+
 `bits_per_byte_corr` is declared non-reconstructible from the detail slice in `configs/olmes.toml` and is excluded from reconstruction checks.
 
 Checkpoint derivation verification covers PPL, aggregate OLMES, scaling-law

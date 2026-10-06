@@ -36,6 +36,8 @@
 
 - **Live validation:** Reran PPL, aggregate OLMES, scaling-law, and all structured published-result processors. All 55 final files in 18 publication units matched verified Hugging Face copies at immutable commit `a7a576a27d06aaf359e12cdd69850c4a00464fba`; publication was a verified no-op. Output derivation checks passed; historical raw compute differences were diagnostic. Automatic cleanup removed all 56 selected raw source files.
 
+- **Cleanup and recovery validation:** Confirmed PPL-only full cleanup and selective download restored the identical SHA-256. Standalone all-raw cleanup removed the two remaining owned cache trees. No dataset raw files or owned download caches remain; all 75 per-instance output files retain their original sizes and modification times. Retired and archived the historical tracked download note in this branch while preserving the unrelated original checkout's tracked source.
+
 ## Goal
 
 Provide one library-owned lifecycle for downloading, processing, validating,
