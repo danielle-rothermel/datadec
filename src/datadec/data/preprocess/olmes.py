@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+import json
 from collections import defaultdict
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
-import json
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal, TypeAlias
 
@@ -14,10 +14,14 @@ import pandas as pd
 import pyarrow.parquet as pq
 from dr_ds import coerce_float
 
-from datadec.config import OLMESContract, load_olmes_contract
+from datadec.config import (
+    CHECKPOINT_ENRICHMENT_COLUMNS,
+    OLMESContract,
+    load_olmes_contract,
+)
 from datadec.data import constants as consts
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.model_utils import checkpoint_enrichment
-from datadec.data.paths import DataDecidePaths
 from datadec.data.preprocess.duckdb import (
     duckdb_type,
     prepare_parquet_export,
@@ -25,12 +29,11 @@ from datadec.data.preprocess.duckdb import (
     replace_parquet_exports,
     sql_literal,
 )
+from datadec.data.preprocess.identity import normalize_step
 from datadec.data.preprocess.model_enrichment import (
-    CHECKPOINT_ENRICHMENT_COLUMNS,
     create_model_enrichment_table,
     enrichment_select_expressions,
 )
-from datadec.data.preprocess.ppl import _normalize_step
 
 if TYPE_CHECKING:
     from datadec.data.ingest.enums import DataRecipeName, ModelSizeName, Seed
@@ -166,7 +169,7 @@ def group_olmes_rows(
             DataRecipeName(record["data"]),
             Seed(record["seed"]),
         )
-        step = _normalize_step(record["step"], row_index=row_index)
+        step = normalize_step(record["step"], row_index=row_index)
         task = _require_string(record.get("task"), row_index=row_index, field="task")
         chinchilla = _require_string(
             record.get("chinchilla"), row_index=row_index, field="chinchilla"
@@ -267,7 +270,7 @@ def flatten_olmes_rows(
 
 
 def preprocess_olmes(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     *,
     input_path: Path | None = None,
     output_path: Path | None = None,

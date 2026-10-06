@@ -361,6 +361,7 @@ dependencies = [
     { name = "pyarrow" },
     { name = "pydantic" },
     { name = "srsly" },
+    { name = "typer" },
 ]
 
 [package.dev-dependencies]
@@ -369,7 +370,6 @@ dev = [
     { name = "pytest" },
     { name = "pytest-postgresql" },
     { name = "ty" },
-    { name = "typer" },
 ]
 
 [package.metadata]
@@ -386,6 +386,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=21.0.0" },
     { name = "pydantic", specifier = ">=2.11" },
     { name = "srsly", specifier = ">=2.5.1" },
+    { name = "typer", specifier = ">=0.20.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -394,7 +395,6 @@ dev = [
     { name = "pytest", specifier = ">=8.4.1" },
     { name = "pytest-postgresql", specifier = ">=7.0.0" },
     { name = "ty" },
-    { name = "typer", specifier = ">=0.20.0" },
 ]
 
 [[package]]

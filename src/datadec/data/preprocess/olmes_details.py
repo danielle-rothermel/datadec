@@ -17,10 +17,14 @@ import orjson
 from dr_ds import coerce_float
 from fsspec.implementations.memory import MemoryFileSystem
 
-from datadec.config import OLMESContract, OLMESTableContract, load_olmes_contract
-from datadec.config import load_source_manifest
+from datadec.config import (
+    OLMESContract,
+    OLMESTableContract,
+    load_olmes_contract,
+    load_source_manifest,
+)
+from datadec.data.artifacts import OLMES_DETAILS_STAGING_FILENAME, DataArtifacts
 from datadec.data.model_utils import checkpoint_enrichment
-from datadec.data.paths import DataDecidePaths
 from datadec.data.preprocess.duckdb import (
     DuckDbLogicalType,
     PendingParquetExport,
@@ -31,14 +35,13 @@ from datadec.data.preprocess.duckdb import (
     replace_parquet_exports,
     sql_literal,
 )
-from datadec.data.preprocess.ppl import _normalize_step
+from datadec.data.preprocess.identity import normalize_step
 
 _CHECKPOINT_MEMBER_RE = re.compile(
     r"^(?P<recipe>[^/]+)/(?P<params>[^/]+)/seed-(?P<seed_value>\d+)/step-(?P<step>\d+)\.tar\.gz$"
 )
 _METRICS_SUFFIX = "-metrics.json"
 _PREDICTIONS_SUFFIX = "-predictions.jsonl"
-_STAGING_FILENAME = ".olmes-details.duckdb"
 _MEMORY_ROOT = "/datadec-olmes-details"
 _INT64_MIN = -(2**63)
 _INT64_MAX = 2**63 - 1
@@ -127,7 +130,7 @@ def _assert_all_detailed_schema_parity(contract: OLMESContract) -> None:
     _assert_detailed_choices_schema_parity(contract)
 
 
-def _recipe_tar_path(paths: DataDecidePaths, recipe: str) -> Path:
+def _recipe_tar_path(paths: DataArtifacts, recipe: str) -> Path:
     manifest = load_source_manifest()
     filename = manifest.olmes_details.filename_template.format(recipe=recipe)
     return paths.data_dir / manifest.olmes_details.output_root / filename
@@ -408,7 +411,7 @@ def _parse_checkpoint_member_path(
         expected_recipe,
         match.group("params"),
         int(match.group("seed_value")),
-        _normalize_step(match.group("step"), row_index=0),
+        normalize_step(match.group("step"), row_index=0),
     )
 
 
@@ -440,7 +443,7 @@ def _contract_fingerprint(contract: OLMESContract) -> str:
 
 
 def _staging_database_path(tasks_path: Path) -> Path:
-    return tasks_path.parent / _STAGING_FILENAME
+    return tasks_path.parent / OLMES_DETAILS_STAGING_FILENAME
 
 
 def _initialize_staging_database(
@@ -1091,7 +1094,7 @@ def _remove_completed_staging_database(staging_path: Path) -> None:
 
 
 def preprocess_olmes_details(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     recipe: str,
     *,
     contract: OLMESContract | None = None,
@@ -1113,7 +1116,11 @@ def preprocess_olmes_details(
         raise FileNotFoundError(f"OLMES detail archive not found: {resolved_input}")
 
     resolved_tasks.parent.mkdir(parents=True, exist_ok=True)
-    staging_path = _staging_database_path(resolved_tasks)
+    staging_path = (
+        paths.olmes_details_staging_path(recipe)
+        if output_tasks_path is None
+        else _staging_database_path(resolved_tasks)
+    )
     connection = duckdb.connect(str(staging_path))
     memory_filesystem = MemoryFileSystem()
     connection.register_filesystem(memory_filesystem)

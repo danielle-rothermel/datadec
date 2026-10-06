@@ -1,15 +1,30 @@
 from __future__ import annotations
 
 import csv
+from dataclasses import replace
 import json
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
-from datadec.data.model_utils import checkpoint_enrichment, create_model_schedules
-from datadec.data.paths import DataDecidePaths
-from datadec.data.preprocess.derivations_verify import (
-    verify_preprocessed_derivations,
+from datadec.data.artifacts import DataArtifacts
+from datadec.data.model_utils import (
+    checkpoint_enrichment,
+    create_model_schedules,
+)
+from datadec.data.selection import DatasetSelection
+from datadec.data.verify.derivations import verify_preprocessed_derivations
+from datadec.data.verify import verify_selected_outputs
+
+SELECTION = DatasetSelection(
+    ppl=True,
+    olmes=True,
+    olmes_details=("fixture",),
+    scaling_law=True,
+    published_results=(),
+    published_figures=False,
+    all_data=False,
 )
 
 
@@ -19,7 +34,7 @@ def _write_parquet(path: Path, rows: list[dict[str, object]]) -> None:
 
 
 def _write_scaling_raw(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     *,
     compute: float,
     tokens: int,
@@ -46,8 +61,8 @@ def _verification_paths(
     tmp_path: Path,
     *,
     raw_scaling_uses_nominal_compute: bool,
-) -> DataDecidePaths:
-    paths = DataDecidePaths(tmp_path)
+) -> DataArtifacts:
+    paths = DataArtifacts(tmp_path)
     schedule = next(
         schedule for schedule in create_model_schedules() if schedule.params == "1B"
     )
@@ -106,9 +121,10 @@ def test_verification_accepts_exact_schedule_evidence(tmp_path: Path) -> None:
         raw_scaling_uses_nominal_compute=False,
     )
 
-    result = verify_preprocessed_derivations(paths)
+    result = verify_preprocessed_derivations(paths, SELECTION)
 
     assert result.contradiction_count == 0
+    assert result.raw_scaling_law is not None
     assert result.raw_scaling_law.token_evidence_count == 3
     assert result.raw_scaling_law.compute_evidence_count == 3
     assert result.lr_raw_evidence_count == 0
@@ -122,9 +138,10 @@ def test_verification_identifies_nominal_raw_compute_semantics(
         raw_scaling_uses_nominal_compute=True,
     )
 
-    result = verify_preprocessed_derivations(paths)
+    result = verify_preprocessed_derivations(paths, SELECTION)
 
     assert result.contradiction_count == 3
+    assert result.raw_scaling_law is not None
     assert result.raw_scaling_law.exact_compute_mismatch_count == 3
     assert result.raw_scaling_law.nominal_compute_mismatch_count == 0
 
@@ -143,7 +160,7 @@ def test_verification_rejects_null_required_checkpoint_derivations(
     ppl.loc[0, "lr_at_step"] = None
     ppl.to_parquet(paths.get_path("ppl_processed"), index=False)
 
-    result = verify_preprocessed_derivations(paths)
+    result = verify_preprocessed_derivations(paths, SELECTION)
     verification = result.processed_outputs[0]
 
     assert verification.token_evidence_count == 0
@@ -152,3 +169,60 @@ def test_verification_rejects_null_required_checkpoint_derivations(
     assert verification.exact_compute_mismatch_count == 1
     assert verification.model_detail_mismatch_count == 1
     assert verification.lr_mismatch_count == 1
+
+
+def test_base_selection_does_not_require_or_discover_detail_outputs(
+    tmp_path: Path,
+) -> None:
+    paths = _verification_paths(
+        tmp_path,
+        raw_scaling_uses_nominal_compute=False,
+    )
+    unrelated_detail = paths.olmes_details_tasks_path("unrelated")
+    unrelated_detail.parent.mkdir(parents=True)
+    unrelated_detail.write_text(
+        "not a parquet file",
+        encoding="utf-8",
+    )
+    selection = DatasetSelection(
+        ppl=True,
+        olmes=True,
+        olmes_details=(),
+        scaling_law=True,
+        published_results=(),
+        published_figures=False,
+        all_data=False,
+    )
+
+    result = verify_preprocessed_derivations(paths, selection)
+
+    assert result.contradiction_count == 0
+    assert len(result.processed_outputs) == 4
+    assert result.detail_tasks == ()
+
+
+def test_selected_verification_reports_nominal_raw_compute_as_diagnostic(
+    tmp_path: Path,
+) -> None:
+    artifacts = _verification_paths(tmp_path, raw_scaling_uses_nominal_compute=True)
+    report = verify_selected_outputs(artifacts, replace(SELECTION, olmes_details=()))
+    assert len(report.diagnostic_checks) == 1
+    assert "3 exact-parameter compute differences" in report.diagnostic_checks[0].detail
+    assert (
+        "0 nominal-parameter compute differences" in report.diagnostic_checks[0].detail
+    )
+    assert all(
+        result.contradiction_count == 0
+        for result in report.derivations.processed_outputs
+    )
+
+
+def test_selected_verification_rejects_processed_compute_mismatch(
+    tmp_path: Path,
+) -> None:
+    artifacts = _verification_paths(tmp_path, raw_scaling_uses_nominal_compute=True)
+    ppl = pd.read_parquet(artifacts.get_path("ppl_processed"))
+    ppl.loc[0, "compute"] = 1.0
+    ppl.to_parquet(artifacts.get_path("ppl_processed"), index=False)
+    with pytest.raises(AssertionError, match="ppl=1"):
+        verify_selected_outputs(artifacts, replace(SELECTION, olmes_details=()))

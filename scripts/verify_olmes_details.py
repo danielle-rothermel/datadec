@@ -6,8 +6,8 @@ from typing import Annotated
 import typer
 
 from datadec.config import load_olmes_contract
-from datadec.data.paths import DataDecidePaths
-from datadec.data.preprocess.olmes_verify import verify_olmes_details
+from datadec.data.artifacts import DataArtifacts
+from datadec.data.verify.olmes_details import verify_olmes_details
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 DEFAULT_RECIPE = "dolma1.7-no-math-no-code"
@@ -38,7 +38,7 @@ def main(
     in configs/olmes.toml and is not validated during reconstruction.
     """
     contract = load_olmes_contract()
-    paths = DataDecidePaths(data_dir)
+    paths = DataArtifacts(data_dir)
     archive = detail_archive or (
         data_dir / "raw/olmes-details/models" / f"{recipe}.tar.gz"
     )
@@ -57,13 +57,14 @@ def main(
         if not path.is_file():
             raise typer.BadParameter(
                 f"missing preprocessed detail output: {path}; "
-                "run scripts/preprocess_olmes_details.py first",
+                f"run datadec run --olmes-details {recipe} --no-upload first",
             )
 
     result = verify_olmes_details(
         recipe=recipe,
         paths=paths,
         detail_archive=archive,
+        aggregate_path=paths.get_path("olmes_processed"),
         contract=contract,
     )
     typer.echo(f"recipe: {recipe}")

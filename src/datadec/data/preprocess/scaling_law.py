@@ -12,6 +12,7 @@ import duckdb
 from duckdb import func
 
 from datadec.config import (
+    CHECKPOINT_ENRICHMENT_COLUMNS,
     OLMESContract,
     ScalingLawContract,
     ScalingLawTableContract,
@@ -19,7 +20,7 @@ from datadec.config import (
     load_scaling_law_contract,
 )
 from datadec.data.model_utils import create_model_schedules
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.duckdb import (
     PendingParquetExport,
     duckdb_type,
@@ -29,10 +30,7 @@ from datadec.data.preprocess.duckdb import (
     replace_parquet_exports,
     sql_literal,
 )
-from datadec.data.preprocess.model_enrichment import (
-    CHECKPOINT_ENRICHMENT_COLUMNS,
-    create_model_enrichment_table,
-)
+from datadec.data.preprocess.model_enrichment import create_model_enrichment_table
 
 RAW_COLUMNS: tuple[str, ...] = (
     "group",
@@ -94,7 +92,7 @@ class ScalingLawPreprocessResult:
 
 
 def preprocess_scaling_law(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
     *,
     verbose: bool = False,
 ) -> ScalingLawPreprocessResult:

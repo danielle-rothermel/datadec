@@ -18,7 +18,7 @@ from datadec.data.constants import (
     TRAINING_PARAMETER_COUNTS,
 )
 from datadec.data.model_utils import calc_batch_size
-from datadec.data.paths import DataDecidePaths
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess import scaling_law as scaling_law_module
 from datadec.data.preprocess.scaling_law import RAW_COLUMNS, preprocess_scaling_law
 
@@ -74,8 +74,8 @@ def _row(**overrides: object) -> dict[str, object]:
 def _write_sources(
     tmp_path: Path,
     rows_by_source: tuple[list[dict[str, object]], ...],
-) -> DataDecidePaths:
-    paths = DataDecidePaths(tmp_path)
+) -> DataArtifacts:
+    paths = DataArtifacts(tmp_path)
     raw_paths = paths.scaling_law_raw_paths()
     assert len(rows_by_source) == len(raw_paths)
     for path, rows in zip(raw_paths, rows_by_source, strict=True):
@@ -206,7 +206,7 @@ def test_preprocess_resolves_precedence_normalizes_and_writes_typed_sorted_outpu
 def test_missing_inputs_are_reported_together_without_creating_outputs(
     tmp_path: Path,
 ) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
 
     with pytest.raises(FileNotFoundError, match="missing required") as exc:
         preprocess_scaling_law(paths)

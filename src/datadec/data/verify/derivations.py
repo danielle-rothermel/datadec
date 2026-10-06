@@ -5,15 +5,16 @@ from pathlib import Path
 
 import duckdb
 
-from datadec.config import load_catalog
-from datadec.data.model_utils import create_model_schedules
-from datadec.data.paths import DataDecidePaths
-from datadec.data.preprocess.duckdb import sql_literal
-from datadec.data.preprocess.model_enrichment import (
+from datadec.config import (
     CHECKPOINT_ENRICHMENT_COLUMNS,
     MODEL_DETAIL_TYPES,
-    create_model_enrichment_table,
+    load_catalog,
 )
+from datadec.data.artifacts import DataArtifacts
+from datadec.data.model_utils import create_model_schedules
+from datadec.data.preprocess.duckdb import sql_literal
+from datadec.data.preprocess.model_enrichment import create_model_enrichment_table
+from datadec.data.selection import DatasetSelection
 
 _RELATIVE_TOLERANCE = 1e-12
 _ABSOLUTE_TOLERANCE = 1e-6
@@ -93,8 +94,8 @@ class DetailTasksVerification:
 @dataclass(frozen=True, slots=True)
 class DerivationVerificationResult:
     processed_outputs: tuple[ScheduleTableVerification, ...]
-    raw_olmes: ScheduleTableVerification
-    raw_scaling_law: ScalingRawVerification
+    raw_olmes: ScheduleTableVerification | None
+    raw_scaling_law: ScalingRawVerification | None
     detail_tasks: tuple[DetailTasksVerification, ...]
     lr_raw_evidence_count: int = 0
 
@@ -104,8 +105,8 @@ class DerivationVerificationResult:
             verification.contradiction_count
             for verification in (
                 *self.processed_outputs,
-                self.raw_olmes,
-                self.raw_scaling_law,
+                *((self.raw_olmes,) if self.raw_olmes is not None else ()),
+                *((self.raw_scaling_law,) if self.raw_scaling_law is not None else ()),
                 *self.detail_tasks,
             )
         )
@@ -357,34 +358,53 @@ def _verify_detail_tasks(
 
 
 def verify_preprocessed_derivations(
-    paths: DataDecidePaths,
+    paths: DataArtifacts,
+    selection: DatasetSelection,
 ) -> DerivationVerificationResult:
-    detail_paths = tuple(
-        sorted(paths.data_dir.glob("processed/olmes-details/*/tasks.parquet"))
-    )
-    if not detail_paths:
-        raise FileNotFoundError(
-            "no preprocessed OLMES detail tasks.parquet outputs were found"
+    processed: list[tuple[str, Path]] = []
+    if selection.ppl:
+        processed.append(("ppl", paths.get_path("ppl_processed")))
+    if selection.olmes:
+        processed.append(("olmes", paths.get_path("olmes_processed")))
+    if selection.scaling_law:
+        processed.extend(
+            (
+                ("scaling-law evaluations", paths.scaling_law_evaluations_path()),
+                (
+                    "scaling-law checkpoint losses",
+                    paths.scaling_law_checkpoint_losses_path(),
+                ),
+            )
         )
-    processed = (
-        ("ppl", paths.get_path("ppl_processed")),
-        ("olmes", paths.get_path("olmes_processed")),
-        ("scaling-law evaluations", paths.scaling_law_evaluations_path()),
-        (
-            "scaling-law checkpoint losses",
-            paths.scaling_law_checkpoint_losses_path(),
-        ),
-        *((f"OLMES detail tasks {path.parent.name}", path) for path in detail_paths),
+    detail_paths = tuple(
+        paths.olmes_details_tasks_path(recipe) for recipe in selection.olmes_details
     )
-    required_paths = tuple(path for _, path in processed) + (
-        paths.get_path("dwn_raw"),
-        *paths.scaling_law_raw_paths(),
+    processed.extend(
+        (f"OLMES detail tasks {recipe}", path)
+        for recipe, path in zip(selection.olmes_details, detail_paths, strict=True)
+    )
+    raw_olmes_path = paths.get_path("dwn_raw") if selection.olmes else None
+    raw_scaling_paths = (
+        paths.scaling_law_raw_paths() if selection.scaling_law else ()
+    )
+    required_paths = (
+        *(path for _, path in processed),
+        *((raw_olmes_path,) if raw_olmes_path is not None else ()),
+        *raw_scaling_paths,
     )
     missing = tuple(path for path in required_paths if not path.is_file())
     if missing:
         raise FileNotFoundError(
             "missing derivation verification inputs: "
             + ", ".join(str(path) for path in missing)
+        )
+
+    if not processed:
+        return DerivationVerificationResult(
+            processed_outputs=(),
+            raw_olmes=None,
+            raw_scaling_law=None,
+            detail_tasks=(),
         )
 
     connection = duckdb.connect()
@@ -408,15 +428,20 @@ def verify_preprocessed_derivations(
                 )
                 for name, path in processed
             ),
-            raw_olmes=_verify_schedule_table(
-                connection,
-                name="raw aggregate OLMES",
-                path=paths.get_path("dwn_raw"),
-                expect_full_enrichment=False,
+            raw_olmes=(
+                _verify_schedule_table(
+                    connection,
+                    name="raw aggregate OLMES",
+                    path=raw_olmes_path,
+                    expect_full_enrichment=False,
+                )
+                if raw_olmes_path is not None
+                else None
             ),
-            raw_scaling_law=_verify_scaling_raw(
-                connection,
-                paths=paths.scaling_law_raw_paths(),
+            raw_scaling_law=(
+                _verify_scaling_raw(connection, paths=raw_scaling_paths)
+                if raw_scaling_paths
+                else None
             ),
             detail_tasks=tuple(
                 _verify_detail_tasks(connection, path=path) for path in detail_paths

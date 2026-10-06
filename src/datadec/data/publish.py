@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from dataclasses import dataclass
 import hashlib
-from pathlib import Path, PurePosixPath
-from typing import Literal
+from pathlib import Path
 
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -15,29 +14,16 @@ from dr_hf import (
 )
 from huggingface_hub import HfApi
 
-from datadec.config import (
-    OLMESTableContract,
-    PublishedResultFile,
-    PublishedResultsManifest,
-    PublishingContract,
-    PublishingTarget,
-    ScalingLawTableContract,
-    load_olmes_contract,
-    load_published_results_manifest,
-    load_publishing_contract,
-    load_scaling_law_contract,
-    load_source_manifest,
+from datadec.config import PublishingTarget, load_publishing_contract
+from datadec.data.artifacts import DataArtifacts
+from datadec.data.publication import (
+    ParquetLogicalType,
+    PublicationColumn,
+    PublicationFile,
+    PublicationUnit,
+    publication_units,
 )
-from datadec.data.download import resolve_olmes_detail_recipes
-from datadec.data.paths import DataDecidePaths
-from datadec.data.preprocess.model_enrichment import CHECKPOINT_ENRICHMENT_TYPES
-from datadec.data.preprocess.ppl import PPL_IDENTITY_COLUMNS, PPL_METRIC_COLUMNS
-from datadec.data.preprocess.published_results import (
-    PUBLISHED_RESULT_SCHEMAS,
-    resolve_published_result_units,
-)
-
-type ParquetLogicalType = Literal["string", "int64", "float64", "bool"]
+from datadec.data.selection import DatasetSelection
 
 _ARROW_TYPES: dict[ParquetLogicalType, pa.DataType] = {
     "string": pa.string(),
@@ -49,256 +35,17 @@ _HASH_CHUNK_SIZE = 1024 * 1024
 
 
 @dataclass(frozen=True, slots=True)
-class PublicationColumn:
-    name: str
-    logical_type: ParquetLogicalType
-    nullable: bool | None = None
-
-
-@dataclass(frozen=True, slots=True)
-class PublicationFile:
-    local_path: Path
-    remote_path: str
-    expected_schema: tuple[PublicationColumn, ...] | None = None
-
-
-@dataclass(frozen=True, slots=True)
-class PublicationUnit:
-    name: str
-    files: tuple[PublicationFile, ...]
-    commit_message: str
-    cleanup_paths: tuple[Path, ...] = ()
-
-
-@dataclass(frozen=True, slots=True)
 class PublicationResult:
     unit_name: str
     created: bool
     commit_oid: str
     remote_paths: tuple[str, ...]
-    deleted_sources: tuple[Path, ...]
 
 
 @dataclass(frozen=True, slots=True)
 class _ValidatedLocalFile:
     publication_file: PublicationFile
     size: int
-
-
-def _publication_schema(
-    table: OLMESTableContract | ScalingLawTableContract,
-) -> tuple[PublicationColumn, ...]:
-    return tuple(
-        PublicationColumn(column.name, column.logical_type, column.nullable)
-        for column in table.columns
-    )
-
-
-def _ppl_publication_schema() -> tuple[PublicationColumn, ...]:
-    return (
-        *(PublicationColumn(name, "string") for name in PPL_IDENTITY_COLUMNS[:3]),
-        PublicationColumn("step", "int64"),
-        *(
-            PublicationColumn(name, logical_type)
-            for name, logical_type in CHECKPOINT_ENRICHMENT_TYPES
-        ),
-        *(PublicationColumn(name, "float64") for name in PPL_METRIC_COLUMNS),
-    )
-
-
-def ppl_publication_unit(
-    paths: DataDecidePaths,
-    *,
-    contract: PublishingContract | None = None,
-    output_path: Path | None = None,
-) -> PublicationUnit:
-    publishing = contract or load_publishing_contract()
-    return PublicationUnit(
-        name="ppl",
-        files=(
-            PublicationFile(
-                local_path=output_path or paths.get_path("ppl_processed"),
-                remote_path=publishing.ppl.remote_path,
-                expected_schema=_ppl_publication_schema(),
-            ),
-        ),
-        commit_message=publishing.ppl.commit_message,
-    )
-
-
-def olmes_publication_unit(
-    paths: DataDecidePaths,
-    *,
-    contract: PublishingContract | None = None,
-    output_path: Path | None = None,
-) -> PublicationUnit:
-    publishing = contract or load_publishing_contract()
-    table = load_olmes_contract().tables.aggregate
-    return PublicationUnit(
-        name="olmes",
-        files=(
-            PublicationFile(
-                local_path=output_path or paths.get_path("olmes_processed"),
-                remote_path=publishing.olmes.remote_path,
-                expected_schema=_publication_schema(table),
-            ),
-        ),
-        commit_message=publishing.olmes.commit_message,
-    )
-
-
-def scaling_law_publication_unit(
-    paths: DataDecidePaths,
-    *,
-    contract: PublishingContract | None = None,
-    evaluations_output_path: Path | None = None,
-    checkpoint_losses_output_path: Path | None = None,
-) -> PublicationUnit:
-    publishing = contract or load_publishing_contract()
-    scaling_law = load_scaling_law_contract()
-    return PublicationUnit(
-        name="scaling-law",
-        files=(
-            PublicationFile(
-                local_path=(
-                    evaluations_output_path or paths.scaling_law_evaluations_path()
-                ),
-                remote_path=publishing.scaling_law.evaluations_remote_path,
-                expected_schema=_publication_schema(scaling_law.tables.evaluations),
-            ),
-            PublicationFile(
-                local_path=(
-                    checkpoint_losses_output_path
-                    or paths.scaling_law_checkpoint_losses_path()
-                ),
-                remote_path=publishing.scaling_law.checkpoint_losses_remote_path,
-                expected_schema=_publication_schema(
-                    scaling_law.tables.checkpoint_losses
-                ),
-            ),
-        ),
-        commit_message=publishing.scaling_law.commit_message,
-        cleanup_paths=paths.scaling_law_raw_paths(),
-    )
-
-
-def olmes_details_publication_unit(
-    paths: DataDecidePaths,
-    recipe: str,
-    *,
-    contract: PublishingContract | None = None,
-    output_tasks_path: Path | None = None,
-    output_instances_path: Path | None = None,
-    output_choices_path: Path | None = None,
-    cleanup_source: bool = True,
-) -> PublicationUnit:
-    publishing = contract or load_publishing_contract()
-    olmes = load_olmes_contract()
-    detail_contract = publishing.olmes_details
-    manifest = load_source_manifest().olmes_details
-    archive = (
-        paths.data_dir
-        / manifest.output_root
-        / manifest.filename_template.format(recipe=recipe)
-    )
-    return PublicationUnit(
-        name=f"olmes-details:{recipe}",
-        files=(
-            PublicationFile(
-                local_path=(
-                    output_tasks_path or paths.olmes_details_tasks_path(recipe)
-                ),
-                remote_path=detail_contract.tasks_remote_path_template.format(
-                    recipe=recipe
-                ),
-                expected_schema=_publication_schema(olmes.tables.detailed_tasks),
-            ),
-            PublicationFile(
-                local_path=(
-                    output_instances_path or paths.olmes_details_instances_path(recipe)
-                ),
-                remote_path=detail_contract.instances_remote_path_template.format(
-                    recipe=recipe
-                ),
-                expected_schema=_publication_schema(olmes.tables.detailed_instances),
-            ),
-            PublicationFile(
-                local_path=(
-                    output_choices_path or paths.olmes_details_choices_path(recipe)
-                ),
-                remote_path=detail_contract.choices_remote_path_template.format(
-                    recipe=recipe
-                ),
-                expected_schema=_publication_schema(olmes.tables.detailed_choices),
-            ),
-        ),
-        commit_message=detail_contract.commit_message_template.format(recipe=recipe),
-        cleanup_paths=(archive,) if cleanup_source else (),
-    )
-
-
-def published_results_publication_units(
-    paths: DataDecidePaths,
-    *,
-    units: Sequence[str] = (),
-    contract: PublishingContract | None = None,
-    manifest: PublishedResultsManifest | None = None,
-) -> tuple[PublicationUnit, ...]:
-    publishing = contract or load_publishing_contract()
-    published_results = manifest or load_published_results_manifest()
-    selected_units = resolve_published_result_units(units, published_results)
-    publication_units: list[PublicationUnit] = []
-    for unit in selected_units:
-        sources = tuple(
-            source
-            for source in published_results.files
-            if source.category == "published_results"
-            and source.publication_unit == unit
-        )
-        publication_units.append(
-            PublicationUnit(
-                name=f"published-results:{unit}",
-                files=tuple(
-                    _published_result_publication_file(
-                        paths,
-                        source,
-                        remote_root=publishing.published_results.remote_root,
-                    )
-                    for source in sources
-                ),
-                commit_message=(
-                    publishing.published_results.commit_message_template.format(
-                        unit=unit
-                    )
-                ),
-                cleanup_paths=tuple(
-                    paths.published_result_source_path(source) for source in sources
-                ),
-            )
-        )
-    return tuple(publication_units)
-
-
-def _published_result_publication_file(
-    paths: DataDecidePaths,
-    source: PublishedResultFile,
-    *,
-    remote_root: str,
-) -> PublicationFile:
-    schema_name = source.schema
-    if schema_name is None:
-        raise ValueError(f"published result has no schema: {source.path}")
-    schema = PUBLISHED_RESULT_SCHEMAS[schema_name]
-    return PublicationFile(
-        local_path=paths.published_result_output_path(source),
-        remote_path=(
-            PurePosixPath(remote_root) / source.parquet_relative_path()
-        ).as_posix(),
-        expected_schema=tuple(
-            PublicationColumn(column.name, column.logical_type, column.nullable)
-            for column in schema.columns
-        ),
-    )
 
 
 def _validate_local_file(file: PublicationFile) -> _ValidatedLocalFile:
@@ -344,6 +91,22 @@ def _validate_local_file(file: PublicationFile) -> _ValidatedLocalFile:
                         f"{path}"
                     )
     return _ValidatedLocalFile(publication_file=file, size=size)
+
+
+def validate_publication_unit(unit: PublicationUnit) -> None:
+    """Validate a complete local publication unit without accessing the network."""
+    _validated_local_files(unit)
+
+
+def _validated_local_files(
+    unit: PublicationUnit,
+) -> tuple[_ValidatedLocalFile, ...]:
+    if not unit.files:
+        raise ValueError(f"publication unit has no files: {unit.name}")
+    remote_paths = tuple(file.remote_path for file in unit.files)
+    if len(remote_paths) != len(set(remote_paths)):
+        raise ValueError(f"publication unit has duplicate remote paths: {unit.name}")
+    return tuple(_validate_local_file(file) for file in unit.files)
 
 
 def _logical_type(data_type: pa.DataType, *, path: Path) -> ParquetLogicalType:
@@ -418,33 +181,55 @@ def _verify_remote_files(
             )
 
 
+def _resolve_revision(api: HfApi, target: PublishingTarget) -> str:
+    repo_info = api.repo_info(
+        target.repo_id,
+        repo_type="dataset",
+        revision=target.revision,
+    )
+    commit_oid = getattr(repo_info, "sha", None)
+    if not isinstance(commit_oid, str) or not commit_oid:
+        raise RuntimeError(f"could not resolve {target.repo_id}@{target.revision}")
+    return commit_oid
+
+
+def verify_published_unit(
+    unit: PublicationUnit,
+    *,
+    target: PublishingTarget | None = None,
+    hf_token: str | None = None,
+    api: HfApi | None = None,
+) -> PublicationResult:
+    """Verify local files against one immutable commit without uploading."""
+    local_files = _validated_local_files(unit)
+    resolved_target = target or load_publishing_contract().target
+    resolved_api = api or HfApi(token=hf_token)
+    commit_oid = _resolve_revision(resolved_api, resolved_target)
+    _verify_remote_files(
+        resolved_api,
+        target=resolved_target,
+        commit_oid=commit_oid,
+        local_files=local_files,
+    )
+    return PublicationResult(
+        unit_name=unit.name,
+        created=False,
+        commit_oid=commit_oid,
+        remote_paths=tuple(file.remote_path for file in unit.files),
+    )
+
+
 def publish_unit(
     unit: PublicationUnit,
     *,
     target: PublishingTarget | None = None,
-    keep_sources: bool = False,
     hf_token: str | None = None,
     api: HfApi | None = None,
 ) -> PublicationResult:
-    if not unit.files:
-        raise ValueError(f"publication unit has no files: {unit.name}")
-    remote_paths = tuple(file.remote_path for file in unit.files)
-    if len(remote_paths) != len(set(remote_paths)):
-        raise ValueError(f"publication unit has duplicate remote paths: {unit.name}")
-
-    local_files = tuple(_validate_local_file(file) for file in unit.files)
+    local_files = _validated_local_files(unit)
     resolved_target = target or load_publishing_contract().target
     resolved_api = api or HfApi(token=hf_token)
-    repo_info = resolved_api.repo_info(
-        resolved_target.repo_id,
-        repo_type="dataset",
-        revision=resolved_target.revision,
-    )
-    expected_parent = getattr(repo_info, "sha", None)
-    if not isinstance(expected_parent, str) or not expected_parent:
-        raise RuntimeError(
-            f"could not resolve {resolved_target.repo_id}@{resolved_target.revision}"
-        )
+    expected_parent = _resolve_revision(resolved_api, resolved_target)
 
     org, repo_name = resolved_target.repo_id.split("/", maxsplit=1)
     commit_result = commit_dataset_files_to_hf(
@@ -468,80 +253,35 @@ def publish_unit(
         commit_oid=commit_result.commit_oid,
         local_files=local_files,
     )
-
-    deleted_sources: tuple[Path, ...] = ()
-    if not keep_sources:
-        deleted_sources = tuple(path for path in unit.cleanup_paths if path.is_file())
-        for path in deleted_sources:
-            path.unlink()
-
     return PublicationResult(
         unit_name=unit.name,
         created=commit_result.created,
         commit_oid=commit_result.commit_oid,
-        remote_paths=remote_paths,
-        deleted_sources=deleted_sources,
+        remote_paths=tuple(file.remote_path for file in unit.files),
     )
 
 
 def publish_existing_outputs(
-    paths: DataDecidePaths,
+    artifacts: DataArtifacts,
+    selection: DatasetSelection,
     *,
-    ppl: bool = False,
-    olmes: bool = False,
-    olmes_details: Sequence[str] = (),
-    scaling_law: bool = False,
-    published_results: bool = False,
-    keep_sources: bool = False,
     hf_token: str | None = None,
-) -> list[PublicationResult]:
-    if (
-        not ppl
-        and not olmes
-        and not olmes_details
-        and not scaling_law
-        and not published_results
-    ):
-        raise ValueError("select at least one output to publish")
-
+) -> tuple[PublicationResult, ...]:
     publishing = load_publishing_contract()
-    recipes = resolve_olmes_detail_recipes(
-        olmes_details, load_source_manifest().olmes_details
-    )
-    units: list[PublicationUnit] = []
-    if ppl:
-        units.append(ppl_publication_unit(paths, contract=publishing))
-    if olmes:
-        units.append(olmes_publication_unit(paths, contract=publishing))
-    if scaling_law:
-        units.append(scaling_law_publication_unit(paths, contract=publishing))
-    if published_results:
-        units.extend(published_results_publication_units(paths, contract=publishing))
-    units.extend(
-        olmes_details_publication_unit(paths, recipe, contract=publishing)
-        for recipe in recipes
-    )
-    return [
+    return tuple(
         publish_unit(
             unit,
             target=publishing.target,
-            keep_sources=keep_sources,
             hf_token=hf_token,
         )
-        for unit in units
-    ]
+        for unit in publication_units(artifacts, selection, contract=publishing)
+    )
 
 
 __all__ = [
-    "PublicationColumn",
-    "PublicationFile",
     "PublicationResult",
-    "PublicationUnit",
-    "olmes_details_publication_unit",
-    "olmes_publication_unit",
-    "ppl_publication_unit",
-    "published_results_publication_units",
     "publish_existing_outputs",
     "publish_unit",
-    "scaling_law_publication_unit",
+    "validate_publication_unit",
+    "verify_published_unit",
 ]

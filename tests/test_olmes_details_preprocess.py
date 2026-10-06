@@ -12,8 +12,8 @@ import pandas as pd
 import pytest
 
 from datadec.config import load_olmes_contract
+from datadec.data.artifacts import DataArtifacts
 from datadec.data.ingest.enums import DataRecipeName, ModelSizeName, Seed
-from datadec.data.paths import DataDecidePaths
 from datadec.data.preprocess import olmes_details as olmes_details_module
 from datadec.data.preprocess.olmes_details import (
     OlmesDetailsPreprocessResult,
@@ -23,7 +23,7 @@ from datadec.data.preprocess.olmes_details import (
     _parse_checkpoint_member_path,
     preprocess_olmes_details,
 )
-from datadec.data.preprocess.olmes_verify import verify_detail_counts
+from datadec.data.verify.olmes_details import verify_detail_counts
 
 CONTRACT = load_olmes_contract()
 OUTPUT_COLUMNS = tuple(column.name for column in CONTRACT.tables.detailed_tasks.columns)
@@ -316,7 +316,7 @@ def _preprocess_fixture(
     tmp_path: Path, archive: Path
 ) -> tuple[OlmesDetailsPreprocessResult, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     result = preprocess_olmes_details(
-        DataDecidePaths(tmp_path), RECIPE, input_path=archive, contract=CONTRACT
+        DataArtifacts(tmp_path), RECIPE, input_path=archive, contract=CONTRACT
     )
     return (
         result,
@@ -443,7 +443,7 @@ def test_duplicate_task_primary_key_is_rejected(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError, match="duplicate OLMES detail task row"):
         preprocess_olmes_details(
-            DataDecidePaths(tmp_path), RECIPE, input_path=recipe_tar, contract=CONTRACT
+            DataArtifacts(tmp_path), RECIPE, input_path=recipe_tar, contract=CONTRACT
         )
 
 
@@ -457,7 +457,7 @@ def test_duplicate_instance_primary_key_is_rejected(tmp_path: Path) -> None:
     )
     with pytest.raises(ValueError, match="duplicate OLMES detail instance row"):
         preprocess_olmes_details(
-            DataDecidePaths(tmp_path), RECIPE, input_path=archive, contract=CONTRACT
+            DataArtifacts(tmp_path), RECIPE, input_path=archive, contract=CONTRACT
         )
 
 
@@ -469,7 +469,7 @@ def test_invalid_prediction_rolls_back_checkpoint(tmp_path: Path) -> None:
         num_instances=1,
         custom_predictions=orjson.dumps(prediction) + b"\n",
     )
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
 
     with pytest.raises(ValueError, match="prediction field 'label'"):
         preprocess_olmes_details(paths, RECIPE, input_path=archive, contract=CONTRACT)
@@ -490,7 +490,7 @@ def test_missing_predictions_are_rejected(tmp_path: Path) -> None:
     archive = _build_fixture_archive(tmp_path, include_predictions=False)
     with pytest.raises(ValueError, match="unpaired OLMES detail task files"):
         preprocess_olmes_details(
-            DataDecidePaths(tmp_path), RECIPE, input_path=archive, contract=CONTRACT
+            DataArtifacts(tmp_path), RECIPE, input_path=archive, contract=CONTRACT
         )
 
 
@@ -498,7 +498,7 @@ def test_archive_without_checkpoints_preserves_existing_outputs(tmp_path: Path) 
     archive = tmp_path / "empty.tar.gz"
     with tarfile.open(archive, mode="w:gz"):
         pass
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     outputs = (
         paths.olmes_details_tasks_path(RECIPE),
         paths.olmes_details_instances_path(RECIPE),
@@ -523,7 +523,7 @@ def test_instance_count_mismatch_is_rejected(tmp_path: Path) -> None:
     archive = _build_fixture_archive(tmp_path, num_instances=3, prediction_lines=2)
     with pytest.raises(ValueError, match="instance count mismatch"):
         preprocess_olmes_details(
-            DataDecidePaths(tmp_path), RECIPE, input_path=archive, contract=CONTRACT
+            DataArtifacts(tmp_path), RECIPE, input_path=archive, contract=CONTRACT
         )
 
 
@@ -533,12 +533,12 @@ def test_task_name_mismatch_is_rejected(tmp_path: Path) -> None:
     archive = _build_fixture_archive(tmp_path, metrics_payload=payload)
     with pytest.raises(ValueError, match="task identity mismatch"):
         preprocess_olmes_details(
-            DataDecidePaths(tmp_path), RECIPE, input_path=archive, contract=CONTRACT
+            DataArtifacts(tmp_path), RECIPE, input_path=archive, contract=CONTRACT
         )
 
 
 def test_checkpoint_not_in_aggregate_still_succeeds(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     aggregate_path = paths.get_path("olmes_processed")
     aggregate_path.parent.mkdir(parents=True)
     pd.DataFrame(
@@ -568,7 +568,7 @@ def test_checkpoint_not_in_aggregate_still_succeeds(tmp_path: Path) -> None:
 
 
 def test_preprocess_writes_typed_output(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     archive = _build_fixture_archive(tmp_path)
     _install_fixture_archive(tmp_path, archive)
 
@@ -606,7 +606,7 @@ def test_preprocess_writes_typed_output(tmp_path: Path) -> None:
 
 def test_preprocess_resumes_after_committed_checkpoint(tmp_path: Path) -> None:
     archive = _build_two_checkpoint_archive(tmp_path)
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     original_ingest = olmes_details_module._ingest_checkpoint
 
     def fail_on_second_checkpoint(*args, **kwargs):
@@ -650,7 +650,7 @@ def test_preprocess_resumes_after_committed_checkpoint(tmp_path: Path) -> None:
 
 
 def test_preprocess_does_not_download_or_upload(tmp_path: Path) -> None:
-    paths = DataDecidePaths(tmp_path)
+    paths = DataArtifacts(tmp_path)
     archive = _build_fixture_archive(tmp_path)
     _install_fixture_archive(tmp_path, archive)
 
