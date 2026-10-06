@@ -1,0 +1,43 @@
+{
+ "jobs": [
+  {
+   "name": "t-piqa-retry-baselines-dd-dolma-1b",
+   "subsets": [
+    "configs/po/subsets/piqa-train-part-train-n1838-seed0.json",
+    "configs/po/subsets/piqa-train-part-traindev-n919-seed0.json",
+    "configs/po/subsets/piqa-validation-part-test-n919-seed0.json",
+    "configs/po/subsets/piqa-train-part-testaug-n919-seed0.json"
+   ],
+   "task": "piqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-1B",
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "t-piqa-retry-mid-dd-dclm-1b",
+   "subsets": [
+    "configs/po/subsets/piqa-train-part-train-n1838-seed0.json",
+    "configs/po/subsets/piqa-train-part-traindev-n919-seed0.json",
+    "configs/po/subsets/piqa-validation-part-test-n919-seed0.json",
+    "configs/po/subsets/piqa-train-part-testaug-n919-seed0.json"
+   ],
+   "task": "piqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "revision": "step35000-seed-default"
+  },
+  {
+   "name": "t-piqa-retry-mid-dd-dolma-1b",
+   "subsets": [
+    "configs/po/subsets/piqa-train-part-train-n1838-seed0.json",
+    "configs/po/subsets/piqa-train-part-traindev-n919-seed0.json",
+    "configs/po/subsets/piqa-validation-part-test-n919-seed0.json",
+    "configs/po/subsets/piqa-train-part-testaug-n919-seed0.json"
+   ],
+   "task": "piqa",
+   "batch_size": 64,
+   "model": "allenai/DataDecide-dolma1_7-1B",
+   "revision": "step35000-seed-default"
+  }
+ ]
+}
