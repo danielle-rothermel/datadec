@@ -50,6 +50,7 @@ def test_ppl_selection_owns_only_its_known_paths(tmp_path: Path) -> None:
 
     assert artifacts.raw_paths(selection) == (tmp_path / "raw/ppl.parquet",)
     assert artifacts.processed_paths(selection) == (tmp_path / "processed/ppl.parquet",)
+    assert artifacts.raw_intermediate_paths(selection) == ()
     assert artifacts.intermediate_paths(selection) == (
         tmp_path / "processed/.ppl.parquet.tmp",
         tmp_path / "processed/.ppl.parquet.backup.tmp",
@@ -78,6 +79,7 @@ def test_detail_selection_owns_archive_outputs_and_staging(tmp_path: Path) -> No
     assert {
         output.with_name(f".{output.name}.backup.tmp") for output in outputs
     }.issubset(intermediates)
+    assert artifacts.raw_intermediate_paths(selection) == ()
     staging = output_root / OLMES_DETAILS_STAGING_FILENAME
     assert {staging, Path(f"{staging}.wal"), Path(f"{staging}.tmp")}.issubset(
         intermediates
@@ -110,7 +112,9 @@ def test_published_unit_owns_only_its_sources_outputs_and_partials(
     assert artifacts.raw_paths(selection) == raw
     assert artifacts.processed_paths(selection) == processed
     intermediates = set(artifacts.intermediate_paths(selection))
-    assert {path.with_name(f"{path.name}.part") for path in raw}.issubset(intermediates)
+    raw_intermediates = tuple(path.with_name(f"{path.name}.part") for path in raw)
+    assert artifacts.raw_intermediate_paths(selection) == raw_intermediates
+    assert set(raw_intermediates).issubset(intermediates)
     assert len(intermediates) == len(raw) + 2 * len(processed)
     assert not any("outputs2" in str(path) for path in intermediates)
 

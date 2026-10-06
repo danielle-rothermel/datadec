@@ -7,7 +7,7 @@
 - [x] Keep processors local-only and separate verification from processing.
 - [x] Separate publication-unit construction from upload and remote verification.
 - [x] Add selective downloads of processed outputs from Hugging Face.
-- [ ] Add shared, scoped cleanup with dry-run support.
+- [x] Add shared, scoped cleanup with dry-run support.
 - [ ] Implement the full pipeline coordinator in `src`.
 - [ ] Consolidate the Typer CLI in `src` and retire superseded scripts.
 - [ ] Update callers, documentation, packaging, and focused tests together.
@@ -23,6 +23,8 @@
 - **Step 4 — Separate publication-unit construction from upload and remote verification:** Separated publication units from CAS upload and immutable size/hash verification. Publishing never deletes local files; added read-only verification for cleanup. Updated tests to prove raw/output retention on success and failure. All 347 integrated tests passed.
 
 - **Step 5 — Add selective downloads of processed outputs from Hugging Face:** Added exact selected processed downloads from an immutable Hugging Face commit, with size/hash/schema verification before replacing any existing outputs. Raw downloads now use the same resolved selection and support published-result units. All 356 integrated tests passed.
+
+- **Step 6 — Add shared, scoped cleanup with dry-run support:** Added shared raw/full cleanup with exact dry-run plans and all remote checks before deletion. Missing files are idempotent; subsets preserve shared caches, processor staging and unrelated files; symlink escapes and unexpected directories are rejected. All 370 integrated tests passed.
 
 ## Goal
 

@@ -176,13 +176,26 @@ class DataArtifacts:
         return _deduplicate(paths)
 
     def intermediate_paths(self, selection: DatasetSelection) -> tuple[Path, ...]:
-        paths = [
+        return _deduplicate(
+            (
+                *self.raw_intermediate_paths(selection),
+                *self.processing_intermediate_paths(selection),
+            )
+        )
+
+    def raw_intermediate_paths(self, selection: DatasetSelection) -> tuple[Path, ...]:
+        return tuple(
             source_path.with_name(f"{source_path.name}.part")
             for source_path in (
                 self.published_result_download_path(source)
                 for source in self._selected_drive_sources(selection)
             )
-        ]
+        )
+
+    def processing_intermediate_paths(
+        self, selection: DatasetSelection
+    ) -> tuple[Path, ...]:
+        paths: list[Path] = []
         for output_path in self.processed_paths(selection):
             paths.extend(
                 (
