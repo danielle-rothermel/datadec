@@ -7,7 +7,8 @@ import typer
 
 from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.olmes import preprocess_olmes
-from datadec.data.publish import olmes_publication_unit, publish_unit
+from datadec.data.publication import olmes_publication_unit
+from datadec.data.publish import publish_unit
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
@@ -25,7 +26,6 @@ def main(
         typer.Option("--output", help="Override processed OLMES parquet output"),
     ] = None,
     upload: Annotated[bool, typer.Option("--upload/--no-upload")] = True,
-    keep_sources: Annotated[bool, typer.Option("--keep-sources")] = False,
 ) -> None:
     """Preprocess the local raw OLMES parquet artifact."""
     paths = DataArtifacts(data_dir)
@@ -36,10 +36,7 @@ def main(
         verbose=True,
     )
     if upload:
-        publish_unit(
-            olmes_publication_unit(paths, output_path=result.output_path),
-            keep_sources=keep_sources,
-        )
+        publish_unit(olmes_publication_unit(paths, output_path=result.output_path))
 
 
 if __name__ == "__main__":

@@ -44,8 +44,8 @@ def test_cli_default_is_repo_data_independent_of_cwd(
     preprocess.assert_called_once_with(paths, verbose=True)
     unit = publish.call_args.args[0]
     assert unit.files[0].local_path == tmp_path / "ppl.parquet"
-    assert unit.cleanup_paths == ()
-    assert publish.call_args.kwargs == {"keep_sources": False}
+    assert not hasattr(unit, "cleanup_paths")
+    assert publish.call_args.kwargs == {}
     assert DEFAULT_DATA_DIR == Path(__file__).resolve().parents[1] / "data"
 
 

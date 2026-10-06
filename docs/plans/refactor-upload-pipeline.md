@@ -5,7 +5,7 @@
 - [x] Split configuration and schema contracts into focused modules.
 - [x] Centralize dataset selection, artifact paths, and file ownership.
 - [x] Keep processors local-only and separate verification from processing.
-- [ ] Separate publication-unit construction from upload and remote verification.
+- [x] Separate publication-unit construction from upload and remote verification.
 - [ ] Add selective downloads of processed outputs from Hugging Face.
 - [ ] Add shared, scoped cleanup with dry-run support.
 - [ ] Implement the full pipeline coordinator in `src`.
@@ -19,6 +19,8 @@
 - **Step 2 — Centralize dataset selection, artifact paths, and file ownership:** Added deterministic dataset selection and explicit artifact ownership; migrated all callers and removed paths.py and duplicate selectors/path mappings. Recipe-specific metadata cleanup is isolated; shared caches require --all. All 335 tests passed.
 
 - **Step 3 — Keep processors local-only and separate verification from processing:** Moved verification into data/verify and added typed selection-aware reports. Base-only derivation checks never scan detail files; cross-source prerequisites are reported explicitly. Extracted shared checkpoint identity normalization and staging ownership. All 352 tests passed.
+
+- **Step 4 — Separate publication-unit construction from upload and remote verification:** Separated publication units from CAS upload and immutable size/hash verification. Publishing never deletes local files; added read-only verification for cleanup. Updated tests to prove raw/output retention on success and failure. All 347 integrated tests passed.
 
 ## Goal
 

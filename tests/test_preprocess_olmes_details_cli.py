@@ -66,7 +66,7 @@ def test_cli_default_is_repo_data_independent_of_cwd(
         tmp_path / "c4-instances.parquet",
         tmp_path / "c4-choices.parquet",
     )
-    assert unit.cleanup_paths == (tmp_path / "raw/olmes-details/models/c4.tar.gz",)
+    assert not hasattr(unit, "cleanup_paths")
     assert DEFAULT_DATA_DIR == Path(__file__).resolve().parents[1] / "data"
 
 
@@ -158,6 +158,7 @@ def test_cli_path_overrides_are_forwarded(tmp_path: Path) -> None:
     output_tasks = tmp_path / "tasks.parquet"
     output_instances = tmp_path / "instances.parquet"
     output_choices = tmp_path / "choices.parquet"
+    input_path.write_text("source")
     with (
         patch.object(script, "DataArtifacts", return_value=paths),
         patch.object(
@@ -203,8 +204,8 @@ def test_cli_path_overrides_are_forwarded(tmp_path: Path) -> None:
         output_instances,
         output_choices,
     )
-    assert unit.cleanup_paths == ()
-    assert input_path not in unit.cleanup_paths
+    assert not hasattr(unit, "cleanup_paths")
+    assert input_path.is_file()
 
 
 def test_cli_rejects_unknown_recipe() -> None:
@@ -262,4 +263,4 @@ def test_cli_publish_failure_stops_before_next_recipe(tmp_path: Path) -> None:
     assert preprocess.call_count == 1
     assert publish.call_count == 1
     unit = publish.call_args.args[0]
-    assert unit.cleanup_paths == (tmp_path / "raw/olmes-details/models/c4.tar.gz",)
+    assert not hasattr(unit, "cleanup_paths")

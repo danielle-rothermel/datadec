@@ -82,7 +82,8 @@ def test_cli_default_is_repo_data_independent_of_cwd(
         tmp_path / "evaluations.parquet",
         tmp_path / "losses.parquet",
     )
-    assert publish.call_args.kwargs == {"keep_sources": False}
+    assert publish.call_args.kwargs == {}
+    assert not hasattr(unit, "cleanup_paths")
     assert DEFAULT_DATA_DIR == Path(__file__).resolve().parents[1] / "data"
 
 
@@ -123,7 +124,7 @@ def test_cli_data_dir_prints_stable_evidence_without_network_calls(
     upload_file.assert_not_called()
 
 
-def test_cli_keep_sources_is_forwarded_for_atomic_scaling_unit(
+def test_cli_publishes_atomic_scaling_unit_without_cleanup_ownership(
     tmp_path: Path,
 ) -> None:
     paths = DataArtifacts(tmp_path)
@@ -136,7 +137,7 @@ def test_cli_keep_sources_is_forwarded_for_atomic_scaling_unit(
         patch.object(script, "preprocess_scaling_law", return_value=result_item),
         patch.object(script, "publish_unit") as publish,
     ):
-        result = runner.invoke(app, ["--keep-sources"])
+        result = runner.invoke(app, [])
 
     assert result.exit_code == 0
     unit = publish.call_args.args[0]
@@ -144,5 +145,5 @@ def test_cli_keep_sources_is_forwarded_for_atomic_scaling_unit(
         result_item.evaluations_output_path,
         result_item.checkpoint_losses_output_path,
     )
-    assert unit.cleanup_paths == paths.scaling_law_raw_paths()
-    assert publish.call_args.kwargs == {"keep_sources": True}
+    assert not hasattr(unit, "cleanup_paths")
+    assert publish.call_args.kwargs == {}

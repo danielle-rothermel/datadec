@@ -76,7 +76,7 @@ def test_cli_defaults_to_all_manifest_units_independent_of_cwd(
         manifest=manifest,
     )
     assert [call.args[0] for call in publish.call_args_list] == list(publication_units)
-    assert all(call.kwargs["keep_sources"] is False for call in publish.call_args_list)
+    assert all("keep_sources" not in call.kwargs for call in publish.call_args_list)
     assert DEFAULT_DATA_DIR == Path(__file__).resolve().parents[1] / "data"
 
 
@@ -135,9 +135,7 @@ def test_cli_no_upload_preprocesses_without_hf_work_or_cleanup(tmp_path: Path) -
         patch.object(script, "published_results_publication_units") as compose,
         patch.object(script, "publish_unit") as publish,
     ):
-        result = runner.invoke(
-            app, ["--no-upload", "--keep-sources", "--data-dir", str(tmp_path)]
-        )
+        result = runner.invoke(app, ["--no-upload", "--data-dir", str(tmp_path)])
 
     assert result.exit_code == 0
     preprocess.assert_called_once()
@@ -146,7 +144,7 @@ def test_cli_no_upload_preprocesses_without_hf_work_or_cleanup(tmp_path: Path) -
     publish.assert_not_called()
 
 
-def test_cli_forwards_keep_sources_and_publishes_only_returned_units(
+def test_cli_publishes_only_returned_units_without_cleanup_policy(
     tmp_path: Path,
 ) -> None:
     manifest = object()
@@ -196,7 +194,6 @@ def test_cli_forwards_keep_sources_and_publishes_only_returned_units(
                 "outputs2",
                 "--unit",
                 "per-task-winogrande",
-                "--keep-sources",
                 "--data-dir",
                 str(tmp_path),
             ],
@@ -210,7 +207,7 @@ def test_cli_forwards_keep_sources_and_publishes_only_returned_units(
         manifest=manifest,
     )
     assert publish.call_count == 2
-    assert all(call.kwargs["keep_sources"] is True for call in publish.call_args_list)
+    assert all("keep_sources" not in call.kwargs for call in publish.call_args_list)
 
 
 def test_cli_does_not_upload_when_preprocessing_fails() -> None:

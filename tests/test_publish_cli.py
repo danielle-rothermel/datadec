@@ -29,7 +29,7 @@ def test_cli_requires_an_explicit_selection() -> None:
     assert "--all" in result.output
 
 
-def test_cli_forwards_repeatable_detail_selection_and_cleanup_policy(
+def test_cli_forwards_repeatable_detail_selection(
     tmp_path: Path,
 ) -> None:
     paths = object()
@@ -45,7 +45,6 @@ def test_cli_forwards_repeatable_detail_selection_and_cleanup_policy(
                 "c4",
                 "--olmes-details",
                 "fineweb-pro",
-                "--keep-sources",
                 "--data-dir",
                 str(tmp_path),
             ],
@@ -53,15 +52,13 @@ def test_cli_forwards_repeatable_detail_selection_and_cleanup_policy(
 
     assert result.exit_code == 0
     path_type.assert_called_once_with(tmp_path)
-    publish.assert_called_once_with(
-        paths,
-        ppl=True,
-        olmes=False,
-        olmes_details=["c4", "fineweb-pro"],
-        scaling_law=False,
-        published_results=False,
-        keep_sources=True,
-    )
+    selection = publish.call_args.args[1]
+    assert publish.call_args.args[0] is paths
+    assert selection.ppl is True
+    assert selection.olmes is False
+    assert selection.olmes_details == ("c4", "fineweb-pro")
+    assert selection.scaling_law is False
+    assert selection.published_results == ()
 
 
 def test_cli_all_expands_all_supported_existing_outputs(tmp_path: Path) -> None:
@@ -75,14 +72,13 @@ def test_cli_all_expands_all_supported_existing_outputs(tmp_path: Path) -> None:
 
     assert result.exit_code == 0
     publish.assert_called_once()
-    assert publish.call_args.kwargs == {
-        "ppl": True,
-        "olmes": True,
-        "olmes_details": ["all"],
-        "scaling_law": True,
-        "published_results": True,
-        "keep_sources": False,
-    }
+    selection = publish.call_args.args[1]
+    assert selection.all_data is True
+    assert selection.ppl is True
+    assert selection.olmes is True
+    assert selection.olmes_details
+    assert selection.scaling_law is True
+    assert selection.published_results
     assert result.output == "ppl: verified no-op at commit-oid\n"
 
 
@@ -93,20 +89,18 @@ def test_cli_selects_all_existing_published_results(tmp_path: Path) -> None:
         )
 
     assert result.exit_code == 0
-    assert publish.call_args.kwargs == {
-        "ppl": False,
-        "olmes": False,
-        "olmes_details": [],
-        "scaling_law": False,
-        "published_results": True,
-        "keep_sources": False,
-    }
+    selection = publish.call_args.args[1]
+    assert selection.ppl is False
+    assert selection.olmes is False
+    assert selection.olmes_details == ()
+    assert selection.scaling_law is False
+    assert selection.published_results
 
 
 def test_cli_reports_unknown_recipe_as_usage_error() -> None:
     with patch.object(
         script,
-        "publish_existing_outputs",
+        "resolve_selection",
         side_effect=ValueError("unknown OLMES detail recipe: missing"),
     ):
         result = runner.invoke(app, ["--olmes-details", "missing"])

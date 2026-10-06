@@ -9,7 +9,8 @@ from datadec.config import load_source_manifest
 from datadec.data.selection import resolve_olmes_detail_recipes
 from datadec.data.artifacts import DataArtifacts
 from datadec.data.preprocess.olmes_details import preprocess_olmes_details
-from datadec.data.publish import olmes_details_publication_unit, publish_unit
+from datadec.data.publication import olmes_details_publication_unit
+from datadec.data.publish import publish_unit
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
@@ -35,7 +36,6 @@ def main(
         typer.Option("--output-choices", help="Override choices parquet path"),
     ] = None,
     upload: Annotated[bool, typer.Option("--upload/--no-upload")] = True,
-    keep_sources: Annotated[bool, typer.Option("--keep-sources")] = False,
 ) -> None:
     """Preprocess local OLMES detail archives into typed task/instance/choice parquet."""
     manifest = load_source_manifest()
@@ -73,9 +73,7 @@ def main(
                     output_tasks_path=result.output_tasks_path,
                     output_instances_path=result.output_instances_path,
                     output_choices_path=result.output_choices_path,
-                    cleanup_source=input_path is None,
-                ),
-                keep_sources=keep_sources,
+                )
             )
 
 

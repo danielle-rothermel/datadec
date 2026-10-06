@@ -7,6 +7,7 @@ import typer
 
 from datadec.data.artifacts import DataArtifacts
 from datadec.data.publish import publish_existing_outputs
+from datadec.data.selection import resolve_selection
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
@@ -21,7 +22,6 @@ def main(
     scaling_law: Annotated[bool, typer.Option("--scaling-law")] = False,
     published_results: Annotated[bool, typer.Option("--published-results")] = False,
     all_outputs: Annotated[bool, typer.Option("--all")] = False,
-    keep_sources: Annotated[bool, typer.Option("--keep-sources")] = False,
     data_dir: Annotated[Path, typer.Option("--data-dir")] = DEFAULT_DATA_DIR,
 ) -> None:
     """Publish selected existing final DataDecide outputs to Hugging Face."""
@@ -38,22 +38,18 @@ def main(
             "select --ppl, --olmes, --olmes-details, --scaling-law, "
             "--published-results, or --all"
         )
-    if all_outputs:
-        ppl = True
-        olmes = True
-        scaling_law = True
-        published_results = True
-        details = ["all"]
-
     try:
-        results = publish_existing_outputs(
-            DataArtifacts(data_dir),
+        selection = resolve_selection(
             ppl=ppl,
             olmes=olmes,
             olmes_details=details,
             scaling_law=scaling_law,
             published_results=published_results,
-            keep_sources=keep_sources,
+            all_data=all_outputs,
+        )
+        results = publish_existing_outputs(
+            DataArtifacts(data_dir),
+            selection,
         )
     except ValueError as error:
         raise typer.BadParameter(str(error)) from error

@@ -66,7 +66,7 @@ def test_cli_default_is_repo_data_independent_of_cwd(
     )
     unit = publish.call_args.args[0]
     assert unit.files[0].local_path == tmp_path / "olmes.parquet"
-    assert unit.cleanup_paths == ()
+    assert not hasattr(unit, "cleanup_paths")
     assert DEFAULT_DATA_DIR == Path(__file__).resolve().parents[1] / "data"
 
 
@@ -136,4 +136,4 @@ def test_cli_input_and_output_overrides(tmp_path: Path) -> None:
     download_sources.assert_not_called()
     unit = publish.call_args.args[0]
     assert unit.files[0].local_path == output_path
-    assert unit.cleanup_paths == ()
+    assert not hasattr(unit, "cleanup_paths")

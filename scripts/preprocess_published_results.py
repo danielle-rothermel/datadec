@@ -14,10 +14,8 @@ from datadec.data.selection import resolve_published_result_units
 from datadec.data.preprocess.published_results import (
     preprocess_published_results,
 )
-from datadec.data.publish import (
-    publish_unit,
-    published_results_publication_units,
-)
+from datadec.data.publication import published_results_publication_units
+from datadec.data.publish import publish_unit
 
 DEFAULT_DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
@@ -28,7 +26,6 @@ app = typer.Typer()
 def main(
     unit: Annotated[list[str] | None, typer.Option("--unit")] = None,
     upload: Annotated[bool, typer.Option("--upload/--no-upload")] = True,
-    keep_sources: Annotated[bool, typer.Option("--keep-sources")] = False,
     data_dir: Annotated[Path, typer.Option("--data-dir")] = DEFAULT_DATA_DIR,
 ) -> None:
     """Convert structured results to Parquet and publish them by default."""
@@ -55,7 +52,6 @@ def main(
         result = publish_unit(
             publication_unit,
             target=publishing.target,
-            keep_sources=keep_sources,
         )
         status = "created" if result.created else "verified no-op"
         typer.echo(f"{result.unit_name}: {status} at {result.commit_oid}")
