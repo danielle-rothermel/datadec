@@ -22,7 +22,7 @@ from datadec.po.gepa_cells import (
     cell_id,
     default_dtype,
     eval_class,
-    gepa_class,
+    gepa_est_minutes,
     hierarchical_bootstrap,
     model_key,
     write_cell,
@@ -49,8 +49,8 @@ def test_ids_and_classes():
     assert key == "allenai/DataDecide-dclm-baseline-150M@step37500-seed-default@fp32-tf32"
     assert cell_id(key, "arc_easy") == CELL
     assert model_key("Qwen/Qwen3-8B", None, "bfloat16") == "Qwen/Qwen3-8B@main@bf16"
-    assert [gepa_class(m) for m in (DD, "EleutherAI/pythia-2.8b", "Qwen/Qwen3-4B", "allenai/Olmo-3-1025-7B")] == \
-        ["gepa-small", "gepa-small", "gepa-big", "gepa-big"]
+    assert [gepa_est_minutes(m) for m in (DD, "EleutherAI/pythia-2.8b", "Qwen/Qwen3-4B", "allenai/Olmo-3-1025-7B")] == \
+        [180, 180, 360, 360]
     assert [eval_class(m) for m in (DD, "Qwen/Qwen3-14B", "allenai/Olmo-3.1-32B-Instruct")] == ["small", "big", "32b"]
     assert default_dtype("allenai/Olmo-3-1125-32B") == "bfloat16" and default_dtype(DD) == "float32"
 
@@ -99,9 +99,10 @@ def test_gepa_items_match_pool_contract(tmp_path):
     assert set(item) == {"schema", "name", "kind", "class", "est_minutes", "cwd", "command", "followup", "followup_cwd",
                          "env_files", "complete", "meta", "created_utc", "attempts"}
     assert item["schema"] == "po-pool-item/1" and item["name"] == f"gepa-{rid}" and item["kind"] == "gepa"
-    assert item["class"] == "gepa-small" and item["est_minutes"] == 180 and item["cwd"] == "/x/olmes"
+    assert item["class"] == "gepa" and item["est_minutes"] == 180 and item["cwd"] == "/x/olmes"
     assert item["command"] == ["uv", "run", "local/gepa_arc.py", "--job", str(root / "gepa" / CELL / f"{rid}.job.json")]
-    assert item["followup"] == ["uv", "run", "python", "scripts/po_gepa_cells.py", "eval-item", "--run-dir", run_dir, "--pool", str(pool)]
+    assert item["followup"] == ["uv", "run", "--directory", str(REPO), "python", "scripts/po_gepa_cells.py", "eval-item",
+                                "--run-dir", run_dir, "--pool", str(pool)]
     assert item["followup_cwd"] == str(REPO)
     assert item["env_files"] == ["/scratch/ddr8143/.config/secrets/openrouter.env"]
     assert item["complete"] == {"type": "file", "path": f"{run_dir}/result.json"}
@@ -110,7 +111,7 @@ def test_gepa_items_match_pool_contract(tmp_path):
     assert _write(tmp_path)[2] == []
     big = _write(tmp_path / "b", model="allenai/Olmo-3-1125-32B", revision=None, task="csqa")[2]
     item = json.loads(big[0].read_text())
-    assert item["class"] == "gepa-big" and item["est_minutes"] == 360 and item["meta"]["dtype"] == "bfloat16"
+    assert item["class"] == "gepa" and item["est_minutes"] == 360 and item["meta"]["dtype"] == "bfloat16"
 
 
 def test_eval_item_writes_sweep_pairs_and_continues_sequence(tmp_path):
@@ -146,7 +147,8 @@ def _fake_run(gepa_root, sweeps, rid, start, best, gepa_text):
         {"best_candidate": {"system_prompt": best}, "seed_val_score": 0.3, "best_val_score": 0.4, "num_candidates": 5}))
     (sweeps / f"ge-{rid}").mkdir(parents=True)
     (sweeps / f"ge-{rid}" / "sweep.json").write_text(json.dumps(
-        {"instructions": [{"id": "none", "text": None}, {"id": f"gepa-{rid}", "text": gepa_text}]}))
+        {"instructions": [{"id": "none", "text": None}, {"id": f"gepa-{rid}", "text": gepa_text}],
+         "subsets": [{"label": "s1", "n": 2}, {"label": "s2", "n": 2}]}))
 
 
 def _items(rid, gepa_acc, gepa_lik, include_gepa=True):
@@ -179,7 +181,7 @@ def test_aggregate_known_deltas_same_text_and_idempotent(tmp_path):
     ]).to_parquet(tidy / "contrasts.parquet", index=False)
 
     for _ in range(2):  # second pass must replace, not duplicate
-        aggregate(tidy, gepa_root, sweeps, load_items=lambda d: frames[d.name])
+        assert aggregate(tidy, gepa_root, sweeps, load_items=lambda d: frames[d.name])[2] == []
     runs = pd.read_parquet(tidy / "gepa_runs.parquet").set_index("run_id")
     assert len(runs) == 2 and (tidy / "gepa_runs.csv").exists() and (tidy / "contrasts.csv").exists()
     assert runs.loc[a, "accuracy_delta"] == pytest.approx(0.25) and runs.loc[a, "likelihood_delta"] == pytest.approx(0.1)
@@ -198,6 +200,21 @@ def test_aggregate_known_deltas_same_text_and_idempotent(tmp_path):
     ape_lik = g.loc[(f"gepa:{CELL}:ape", "likelihood")]
     assert ape_lik.lo == pytest.approx(0.1) and ape_lik.hi == pytest.approx(0.1)
     assert set(g.reset_index()["method"]) == {"hierarchical-bootstrap"} and set(g.reset_index()["role"]) == {"test"}
+
+
+def test_aggregate_skips_runs_whose_eval_sweep_is_partial(tmp_path):
+    gepa_root, sweeps, tidy = tmp_path / "gepa", tmp_path / "sweeps", tmp_path / "tidy"
+    done, partial, empty, unswept = (f"{CELL}__ape__s{k}" for k in range(4))
+    for rid in (done, partial, empty):
+        _fake_run(gepa_root, sweeps, rid, "ape", "Answer well.", "Answer well.")
+    _fake_run(gepa_root, sweeps, unswept, "ape", "Answer well.", "Answer well.")
+    (sweeps / f"ge-{unswept}" / "sweep.json").unlink()  # follow-up not run yet
+    frames = {f"ge-{done}": _items(done, [1, 1, 1, 0], [0.3, 0.4, 0.5, 0.6]),
+              f"ge-{partial}": _items(partial, [1, 1, 1, 0], [0.3, 0.4, 0.5, 0.6]).iloc[:-1],  # last gepa item missing
+              f"ge-{empty}": pd.DataFrame()}
+    contrasts, runs, incomplete = aggregate(tidy, gepa_root, sweeps, load_items=lambda d: frames[d.name])
+    assert list(runs["run_id"]) == [done] and sorted(incomplete) == sorted([partial, empty, unswept])
+    assert set(contrasts["n_runs"]) == {1}
 
 
 def test_hierarchical_bootstrap_spans_run_spread():

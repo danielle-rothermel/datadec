@@ -2,7 +2,8 @@
 
   write      6 job files under ROOT/gepa/<cell_id>/ and 6 gepa items in the pool (empty and ape starts x seeds 0-2)
   eval-item  follow-up of a finished gepa item: the ge-<run_id> Test sweep plus its eval item in the same pool
-  aggregate  per-run and per-cell paired effects (hierarchical bootstrap) into the tidy contrasts and gepa_runs tables
+  aggregate  per-run and per-cell paired effects (hierarchical bootstrap) into the tidy contrasts and gepa_runs tables;
+             runs whose eval sweep does not yet cover every Test item in both arms are skipped and listed
 """
 
 from __future__ import annotations
@@ -53,7 +54,11 @@ def aggregate(
     gepa_root: Annotated[Path, typer.Option("--gepa-root", help="ROOT/gepa")],
     sweeps: Annotated[Path, typer.Option("--sweeps", help="dir holding the ge-<run_id> sweeps")],
 ) -> None:
-    contrasts, runs = aggregate_cells(tidy, gepa_root, sweeps)
+    contrasts, runs, incomplete = aggregate_cells(tidy, gepa_root, sweeps)
+    if incomplete:
+        typer.echo(f"{len(incomplete)} finished runs skipped (eval sweep not written yet, or missing Test items in an arm):")
+        for rid in incomplete:
+            typer.echo(f"  {rid}")
     if runs.empty:
         typer.echo("no finished runs with eval results")
         return

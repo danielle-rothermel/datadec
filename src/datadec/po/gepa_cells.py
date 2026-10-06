@@ -8,7 +8,11 @@ bootstrap (runs, then items within runs).
 Paths follow the contracts: runs at ``ROOT/gepa/<cell_id>/<run_id>/``, jobs at ``ROOT/gepa/<cell_id>/<run_id>.job.json``,
 eval sweeps at ``ROOT/sweeps/ge-<run_id>``, pool items as ``<pool>/pending/<NNNN>-<name>.json`` (po-pool-item/1).
 Items are written straight into the pool directories (atomic rename into ``pending/``); nothing here depends on
-the pool module.
+the pool module. Every gepa item has class ``gepa`` (its ``est_minutes`` scales with model size); the follow-up
+runs ``uv run --directory <datadec checkout>``, so it does not depend on the worker honouring ``followup_cwd``.
+
+Aggregation includes a run only when its eval sweep covers every Test item in both arms, so a sweep still running
+(or one with a failed chunk) never contributes partial deltas; such runs are reported as incomplete.
 """
 
 from __future__ import annotations
@@ -55,9 +59,10 @@ GEPA_ITEM_PREFIX = "gepa-"
 SECRETS_ENV_FILE = "/scratch/ddr8143/.config/secrets/openrouter.env"
 POOL_ITEM_SCHEMA = "po-pool-item/1"
 POOL_STATE_DIRS = ("pending", "claimed", "done", "failed")
-SMALL_MAX_PARAMS = 4e9  # strictly below -> gepa-small / small
+SMALL_MAX_PARAMS = 4e9  # strictly below -> small (eval class, shorter gepa estimate)
 BIG_MAX_PARAMS = 30e9  # strictly below -> big; at or above -> 32b (eval) and bfloat16 weights
-GEPA_EST_MINUTES = {"gepa-small": 180, "gepa-big": 360}
+GEPA_CLASS = "gepa"  # one worker class for every gepa item (pool-item and gepa-run contracts)
+GEPA_EST_MINUTES_SMALL, GEPA_EST_MINUTES_BIG = 180, 360
 EVAL_EST_MINUTES = {"small": 30, "big": 90, "32b": 180}
 PRECISION = {"float32": "fp32-tf32", "bfloat16": "bf16"}
 
@@ -130,8 +135,8 @@ def run_id(cell: str, start: Start, seed: int) -> str:
     return f"{cell}__{start}__s{seed}"
 
 
-def gepa_class(model: str) -> str:
-    return "gepa-small" if nominal_params(model) < SMALL_MAX_PARAMS else "gepa-big"
+def gepa_est_minutes(model: str) -> int:
+    return GEPA_EST_MINUTES_SMALL if nominal_params(model) < SMALL_MAX_PARAMS else GEPA_EST_MINUTES_BIG
 
 
 def eval_class(model: str) -> str:
@@ -217,12 +222,12 @@ def _now() -> str:
 
 def gepa_item(job: dict, *, job_file: Path, pool_dir: Path, repo: Path, olmes_repo: Path) -> dict:
     run_dir = job["run_dir"]
-    item_class = gepa_class(job["model"])
     return {
-        "schema": POOL_ITEM_SCHEMA, "name": GEPA_ITEM_PREFIX + job["job_id"], "kind": "gepa", "class": item_class,
-        "est_minutes": GEPA_EST_MINUTES[item_class], "cwd": str(olmes_repo),
+        "schema": POOL_ITEM_SCHEMA, "name": GEPA_ITEM_PREFIX + job["job_id"], "kind": "gepa", "class": GEPA_CLASS,
+        "est_minutes": gepa_est_minutes(job["model"]), "cwd": str(olmes_repo),
         "command": ["uv", "run", "local/gepa_arc.py", "--job", str(job_file)],
-        "followup": ["uv", "run", "python", "scripts/po_gepa_cells.py", "eval-item", "--run-dir", run_dir, "--pool", str(pool_dir)],
+        "followup": ["uv", "run", "--directory", str(repo), "python", "scripts/po_gepa_cells.py", "eval-item",
+                     "--run-dir", run_dir, "--pool", str(pool_dir)],
         "followup_cwd": str(repo),
         "env_files": [SECRETS_ENV_FILE],
         "complete": {"type": "file", "path": f"{run_dir}/result.json"},
@@ -348,10 +353,12 @@ def write_eval_item(run_dir: Path, pool_dir: Path, repo: Path) -> tuple[Path, li
 
 @dataclass(frozen=True, slots=True)
 class RunDiffs:
-    """Paired per-item differences optimized - canonical on Test for one run, keyed by tidy metric."""
+    """Paired per-item differences optimized - canonical on Test for one run, keyed by tidy metric, and the number of
+    paired items per Test subset label."""
 
     diffs: dict[str, np.ndarray]
     same_text: bool
+    subset_counts: dict[str, int]
 
     @property
     def n_items(self) -> int:
@@ -370,7 +377,9 @@ def run_diffs(items: pd.DataFrame, rid: str, texts: dict[str, str | None]) -> Ru
     keys = base.index.intersection(opt.index)
     if len(keys) == 0:
         return None
-    return RunDiffs({m: (opt.loc[keys, col] - base.loc[keys, col]).to_numpy(float) for m, col in METRIC_COLUMNS.items()}, same_text)
+    counts = {str(k): int(v) for k, v in pd.Series(keys.get_level_values("subset")).value_counts().items()}
+    return RunDiffs({m: (opt.loc[keys, col] - base.loc[keys, col]).to_numpy(float) for m, col in METRIC_COLUMNS.items()},
+                    same_text, counts)
 
 
 def item_bootstrap(diff: np.ndarray, *, resamples: int = BOOTSTRAP_RESAMPLES, seed: int = BOOTSTRAP_SEED) -> tuple[float, float]:
@@ -391,9 +400,13 @@ def hierarchical_bootstrap(diffs: list[np.ndarray], *, resamples: int = BOOTSTRA
     return float(np.percentile(stats, 2.5)), float(np.percentile(stats, 97.5))
 
 
-def _instruction_texts(sweep_dir: Path) -> dict[str, str | None]:
-    manifest = json.loads((sweep_dir / "sweep.json").read_text())
+def _instruction_texts(manifest: dict) -> dict[str, str | None]:
     return {i["id"]: i.get("text") for i in manifest["instructions"]}
+
+
+def _test_counts(manifest: dict) -> dict[str, int]:
+    """Items per Test subset label the eval sweep was written for."""
+    return {s["label"]: int(s["n"]) for s in manifest["subsets"]}
 
 
 def _load_items(sweep_dir: Path) -> pd.DataFrame:
@@ -408,20 +421,26 @@ def _proposals(run_dir: Path, result: dict) -> int | None:
     return result.get("reflection_calls")
 
 
-def collect_runs(gepa_root: Path, sweeps_dir: Path, load_items: Callable[[Path], pd.DataFrame] = _load_items) -> tuple[pd.DataFrame, dict[str, RunDiffs]]:
-    """Every finished run under gepa_root whose eval sweep has items: one gepa_runs row each, plus its diffs."""
-    rows, diffs = [], {}
+def collect_runs(gepa_root: Path, sweeps_dir: Path, load_items: Callable[[Path], pd.DataFrame] = _load_items
+                 ) -> tuple[pd.DataFrame, dict[str, RunDiffs], list[str]]:
+    """Every finished run under gepa_root whose eval sweep pairs every Test item in both arms: one gepa_runs row each,
+    plus its diffs. Runs with result.json whose eval sweep is not written yet, empty or only partly covered are
+    returned as incomplete run ids and contribute nothing."""
+    rows, diffs, incomplete = [], {}, []
     for job_file in sorted(Path(gepa_root).glob("*/*.job.json")):
         rid = job_file.name.removesuffix(".job.json")
         run_dir = job_file.parent / rid
         sweep_dir = Path(sweeps_dir) / (EVAL_SWEEP_PREFIX + rid)
-        if not (run_dir / "result.json").exists() or not (sweep_dir / "sweep.json").exists():
+        if not (run_dir / "result.json").exists():
             continue
+        if not (sweep_dir / "sweep.json").exists():
+            incomplete.append(rid)
+            continue
+        manifest = json.loads((sweep_dir / "sweep.json").read_text())
         items = load_items(sweep_dir)
-        if items.empty:
-            continue
-        rd = run_diffs(items, rid, _instruction_texts(sweep_dir))
-        if rd is None:
+        rd = None if items.empty else run_diffs(items, rid, _instruction_texts(manifest))
+        if rd is None or rd.subset_counts != _test_counts(manifest):
+            incomplete.append(rid)
             continue
         job, result = load_run(run_dir)
         best = best_text(result) or ""
@@ -446,7 +465,7 @@ def collect_runs(gepa_root: Path, sweeps_dir: Path, load_items: Callable[[Path],
             row |= {f"{metric}_delta": float(diff.mean()), f"{metric}_lo": lo, f"{metric}_hi": hi}
         rows.append(row)
         diffs[rid] = rd
-    return pd.DataFrame(rows), diffs
+    return pd.DataFrame(rows), diffs, incomplete
 
 
 def cell_contrasts(runs: pd.DataFrame, diffs: dict[str, RunDiffs]) -> pd.DataFrame:
@@ -480,12 +499,13 @@ def _replace_rows(path: Path, new: pd.DataFrame, stale: Callable[[pd.DataFrame],
     return new
 
 
-def aggregate(tidy_dir: Path, gepa_root: Path, sweeps_dir: Path, load_items: Callable[[Path], pd.DataFrame] = _load_items) -> tuple[pd.DataFrame, pd.DataFrame]:
+def aggregate(tidy_dir: Path, gepa_root: Path, sweeps_dir: Path, load_items: Callable[[Path], pd.DataFrame] = _load_items
+              ) -> tuple[pd.DataFrame, pd.DataFrame, list[str]]:
     """Append gepa rows to contrasts.parquet and write gepa_runs.parquet (csv twins beside), replacing any earlier
-    rows of the cells aggregated now. Returns (contrast rows, run rows) of this aggregation."""
-    runs, diffs = collect_runs(gepa_root, sweeps_dir, load_items)
+    rows of the cells aggregated now. Returns (contrast rows, run rows, incomplete run ids) of this aggregation."""
+    runs, diffs, incomplete = collect_runs(gepa_root, sweeps_dir, load_items)
     if runs.empty:
-        return pd.DataFrame(), runs
+        return pd.DataFrame(), runs, incomplete
     contrasts = cell_contrasts(runs, diffs)
     cells = set(runs["cell_id"])
     prefixes = tuple(f"gepa:{c}:" for c in cells)
@@ -493,4 +513,4 @@ def aggregate(tidy_dir: Path, gepa_root: Path, sweeps_dir: Path, load_items: Cal
     _replace_rows(tidy_dir / "contrasts.parquet", contrasts,
                   lambda df: (df["contrast_type"] == CONTRAST_TYPE) & df["b_key"].astype(str).str.startswith(prefixes))
     _replace_rows(tidy_dir / "gepa_runs.parquet", runs, lambda df: df["cell_id"].isin(cells))
-    return contrasts, runs
+    return contrasts, runs, incomplete
