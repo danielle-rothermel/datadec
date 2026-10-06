@@ -1,0 +1,353 @@
+{
+ "title": "Pretraining recipe at matched size (DataDecide)",
+ "rows": 2,
+ "cols": 4,
+ "metric_mode": "delta",
+ "legend": "first",
+ "panels": [
+  {
+   "title": "arc_easy",
+   "task": "arc_easy",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "Dolma \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4 \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "arc_challenge",
+   "task": "arc_challenge",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "Dolma \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4 \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "hellaswag",
+   "task": "hellaswag",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "Dolma \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4 \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "csqa",
+   "task": "csqa",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "Dolma \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4 \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "socialiqa",
+   "task": "socialiqa",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "Dolma \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4 \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "openbookqa",
+   "task": "openbookqa",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "Dolma \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4 \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "piqa",
+   "task": "piqa",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "Dolma \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4 \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "winogrande",
+   "task": "winogrande",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "Dolma \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "dolma",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4 \u2212 DCLM",
+     "filter": {
+      "contrast_type": "recipe",
+      "a_recipe": "dclm",
+      "recipe": "c4",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  }
+ ]
+}
