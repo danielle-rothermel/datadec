@@ -68,7 +68,9 @@ SMALL_MAX_PARAMS = 4e9  # strictly below -> small (eval class, shorter gepa esti
 BIG_MAX_PARAMS = 30e9  # strictly below -> big; at or above -> 32b (eval) and bfloat16 weights
 DEFAULT_DEVICE = "cuda"  # GEPA search device of cluster pool runs; the Mac lane writes "mps"
 EVAL_DEVICE = "cuda"  # Test eval sweeps run on the cluster regardless of the search device
-GEPA_CLASS = "gepa"  # one worker class for every gepa item (pool-item and gepa-run contracts)
+GEPA_CLASS = "gepa"  # gepa items that share a GPU under MPS (two slots): models under GEPA_SHARED_MAX_PARAMS
+GEPA_BIG_CLASS = "gepa-big"  # gepa items needing the whole GPU (one slot): 8B fp32 and up
+GEPA_SHARED_MAX_PARAMS = 6e9  # strictly below -> class gepa (two 4B fp32 models fit one 80 GB A100; two 8B do not)
 GEPA_EST_MINUTES_SMALL, GEPA_EST_MINUTES_BIG = 180, 360
 EVAL_EST_MINUTES = {"small": 30, "big": 90, "32b": 180}
 PRECISION = {"float32": "fp32-tf32", "bfloat16": "bf16"}
@@ -140,6 +142,11 @@ def cell_id(key: str, task: str) -> str:
 
 def run_id(cell: str, start: Start, seed: int) -> str:
     return f"{cell}__{start}__s{seed}"
+
+
+def gepa_class(model: str) -> str:
+    """Worker class of a gepa item: shared-GPU "gepa" below GEPA_SHARED_MAX_PARAMS, else "gepa-big"."""
+    return GEPA_CLASS if nominal_params(model) < GEPA_SHARED_MAX_PARAMS else GEPA_BIG_CLASS
 
 
 def gepa_est_minutes(model: str) -> int:
@@ -230,7 +237,7 @@ def _now() -> str:
 def gepa_item(job: dict, *, job_file: Path, pool_dir: Path, repo: Path, olmes_repo: Path) -> dict:
     run_dir = job["run_dir"]
     return {
-        "schema": POOL_ITEM_SCHEMA, "name": GEPA_ITEM_PREFIX + job["job_id"], "kind": "gepa", "class": GEPA_CLASS,
+        "schema": POOL_ITEM_SCHEMA, "name": GEPA_ITEM_PREFIX + job["job_id"], "kind": "gepa", "class": gepa_class(job["model"]),
         "est_minutes": gepa_est_minutes(job["model"]), "cwd": str(olmes_repo),
         "command": ["uv", "run", "local/gepa_arc.py", "--job", str(job_file)],
         "followup": ["uv", "run", "--directory", str(repo), "python", "scripts/po_gepa_cells.py", "eval-item",

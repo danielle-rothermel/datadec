@@ -22,6 +22,7 @@ from datadec.po.gepa_cells import (
     cell_id,
     default_dtype,
     eval_class,
+    gepa_class,
     gepa_est_minutes,
     hierarchical_bootstrap,
     model_key,
@@ -49,6 +50,8 @@ def test_ids_and_classes():
     assert key == "allenai/DataDecide-dclm-baseline-150M@step37500-seed-default@fp32-tf32"
     assert cell_id(key, "arc_easy") == CELL
     assert model_key("Qwen/Qwen3-8B", None, "bfloat16") == "Qwen/Qwen3-8B@main@bf16"
+    assert [gepa_class(m) for m in (DD, "Qwen/Qwen3-4B", "allenai/Olmo-3-1025-7B", "Qwen/Qwen3-8B", "Qwen/Qwen3-14B")] == \
+        ["gepa", "gepa", "gepa-big", "gepa-big", "gepa-big"]
     assert [gepa_est_minutes(m) for m in (DD, "EleutherAI/pythia-2.8b", "Qwen/Qwen3-4B", "allenai/Olmo-3-1025-7B")] == \
         [180, 180, 360, 360]
     assert [eval_class(m) for m in (DD, "Qwen/Qwen3-14B", "allenai/Olmo-3.1-32B-Instruct")] == ["small", "big", "32b"]
@@ -111,7 +114,7 @@ def test_gepa_items_match_pool_contract(tmp_path):
     assert _write(tmp_path)[2] == []
     big = _write(tmp_path / "b", model="allenai/Olmo-3-1125-32B", revision=None, task="csqa")[2]
     item = json.loads(big[0].read_text())
-    assert item["class"] == "gepa" and item["est_minutes"] == 360 and item["meta"]["dtype"] == "bfloat16"
+    assert item["class"] == "gepa-big" and item["est_minutes"] == 360 and item["meta"]["dtype"] == "bfloat16"
 
 
 def test_mps_jobs_without_pool_keep_cuda_eval_sweep(tmp_path):

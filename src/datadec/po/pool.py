@@ -70,7 +70,8 @@ ITEM_DIRS = (PoolDir.PENDING, PoolDir.CLAIMED, PoolDir.DONE, PoolDir.FAILED)
 @unique
 class ItemKind(StrEnum):
     SWEEP = "sweep"
-    GEPA = "gepa"
+    GEPA = "gepa"  # GEPA runs that share a GPU (two MPS slots): models under GEPA_SHARED_MAX_PARAMS
+    GEPA_BIG = "gepa-big"  # GEPA runs that need the whole GPU (one slot)
     EVAL = "eval"
 
 
