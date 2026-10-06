@@ -7,12 +7,13 @@ from datadec.config import (
     DatasetSource,
     DetailSource,
     PublishedResultFile,
+    PublishedResultSchema,
     load_olmes_contract,
     load_published_results_manifest,
     load_scaling_law_contract,
     load_source_manifest,
 )
-from datadec.data.selection import DatasetSelection
+from datadec.data.selection import DatasetSelection, selected_published_result_sources
 
 DEFAULT_DATA_DIR = "./data"
 OLMES_DETAILS_STAGING_FILENAME = ".olmes-details.duckdb"
@@ -101,11 +102,19 @@ class DataArtifacts:
         return self.published_result_download_path(source)
 
     def published_result_output_path(self, source: PublishedResultFile) -> Path:
-        relative_path = source.parquet_relative_path()
-        return self.data_dir / "processed" / "published-results" / relative_path
+        if source.schema is None:
+            raise ValueError("only structured published results have output paths")
+        return self.published_result_table_path(source.schema)
 
-    def olmes_details_tasks_path(self, recipe: str) -> Path:
-        return self._olmes_details_table_path("detailed_tasks", recipe)
+    def published_result_table_path(self, schema: PublishedResultSchema) -> Path:
+        return self.data_dir / "processed" / "published-results" / f"{schema}.parquet"
+
+    def olmes_details_tasks_path(self) -> Path:
+        contract = load_olmes_contract()
+        path = contract.tables.detailed_tasks.path
+        if path is None:
+            raise ValueError("OLMES task table has no path")
+        return self.data_dir / path
 
     def olmes_details_instances_path(self, recipe: str) -> Path:
         return self._olmes_details_table_path("detailed_instances", recipe)
@@ -115,7 +124,11 @@ class DataArtifacts:
 
     def olmes_details_staging_path(self, recipe: str) -> Path:
         return (
-            self.olmes_details_tasks_path(recipe).parent
+            self.data_dir
+            / "processed"
+            / "olmes-details"
+            / "staging"
+            / recipe
             / OLMES_DETAILS_STAGING_FILENAME
         )
 
@@ -150,10 +163,11 @@ class DataArtifacts:
             paths.append(self.get_path("ppl_processed"))
         if selection.olmes:
             paths.append(self.get_path("olmes_processed"))
+        if selection.olmes_details:
+            paths.append(self.olmes_details_tasks_path())
         for recipe in selection.olmes_details:
             paths.extend(
                 (
-                    self.olmes_details_tasks_path(recipe),
                     self.olmes_details_instances_path(recipe),
                     self.olmes_details_choices_path(recipe),
                 )
@@ -169,11 +183,27 @@ class DataArtifacts:
         if selected_units:
             paths.extend(
                 self.published_result_output_path(source)
-                for source in load_published_results_manifest().files
-                if source.category == "published_results"
-                and source.publication_unit in selected_units
+                for source in selected_published_result_sources(
+                    selection.published_results, load_published_results_manifest()
+                )
             )
         return _deduplicate(paths)
+
+    def aggregate_processed_paths(
+        self, selection: DatasetSelection
+    ) -> tuple[Path, ...]:
+        """Retain all summary tables, excluding instance and choice shards."""
+        details = {
+            path
+            for recipe in selection.olmes_details
+            for path in (
+                self.olmes_details_instances_path(recipe),
+                self.olmes_details_choices_path(recipe),
+            )
+        }
+        return tuple(
+            path for path in self.processed_paths(selection) if path not in details
+        )
 
     def intermediate_paths(self, selection: DatasetSelection) -> tuple[Path, ...]:
         return _deduplicate(
@@ -238,7 +268,17 @@ class DataArtifacts:
     def _selected_drive_sources(
         self, selection: DatasetSelection
     ) -> tuple[PublishedResultFile, ...]:
-        selected_units = set(selection.published_results)
+        manifest = load_published_results_manifest()
+        selected_sources = (
+            {
+                source.path
+                for source in selected_published_result_sources(
+                    selection.published_results, manifest
+                )
+            }
+            if selection.published_results
+            else set()
+        )
         include_figures = selection.published_figures
         return tuple(
             source
@@ -246,7 +286,7 @@ class DataArtifacts:
             if (selection.scaling_law and source.category == "scaling_law")
             or (
                 source.category == "published_results"
-                and source.publication_unit in selected_units
+                and source.path in selected_sources
             )
             or (include_figures and source.category == "published_figures")
         )

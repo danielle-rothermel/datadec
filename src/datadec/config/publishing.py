@@ -93,13 +93,16 @@ class ScalingLawPublishingContract(ConfigModel):
 
 
 class OLMESDetailsPublishingContract(ConfigModel):
-    tasks_remote_path_template: str
+    tasks_remote_path: str
     instances_remote_path_template: str
     choices_remote_path_template: str
     commit_message_template: str
 
     @model_validator(mode="after")
     def validate_contract(self) -> Self:
+        _validate_remote_path(
+            self.tasks_remote_path, description="OLMES task remote path"
+        )
         templates = self.remote_path_templates()
         if len(templates) != len(set(templates)):
             raise ValueError("OLMES detail remote path templates must be unique")
@@ -120,9 +123,8 @@ class OLMESDetailsPublishingContract(ConfigModel):
         )
         return self
 
-    def remote_path_templates(self) -> tuple[str, str, str]:
+    def remote_path_templates(self) -> tuple[str, str]:
         return (
-            self.tasks_remote_path_template,
             self.instances_remote_path_template,
             self.choices_remote_path_template,
         )
@@ -183,13 +185,16 @@ class PublishingContract(ConfigModel):
                 )
 
         detail_tables = (
-            olmes_contract.tables.detailed_tasks,
             olmes_contract.tables.detailed_instances,
             olmes_contract.tables.detailed_choices,
         )
         expected_templates = tuple(
             _remote_path_for_local(table.path_template or "") for table in detail_tables
         )
+        if self.olmes_details.tasks_remote_path != _remote_path_for_local(
+            olmes_contract.tables.detailed_tasks.path or ""
+        ):
+            raise ValueError("OLMES task remote path must correspond to local table")
         if self.olmes_details.remote_path_templates() != expected_templates:
             raise ValueError(
                 "OLMES detail remote path templates must correspond to local tables"
@@ -210,6 +215,7 @@ class PublishingContract(ConfigModel):
             self.olmes.remote_path,
             self.scaling_law.evaluations_remote_path,
             self.scaling_law.checkpoint_losses_remote_path,
+            self.olmes_details.tasks_remote_path,
             *expanded_detail_paths,
             self.published_results.remote_root,
         )

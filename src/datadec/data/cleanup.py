@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import os
+import shutil
 from dataclasses import dataclass
 from enum import UNIQUE, StrEnum, verify
-import os
 from pathlib import Path
-import shutil
 
 from huggingface_hub import HfApi
 
@@ -16,6 +16,7 @@ from datadec.data.selection import DatasetSelection
 
 @verify(UNIQUE)
 class CleanupMode(StrEnum):
+    DEFAULT = "default"
     RAW = "raw"
     ALL = "all"
     NONE = "none"
@@ -65,16 +66,25 @@ def _raw_deletion_plan(
 
 
 def _data_deletion_plan(
-    artifacts: DataArtifacts, selection: DatasetSelection
+    artifacts: DataArtifacts, selection: DatasetSelection, *, retain_aggregates: bool
 ) -> _DeletionPlan:
     raw_plan = _raw_deletion_plan(artifacts, selection)
+    retained = (
+        set(artifacts.aggregate_processed_paths(selection))
+        if retain_aggregates
+        else set()
+    )
     processing_trees = artifacts.processing_intermediate_tree_paths(selection)
     tree_paths = set(processing_trees)
     return _DeletionPlan(
         file_paths=_deduplicate(
             (
                 *raw_plan.file_paths,
-                *artifacts.processed_paths(selection),
+                *(
+                    path
+                    for path in artifacts.processed_paths(selection)
+                    if path not in retained
+                ),
                 *(
                     path
                     for path in artifacts.processing_intermediate_paths(selection)
@@ -122,11 +132,18 @@ def _validate_plan(artifacts: DataArtifacts, plan: _DeletionPlan) -> None:
 
 
 def _existing_publication_units(
-    artifacts: DataArtifacts, selection: DatasetSelection
+    artifacts: DataArtifacts,
+    selection: DatasetSelection,
+    deleted_paths: tuple[Path, ...],
 ) -> tuple[PublicationUnit, ...]:
     result: list[PublicationUnit] = []
+    deleted = set(deleted_paths)
     for unit in publication_units(artifacts, selection):
-        existing_files = tuple(file for file in unit.files if file.local_path.exists())
+        existing_files = tuple(
+            file
+            for file in unit.files
+            if file.local_path in deleted and file.local_path.exists()
+        )
         if existing_files:
             result.append(
                 PublicationUnit(
@@ -177,14 +194,26 @@ def clean_data(
     artifacts: DataArtifacts,
     selection: DatasetSelection,
     *,
+    mode: CleanupMode = CleanupMode.DEFAULT,
     dry_run: bool = False,
     hf_token: str | None = None,
     api: HfApi | None = None,
 ) -> CleanupResult:
-    """Verify selected final outputs remotely, then remove selected artifacts."""
-    plan = _data_deletion_plan(artifacts, selection)
+    """Clean selected artifacts, verifying each final output marked for deletion.
+
+    Default mode retains aggregate processed outputs. All mode removes them too.
+    Raw and none modes respectively remove only download state or retain all files.
+    """
+    mode = CleanupMode(mode)
+    if mode is CleanupMode.NONE:
+        return CleanupResult((), (), ())
+    if mode is CleanupMode.RAW:
+        return cleanup_raw(artifacts, selection, dry_run=dry_run)
+    plan = _data_deletion_plan(
+        artifacts, selection, retain_aggregates=mode is CleanupMode.DEFAULT
+    )
     _validate_plan(artifacts, plan)
-    for unit in _existing_publication_units(artifacts, selection):
+    for unit in _existing_publication_units(artifacts, selection, plan.file_paths):
         verify_published_unit(unit, hf_token=hf_token, api=api)
     return _apply_plan(plan, dry_run=dry_run)
 

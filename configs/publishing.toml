@@ -16,9 +16,9 @@ checkpoint_losses_remote_path = "scaling-law/checkpoint-losses.parquet"
 commit_message = "Publish scaling-law results"
 
 [olmes_details]
-tasks_remote_path_template = "olmes-details/{recipe}/tasks.parquet"
-instances_remote_path_template = "olmes-details/{recipe}/instances.parquet"
-choices_remote_path_template = "olmes-details/{recipe}/choices.parquet"
+tasks_remote_path = "olmes-details/tasks.parquet"
+instances_remote_path_template = "olmes-details/instances/{recipe}.parquet"
+choices_remote_path_template = "olmes-details/choices/{recipe}.parquet"
 commit_message_template = "Publish OLMES details for {recipe}"
 
 [published_results]

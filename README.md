@@ -13,16 +13,16 @@ Artifacts live under `data/` by default:
 | `raw/olmes.parquet` | Raw aggregate OLMES export |
 | `raw/olmes-details/models/{recipe}.tar.gz` | Per-recipe OLMES detail archive |
 | `raw/scaling-law/*.csv` | Three Google Drive scaling-law sources |
-| `reference/published-results/{structured source path}` | 51 Google Drive CSV/JSON sources |
+| `reference/published-results/{structured source path}` | Google Drive CSV/JSON sources grouped into publication units |
 | `reference/published-results/{figure path}` | 80 download-only PDF/PNG figures |
 | `processed/ppl.parquet` | Typed PPL output |
 | `processed/olmes.parquet` | Typed aggregate OLMES output |
 | `processed/scaling-law/evaluations.parquet` | Typed, precedence-resolved scaling-law task evaluations |
 | `processed/scaling-law/checkpoint-losses.parquet` | Typed, reconciled scaling-law checkpoint losses and throughput |
-| `processed/olmes-details/{recipe}/tasks.parquet` | Detail task summaries |
-| `processed/olmes-details/{recipe}/instances.parquet` | Per-instance detail rows |
-| `processed/olmes-details/{recipe}/choices.parquet` | Per-choice detail rows |
-| `processed/published-results/{source path with .parquet suffix}` | One-to-one typed conversion of each structured published result |
+| `processed/olmes-details/tasks.parquet` | Shared detail task summaries for all processed recipes |
+| `processed/olmes-details/instances/{recipe}.parquet` | Per-recipe instance shard |
+| `processed/olmes-details/choices/{recipe}.parquet` | Per-recipe choice shard |
+| `processed/published-results/{schema}.parquet` | One consolidated table for each of the seven published-result schemas |
 
 OLMES table schemas are declared in [`configs/olmes.toml`](configs/olmes.toml).
 Scaling-law source precedence, aliases, seed policy, and table schemas are
@@ -31,6 +31,10 @@ Published-result schemas and atomic publication units are declared in
 [`configs/published_results.toml`](configs/published_results.toml). Hugging
 Face destination paths and commit messages are declared in
 [`configs/publishing.toml`](configs/publishing.toml).
+Each published-result row begins with required `source_file` and `source_unit`
+provenance columns, followed by the original schema columns in their original
+order. Rows from every source with the same schema are preserved in the same
+table, including duplicates and nulls.
 Model definitions and training constants are declared in
 [`configs/catalog.toml`](configs/catalog.toml). Each model distinguishes its
 nominal parameter count (the size label), training parameter count (the value
@@ -54,10 +58,9 @@ selection implies published results; `--published-results` without units
 selects every structured publication unit. `--data-dir` changes the artifact
 root for any command.
 
-`--all` means all processable data: it includes all 25 multi-gigabyte OLMES
-detail recipes as well as PPL, aggregate OLMES, scaling-law data, and every
-structured published-result unit. Use explicit selectors for an aggregate-only
-run:
+`--all` means all processable data: it includes every configured OLMES detail
+recipe as well as PPL, aggregate OLMES, scaling-law data, and every structured
+published-result unit. Use explicit selectors for an aggregate-only run:
 
 ```bash
 # Download, process, verify, publish, and then remove selected raw sources
@@ -75,11 +78,17 @@ uv run datadec run --ppl --olmes --no-upload
 
 `run` downloads missing raw sources, processes the selection, validates its
 outputs, publishes final Parquet files to `drotherm/dd_parsed`, verifies every
-remote copy at an immutable commit, and only then applies cleanup. Its default
-cleanup is `raw`. `--cleanup all` additionally verifies and removes the selected
-processed outputs, while `--cleanup none` retains raw and processed artifacts.
-With `--no-upload`, cleanup defaults to `none`; requesting `raw` or `all` at the
-same time is rejected before any work starts. Processing, validation, or
+remote copy at an immutable commit, and only then applies cleanup. Its `default`
+cleanup removes selected raw inputs, owned intermediates and OLMES recipe detail
+instance and choice shards, retaining aggregate postprocessed results: PPL,
+aggregate OLMES, both scaling-law tables, the seven published-result schema
+tables, and the shared OLMES detail task table. When everything is selected,
+these are 12 retained summary files. Per-recipe instance and choice shards can
+be downloaded again when needed.
+`--cleanup raw` retains all processed outputs; `--cleanup all` removes them too;
+`--cleanup none` retains raw and processed artifacts.
+With `--no-upload`, cleanup defaults to `none`; requesting `default`, `raw` or
+`all` at the same time is rejected before any work starts. Processing, validation, or
 publication failures retain raw inputs and final outputs for diagnosis or retry.
 Cleanup itself is not transactional if a filesystem deletion fails.
 
@@ -92,6 +101,15 @@ uv run datadec download --raw --ppl --olmes --scaling-law
 uv run datadec download --raw --published-results
 ```
 
+Published-result `--unit` values select source groups, while processing,
+processed download, publication, and cleanup operate on complete schema
+families. Selecting one unit therefore expands to every source in each schema
+family touched by that unit so rebuilding or deleting a shared table cannot
+discard rows from unselected sources. Processed downloads fetch complete files;
+selecting any OLMES detail recipe fetches the complete shared task table plus
+that recipe's complete instance and choice shards. Filtering rows or columns
+happens after download through the local read API.
+
 The 80 published PDF/PNG figures are raw reference artifacts. Select them with
 `--published-figures` only on raw download or cleanup operations; they cannot be
 processed or published by DataDecide.
@@ -101,9 +119,12 @@ uv run datadec download --raw --published-figures
 ```
 
 `publish` uploads and verifies existing selected outputs without processing
-them again. `raw-clean` removes selected reproducible raw downloads. `clean`
-also removes owned intermediates and processed outputs, but first verifies
-every existing selected final output against its immutable remote copy. Both
+them again. When a local shared task table contains only some recipes, publication
+merges recipes absent locally from a verified immutable remote table before
+uploading. Recipes already present locally keep their local rows. `raw-clean` removes selected reproducible raw downloads. `clean`
+uses the same `default` retention policy as `run`; choose `--cleanup all` to
+remove aggregate outputs too. Before any deletion, it verifies every existing
+final output marked for removal against its immutable remote copy. Both
 cleanup commands support `--dry-run` and tolerate files that are already
 missing.
 Standalone cleanup with `--all` also includes downloaded reference figures and
@@ -114,6 +135,8 @@ processing selection.
 uv run datadec publish --ppl --olmes --scaling-law
 uv run datadec raw-clean --scaling-law --dry-run
 uv run datadec clean --unit cheap-decisions --dry-run
+uv run datadec clean --all --cleanup default --dry-run
+uv run datadec clean --ppl --cleanup all --dry-run
 ```
 
 Scaling-law preprocessing requires all three local raw CSVs. It validates the
@@ -153,6 +176,30 @@ preprocess_olmes(
 Custom inputs supplied to these processors are outside automatic cleanup
 ownership.
 
+Use `read_processed_table` to project columns and filter rows from known local
+tables with Arrow expressions:
+
+```python
+import pyarrow.dataset as ds
+
+from datadec.data.read import read_processed_table
+
+target_pairs = read_processed_table(
+    artifacts,
+    "published-results/target_pairs",
+    filters=ds.field("source_unit") == "outputs2",
+    columns=["source_file", "pair_index"],
+)
+```
+
+Known table names are `ppl`, `olmes`, both `scaling-law/*` tables, each
+`published-results/{schema}` table, and `olmes-details/tasks`,
+`olmes-details/instances`, and `olmes-details/choices`. The instance and choice
+names read their shard directories and accept `recipe` filters. This API reads
+local data only; it does not provide partial network downloads. Tables are
+written in useful key order with Parquet row-group statistics, so a separate
+index is not maintained.
+
 ## Library organization
 
 | Module | Responsibility |
@@ -163,19 +210,29 @@ ownership.
 | `datadec.data.preprocess` | Local-input/local-output dataset processors |
 | `datadec.data.verify` | Selection-aware output and cross-source verification |
 | `datadec.data.download` | Verified raw-source and processed-output downloads |
+| `datadec.data.read` | Local projection and Arrow-filtered reads of known processed tables |
 | `datadec.data.publication` / `publish` | Atomic publication units, upload, and immutable remote verification |
 | `datadec.data.cleanup` | Scoped raw and full cleanup plans |
 | `datadec.data.pipeline` | End-to-end stage coordination and cleanup policy |
 
 ## OLMES detail preprocessing
 
-Detail preprocessing streams one checkpoint at a time through the recipe archive, writing three contract-typed parquet files per recipe:
+Detail preprocessing streams one checkpoint at a time through the recipe
+archive. Each recipe update atomically replaces these contract-typed outputs:
 
-- **tasks** — task-level metrics and config JSON
-- **instances** — one row per `(recipe, params, seed_value, step, task, doc_id)`; heterogeneous native IDs normalized to nullable `native_id` + `native_id_kind`
-- **choices** — one row per choice index in each instance's `model_output`
+- **tasks** — one shared `tasks.parquet` table of task-level metrics and config
+  JSON; an update replaces the selected recipe rows and retains all other
+  recipes
+- **instances** — one recipe shard per
+  `(recipe, params, seed_value, step, task, doc_id)`; heterogeneous native IDs
+  normalized to nullable `native_id` + `native_id_kind`
+- **choices** — one recipe shard with a row per choice index in each instance's
+  `model_output`
 
-Nullable byte/unconditional fields remain null when absent in the source checkpoint.
+Pipeline processing restores the published shared task table when it is absent
+locally before updating a recipe, which preserves other recipes. Standalone
+processors remain local-only. Nullable byte/unconditional fields remain null
+when absent in the source checkpoint.
 
 ## Verification
 

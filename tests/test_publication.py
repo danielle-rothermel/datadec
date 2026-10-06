@@ -35,11 +35,13 @@ def test_publication_units_follow_resolved_selection_in_pipeline_order(
     assert tuple(unit.name for unit in units) == (
         "ppl",
         "olmes",
+        "olmes-detail-tasks",
         "olmes-details:c4",
         "olmes-details:fineweb-pro",
         "scaling-law",
-        "published-results:outputs2",
-        "published-results:per-task-arc-easy",
+        "published-results:target_pairs",
+        "published-results:transformed",
+        "published-results:prediction_model_scale",
     )
     assert tuple(
         file.local_path for unit in units for file in unit.files
@@ -110,9 +112,9 @@ def test_multi_file_factories_are_atomic_and_contract_typed(tmp_path: Path) -> N
         "scaling-law/checkpoint-losses.parquet",
     )
     assert tuple(file.remote_path for file in details.files) == (
-        "olmes-details/c4/tasks.parquet",
-        "olmes-details/c4/instances.parquet",
-        "olmes-details/c4/choices.parquet",
+        "olmes-details/tasks.parquet",
+        "olmes-details/instances/c4.parquet",
+        "olmes-details/choices/c4.parquet",
     )
     assert all(
         column.nullable is not None
@@ -135,27 +137,26 @@ def test_published_result_units_map_manifest_paths_and_schemas_exactly(
         manifest=manifest,
     )
 
-    files_by_path = {file.local_path: file for unit in units for file in unit.files}
-    structured_sources = tuple(
-        source for source in manifest.files if source.category == "published_results"
-    )
-    assert set(files_by_path) == {
-        artifacts.published_result_output_path(source) for source in structured_sources
+    files_by_name = {unit.name: unit.files[0] for unit in units}
+    assert set(files_by_name) == {
+        f"published-results:{schema_name}" for schema_name in PUBLISHED_RESULT_SCHEMAS
     }
-    for source in structured_sources:
-        file = files_by_path[artifacts.published_result_output_path(source)]
+    for schema_name, schema in PUBLISHED_RESULT_SCHEMAS.items():
+        file = files_by_name[f"published-results:{schema_name}"]
+        assert file.local_path == artifacts.published_result_table_path(schema_name)
         assert file.remote_path == (
-            f"{publishing.published_results.remote_root}/"
-            f"{source.parquet_relative_path()}"
+            f"{publishing.published_results.remote_root}/{schema_name}.parquet"
         )
-        schema_name = source.schema
-        assert schema_name is not None
         assert tuple(
             (column.name, column.logical_type, column.nullable)
             for column in file.expected_schema or ()
-        ) == tuple(
-            (column.name, column.logical_type, column.nullable)
-            for column in PUBLISHED_RESULT_SCHEMAS[schema_name].columns
+        ) == (
+            ("source_file", "string", False),
+            ("source_unit", "string", False),
+            *(
+                (column.name, column.logical_type, column.nullable)
+                for column in schema.columns
+            ),
         )
 
 
@@ -166,8 +167,9 @@ def test_published_result_units_select_in_manifest_order(tmp_path: Path) -> None
     )
 
     assert tuple(unit.name for unit in units) == (
-        "published-results:outputs2",
-        "published-results:per-task-winogrande",
+        "published-results:target_pairs",
+        "published-results:transformed",
+        "published-results:prediction_model_scale",
     )
 
 

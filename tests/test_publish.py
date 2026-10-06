@@ -366,3 +366,122 @@ def test_existing_output_publication_uses_selection_and_stops_on_failure(
         contract=load_contract.return_value,
     )
     assert publish.call_count == 2
+
+
+def _write_task_recipes(path: Path, recipes: list[str], values: list[float]) -> None:
+    from datadec.config import load_olmes_contract
+
+    contract = load_olmes_contract().tables.detailed_tasks
+    arrow_types = {
+        "string": pa.string(),
+        "int64": pa.int64(),
+        "float64": pa.float64(),
+        "bool": pa.bool_(),
+    }
+    columns = {}
+    for column in contract.columns:
+        default = {"string": "fixture", "int64": 1, "float64": 1.0, "bool": True}[
+            column.logical_type
+        ]
+        data = [default] * len(recipes)
+        if column.name == "recipe":
+            data = recipes
+        if column.name == "primary_score":
+            data = values
+        columns[column.name] = pa.array(data, type=arrow_types[column.logical_type])
+    path.parent.mkdir(parents=True, exist_ok=True)
+    pq.write_table(pa.table(columns), path)
+
+
+def _task_publication_api(local: Path, remote: Path) -> Mock:
+    api = Mock()
+    api.repo_info.return_value = SimpleNamespace(sha="parent-oid")
+
+    def paths_info(_repo, paths, *, revision, **_kwargs):
+        path = remote if revision == "parent-oid" else local
+        return [
+            SimpleNamespace(
+                path=paths[0],
+                size=path.stat().st_size,
+                lfs=SimpleNamespace(
+                    sha256=hashlib.sha256(path.read_bytes()).hexdigest()
+                ),
+            )
+        ]
+
+    api.get_paths_info.side_effect = paths_info
+    api.hf_hub_download.return_value = str(remote)
+    return api
+
+
+def test_publish_partial_tasks_retains_published_other_recipes(tmp_path: Path) -> None:
+    from datadec.data.publication import olmes_details_tasks_publication_unit
+
+    artifacts = DataArtifacts(tmp_path / "data")
+    local = artifacts.olmes_details_tasks_path()
+    remote = tmp_path / "remote.parquet"
+    _write_task_recipes(local, ["c4"], [9.0])
+    _write_task_recipes(remote, ["c4", "falcon", "falcon"], [1.0, 2.0, 2.0])
+    api = _task_publication_api(local, remote)
+    with patch(
+        "datadec.data.publish.commit_dataset_files_to_hf",
+        return_value=SimpleNamespace(created=True, commit_oid="commit-oid"),
+    ) as commit:
+        result = publish_unit(olmes_details_tasks_publication_unit(artifacts), api=api)
+    assert pq.read_table(local, columns=["recipe", "primary_score"]).to_pylist() == [
+        {"recipe": "c4", "primary_score": 9.0},
+        {"recipe": "falcon", "primary_score": 2.0},
+        {"recipe": "falcon", "primary_score": 2.0},
+    ]
+    assert result.commit_oid == "commit-oid"
+    assert commit.call_args.kwargs["expected_parent"] == "parent-oid"
+    assert api.hf_hub_download.call_args.kwargs["revision"] == "parent-oid"
+
+
+def test_publish_tasks_does_not_restore_selected_recipe_or_rewrite_complete_local(
+    tmp_path: Path,
+) -> None:
+    from datadec.data.publication import olmes_details_tasks_publication_unit
+
+    artifacts = DataArtifacts(tmp_path / "data")
+    local = artifacts.olmes_details_tasks_path()
+    remote = tmp_path / "remote.parquet"
+    _write_task_recipes(local, ["c4", "falcon"], [9.0, 8.0])
+    _write_task_recipes(remote, ["c4", "falcon"], [1.0, 2.0])
+    before = local.read_bytes()
+    api = _task_publication_api(local, remote)
+    with patch(
+        "datadec.data.publish.commit_dataset_files_to_hf",
+        return_value=SimpleNamespace(created=True, commit_oid="commit-oid"),
+    ):
+        publish_unit(olmes_details_tasks_publication_unit(artifacts), api=api)
+    assert local.read_bytes() == before
+
+
+def test_publish_tasks_rejects_corrupt_remote_base_before_merge_or_commit(
+    tmp_path: Path,
+) -> None:
+    from datadec.data.publication import olmes_details_tasks_publication_unit
+
+    artifacts = DataArtifacts(tmp_path / "data")
+    local = artifacts.olmes_details_tasks_path()
+    remote = tmp_path / "remote.parquet"
+    _write_task_recipes(local, ["c4"], [9.0])
+    _write_task_recipes(remote, ["falcon"], [2.0])
+    before = local.read_bytes()
+    api = _task_publication_api(local, remote)
+    api.get_paths_info.side_effect = None
+    api.get_paths_info.return_value = [
+        SimpleNamespace(
+            path="olmes-details/tasks.parquet",
+            size=remote.stat().st_size,
+            lfs=SimpleNamespace(sha256="0" * 64),
+        )
+    ]
+    with (
+        patch("datadec.data.publish.commit_dataset_files_to_hf") as commit,
+        pytest.raises(RuntimeError, match="SHA-256 mismatch"),
+    ):
+        publish_unit(olmes_details_tasks_publication_unit(artifacts), api=api)
+    assert local.read_bytes() == before
+    commit.assert_not_called()

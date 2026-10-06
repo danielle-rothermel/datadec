@@ -145,12 +145,11 @@ def _table_columns(
     connection: duckdb.DuckDBPyConnection,
     *,
     path: Path,
+    source_sql: str | None = None,
 ) -> set[str]:
+    source_sql = source_sql or f"SELECT * FROM read_parquet({sql_literal(path)})"
     return {
-        str(row[0])
-        for row in connection.execute(
-            f"DESCRIBE SELECT * FROM read_parquet({sql_literal(path)})"
-        ).fetchall()
+        str(row[0]) for row in connection.execute(f"DESCRIBE {source_sql}").fetchall()
     }
 
 
@@ -168,8 +167,9 @@ def _verify_schedule_table(
     name: str,
     path: Path,
     expect_full_enrichment: bool,
+    source_sql: str | None = None,
 ) -> ScheduleTableVerification:
-    columns = _table_columns(connection, path=path)
+    columns = _table_columns(connection, path=path, source_sql=source_sql)
     required = {"params", "step"}
     missing = required.difference(columns)
     if missing:
@@ -240,6 +240,7 @@ def _verify_schedule_table(
         if expect_full_enrichment
         else "0"
     )
+    source_sql = source_sql or f"SELECT * FROM read_parquet({sql_literal(path)})"
     row = connection.execute(
         f"""
         SELECT
@@ -254,7 +255,7 @@ def _verify_schedule_table(
             {model_detail_mismatches},
             {lr_evidence},
             {lr_mismatches}
-        FROM read_parquet({sql_literal(path)}) AS x
+        FROM ({source_sql}) AS x
         LEFT JOIN _model_enrichment AS enrichment USING (params, step)
         """
     ).fetchone()
@@ -326,8 +327,10 @@ def _verify_detail_tasks(
     connection: duckdb.DuckDBPyConnection,
     *,
     path: Path,
+    source_sql: str | None = None,
 ) -> DetailTasksVerification:
     max_sequence_length = load_catalog().training.max_sequence_length
+    source_sql = source_sql or f"SELECT * FROM read_parquet({sql_literal(path)})"
     row = connection.execute(
         f"""
         SELECT
@@ -349,7 +352,7 @@ def _verify_detail_tasks(
                 WHERE json_extract_string(model_config, '$.revision')
                     <> 'step' || tasks.step::VARCHAR || '-unsharded-hf'
             )
-        FROM read_parquet({sql_literal(path)}) AS tasks
+        FROM ({source_sql}) AS tasks
         LEFT JOIN _model_schedule AS schedule USING (params)
         """
     ).fetchone()
@@ -361,34 +364,36 @@ def verify_preprocessed_derivations(
     paths: DataArtifacts,
     selection: DatasetSelection,
 ) -> DerivationVerificationResult:
-    processed: list[tuple[str, Path]] = []
+    processed: list[tuple[str, Path, str | None]] = []
     if selection.ppl:
-        processed.append(("ppl", paths.get_path("ppl_processed")))
+        processed.append(("ppl", paths.get_path("ppl_processed"), None))
     if selection.olmes:
-        processed.append(("olmes", paths.get_path("olmes_processed")))
+        processed.append(("olmes", paths.get_path("olmes_processed"), None))
     if selection.scaling_law:
         processed.extend(
             (
-                ("scaling-law evaluations", paths.scaling_law_evaluations_path()),
+                (
+                    "scaling-law evaluations",
+                    paths.scaling_law_evaluations_path(),
+                    None,
+                ),
                 (
                     "scaling-law checkpoint losses",
                     paths.scaling_law_checkpoint_losses_path(),
+                    None,
                 ),
             )
         )
-    detail_paths = tuple(
-        paths.olmes_details_tasks_path(recipe) for recipe in selection.olmes_details
+    detail_path = paths.olmes_details_tasks_path() if selection.olmes_details else None
+    detail_source_sql = (
+        "SELECT * FROM _selected_detail_tasks" if detail_path is not None else None
     )
-    processed.extend(
-        (f"OLMES detail tasks {recipe}", path)
-        for recipe, path in zip(selection.olmes_details, detail_paths, strict=True)
-    )
+    if detail_path is not None:
+        processed.append(("OLMES detail tasks", detail_path, detail_source_sql))
     raw_olmes_path = paths.get_path("dwn_raw") if selection.olmes else None
-    raw_scaling_paths = (
-        paths.scaling_law_raw_paths() if selection.scaling_law else ()
-    )
+    raw_scaling_paths = paths.scaling_law_raw_paths() if selection.scaling_law else ()
     required_paths = (
-        *(path for _, path in processed),
+        *(path for _, path, _ in processed),
         *((raw_olmes_path,) if raw_olmes_path is not None else ()),
         *raw_scaling_paths,
     )
@@ -410,9 +415,25 @@ def verify_preprocessed_derivations(
     connection = duckdb.connect()
     try:
         _register_model_schedule(connection)
+        if detail_path is not None:
+            selected_recipes = ", ".join(
+                sql_literal(recipe) for recipe in selection.olmes_details
+            )
+            connection.execute(
+                f"""
+                CREATE TEMP TABLE _selected_detail_tasks AS
+                SELECT *
+                FROM read_parquet({sql_literal(detail_path)})
+                WHERE recipe IN ({selected_recipes})
+                """
+            )
         checkpoint_union = " UNION ALL ".join(
-            "SELECT params, step FROM read_parquet(" + sql_literal(path) + ")"
-            for _, path in processed
+            (
+                f"SELECT params, step FROM ({source_sql})"
+                if source_sql is not None
+                else "SELECT params, step FROM read_parquet(" + sql_literal(path) + ")"
+            )
+            for _, path, source_sql in processed
         )
         create_model_enrichment_table(
             connection,
@@ -425,8 +446,9 @@ def verify_preprocessed_derivations(
                     name=name,
                     path=path,
                     expect_full_enrichment=True,
+                    source_sql=source_sql,
                 )
-                for name, path in processed
+                for name, path, source_sql in processed
             ),
             raw_olmes=(
                 _verify_schedule_table(
@@ -443,8 +465,16 @@ def verify_preprocessed_derivations(
                 if raw_scaling_paths
                 else None
             ),
-            detail_tasks=tuple(
-                _verify_detail_tasks(connection, path=path) for path in detail_paths
+            detail_tasks=(
+                (
+                    _verify_detail_tasks(
+                        connection,
+                        path=detail_path,
+                        source_sql=detail_source_sql,
+                    ),
+                )
+                if detail_path is not None
+                else ()
             ),
         )
     finally:

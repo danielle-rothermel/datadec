@@ -4,7 +4,11 @@ from dataclasses import dataclass
 
 from datadec.data.artifacts import DataArtifacts
 from datadec.data.cleanup import CleanupMode, CleanupResult, clean_data, cleanup_raw
-from datadec.data.download import DownloadResult, download_sources
+from datadec.data.download import (
+    DownloadResult,
+    download_sources,
+    restore_task_summaries,
+)
 from datadec.data.preprocess import (
     preprocess_olmes,
     preprocess_olmes_details,
@@ -42,9 +46,11 @@ class PipelineResult:
 def _cleanup_mode(request: PipelineRequest) -> CleanupMode:
     cleanup = request.cleanup
     if cleanup is None:
-        return CleanupMode.RAW if request.upload else CleanupMode.NONE
+        return CleanupMode.DEFAULT if request.upload else CleanupMode.NONE
     if not request.upload and cleanup is not CleanupMode.NONE:
-        raise ValueError("cleanup requires upload; use cleanup='none' with no-upload runs")
+        raise ValueError(
+            "cleanup requires upload; use cleanup='none' with no-upload runs"
+        )
     return cleanup
 
 
@@ -81,7 +87,9 @@ def run_pipeline(
     """Run the selected local processing lifecycle and optional publication."""
     cleanup_mode = _cleanup_mode(request)
     if request.selection.published_figures:
-        raise ValueError("published figures are raw-only and cannot be run or published")
+        raise ValueError(
+            "published figures are raw-only and cannot be run or published"
+        )
 
     if verbose:
         print("pipeline stage: download raw sources")
@@ -94,6 +102,8 @@ def run_pipeline(
 
     if verbose:
         print("pipeline stage: process selected datasets")
+    if request.upload and request.selection.olmes_details:
+        restore_task_summaries(request.artifacts, hf_token=hf_token)
     _process_selected(request, verbose=verbose)
 
     units = publication_units(request.artifacts, request.selection)
@@ -131,6 +141,7 @@ def run_pipeline(
             cleanup_result = clean_data(
                 request.artifacts,
                 request.selection,
+                mode=cleanup_mode,
                 hf_token=hf_token,
             )
         if verbose:

@@ -35,10 +35,10 @@ def test_publishing_contract_pins_target_paths_and_messages() -> None:
         == "scaling-law/checkpoint-losses.parquet"
     )
     assert contract.scaling_law.commit_message == "Publish scaling-law results"
+    assert contract.olmes_details.tasks_remote_path == "olmes-details/tasks.parquet"
     assert contract.olmes_details.remote_path_templates() == (
-        "olmes-details/{recipe}/tasks.parquet",
-        "olmes-details/{recipe}/instances.parquet",
-        "olmes-details/{recipe}/choices.parquet",
+        "olmes-details/instances/{recipe}.parquet",
+        "olmes-details/choices/{recipe}.parquet",
     )
     assert (
         contract.olmes_details.commit_message_template
@@ -63,9 +63,8 @@ def test_publishing_contract_expands_unique_paths_for_every_detail_recipe() -> N
         for recipe in recipes
         for template in contract.olmes_details.remote_path_templates()
     }
-    assert len(detail_paths) == 75
-    assert "olmes-details/c4/tasks.parquet" in detail_paths
-    assert "olmes-details/fineweb-pro/choices.parquet" in detail_paths
+    assert len(detail_paths) == 50
+    assert "olmes-details/choices/fineweb-pro.parquet" in detail_paths
 
 
 def _validated_contract(raw: dict[str, Any]) -> PublishingContract:
@@ -92,15 +91,15 @@ def _validated_contract(raw: dict[str, Any]) -> PublishingContract:
         ),
         (
             lambda raw: raw["olmes_details"].update(
-                {"tasks_remote_path_template": "olmes-details/tasks.parquet"}
+                {"tasks_remote_path": "olmes-details/{recipe}/tasks.parquet"}
             ),
-            "must contain exactly {recipe}",
+            "must correspond to local table",
         ),
         (
             lambda raw: raw["olmes_details"].update(
                 {
                     "choices_remote_path_template": (
-                        "olmes-details/{recipe}/instances.parquet"
+                        "olmes-details/instances/{recipe}.parquet"
                     )
                 }
             ),
