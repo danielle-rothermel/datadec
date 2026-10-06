@@ -1,0 +1,13 @@
+{
+ "id": "ape-csqa",
+ "text": "Answer each commonsense question with the most plausible concise answer, using only a short word or phrase and no explanation.",
+ "meta_prompt": "I gave a friend an instruction and 5 commonsense questions. The friend read the instruction and wrote the correct answer to each question. Here are the question-answer pairs, exactly as the friend saw them:\n\nQuestion: Sammy wanted to go to where the people were.  Where might he go?\nAnswer: populated areas\n\nQuestion: Google Maps and other highway and street GPS services have replaced what?\nAnswer: atlas\n\nQuestion: The fox walked from the city into the forest, what was it looking for?\nAnswer: natural habitat\n\nQuestion: What is it called when you slowly cook using a grill?\nAnswer: barbeque\n\nQuestion: What would you do if you want to be able to earn money?\nAnswer: apply for job\n\nWrite the instruction I gave my friend. It will be placed once at the top of a prompt, before these examples and then a new question, so it should say how to answer this kind of question in general. Write it as a plain statement of what to do, in at most 150 words. Reply with the instruction only.",
+ "model": "openai/gpt-5.6-sol",
+ "raw_words": 20,
+ "raw_chars": 126,
+ "final_words": 20,
+ "final_chars": 126,
+ "shortening_turns": 0,
+ "truncated": false,
+ "evidence_dir": "/Users/daniellerothermel/drotherm/data/runs/po/ape/20261006T134350Z-seed-csqa/evidence"
+}
