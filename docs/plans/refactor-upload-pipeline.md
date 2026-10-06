@@ -110,7 +110,9 @@ The seven published-result schema families live at
 required original `source_file` and `source_unit`, followed by the unchanged
 source-schema columns. Values, duplicates, and nulls are preserved. OLMES detail
 tasks share `processed/olmes-details/tasks.parquet`; processing one recipe
-replaces that recipe's rows while retaining the others. Instances and choices
+replaces that recipe's rows while retaining the others. Publication also preserves
+remotely published recipes absent locally, using a verified immutable task table.
+Instances and choices
 remain complete recipe shards at
 `processed/olmes-details/instances/{recipe}.parquet` and
 `processed/olmes-details/choices/{recipe}.parquet`. Processing replaces the

@@ -119,7 +119,9 @@ uv run datadec download --raw --published-figures
 ```
 
 `publish` uploads and verifies existing selected outputs without processing
-them again. `raw-clean` removes selected reproducible raw downloads. `clean`
+them again. When a local shared task table contains only some recipes, publication
+merges recipes absent locally from a verified immutable remote table before
+uploading. Recipes already present locally keep their local rows. `raw-clean` removes selected reproducible raw downloads. `clean`
 uses the same `default` retention policy as `run`; choose `--cleanup all` to
 remove aggregate outputs too. Before any deletion, it verifies every existing
 final output marked for removal against its immutable remote copy. Both
