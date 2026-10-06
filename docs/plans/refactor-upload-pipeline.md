@@ -6,13 +6,14 @@
 - [x] Centralize dataset selection, artifact paths, and file ownership.
 - [x] Keep processors local-only and separate verification from processing.
 - [x] Separate publication-unit construction from upload and remote verification.
-- [x] Add selective downloads of processed outputs from Hugging Face.
+- [x] Add selection-aware downloads of processed outputs from Hugging Face.
 - [x] Add shared, scoped cleanup with dry-run support.
 - [x] Implement the full pipeline coordinator in `src`.
 - [x] Consolidate the Typer CLI in `src` and retire superseded scripts.
 - [x] Update callers, documentation, packaging, and focused tests together.
+- [x] Consolidate shared-schema outputs and add local filtered reads.
 
-## Implementation log
+## Historical implementation log (completed 2026-08-19)
 
 - **Step 1 — Split configuration and schema contracts into focused modules:** Split config.py into focused modules; moved PPL, checkpoint-enrichment, and published-result schemas to canonical configuration owners. All 316 tests and installed-wheel resource checks passed.
 
@@ -43,7 +44,7 @@
 Provide one library-owned lifecycle for downloading, processing, validating,
 publishing, and cleaning selected DataDecide datasets. Raw files remain
 recoverable from their original sources; final outputs are archived to
-`drotherm/dd_parsed` and can be downloaded selectively.
+`drotherm/dd_parsed` and can be downloaded by complete table or recipe shard.
 
 Automatic cleanup occurs only after all selected processing, validation, and
 remote verification succeed. Processing scratch files remain disposable local
@@ -62,6 +63,7 @@ each lifecycle responsibility a clear owner:
 | `datadec/data/preprocess/` | Local-input/local-output processors, shared Parquet export mechanics, checkpoint identity normalization, and model enrichment |
 | `datadec/data/verify/` | Selected-output verification, cross-source parity, reconstruction, and derivation checks |
 | `datadec/data/download.py` | Download selected raw sources or published processed outputs |
+| `datadec/data/read.py` | Project columns and filter rows from known local processed tables with Arrow expressions |
 | `datadec/data/publication.py` | Construct concrete atomic publication units using canonical schema and destination contracts |
 | `datadec/data/publish.py` | Upload files and verify their remote sizes and hashes at immutable commits; no local deletion |
 | `datadec/data/cleanup.py` | Resolve deletion plans, preview them, and execute scoped cleanup |
@@ -97,6 +99,23 @@ outside the selection. All applicable raw-dependent checks finish before
 cleanup. Historical nominal-compute values in raw scaling-law inputs are reported
 as diagnostics; generated tables must satisfy the exact-compute contract.
 
+Published-result units are source-group selectors. Selection expands every
+chosen unit to all sources in the schema families it touches before raw
+download, processing, publication, processed download, or cleanup. Local
+replacement is transactional across the selected schema tables, so a partial
+selection cannot silently replace a shared table without its other sources.
+
+The seven published-result schema families live at
+`processed/published-results/{schema}.parquet`. Their first columns are the
+required original `source_file` and `source_unit`, followed by the unchanged
+source-schema columns. Values, duplicates, and nulls are preserved. OLMES detail
+tasks share `processed/olmes-details/tasks.parquet`; processing one recipe
+replaces that recipe's rows while retaining the others. Instances and choices
+remain complete recipe shards at
+`processed/olmes-details/instances/{recipe}.parquet` and
+`processed/olmes-details/choices/{recipe}.parquet`. Processing replaces the
+shared tasks table and both selected shards together.
+
 ## CLI and cleanup
 
 `scripts/data.py` becomes a small launcher for `datadec.cli.app`. Commands are
@@ -108,15 +127,17 @@ Preserve published-result unit selection. Require an explicit selection.
 Published figures remain download-only and are outside processing/publication.
 
 - `run --cleanup default` is the default: remove selected raw and intermediate
-  files and recipe detail outputs, retaining PPL, aggregate OLMES, scaling-law
-  tables, and structured published results.
+  files and per-recipe instance and choice shards, retaining PPL, aggregate
+  OLMES, scaling-law tables, seven structured published-result schema tables,
+  and the shared OLMES detail task table. A full selection retains 12 summary
+  files and removes the instance and choice shards.
 - `run --cleanup raw` removes selected raw files after success.
 - `run --cleanup all` also removes verified published final outputs.
 - `run --cleanup none` retains raw and processed artifacts.
 - `run --no-upload` retains artifacts; reject explicitly contradictory cleanup
   requests. Normal processor scratch-file cleanup still applies.
-- `download` retrieves selected processed outputs; `download --raw` retrieves
-  their original sources.
+- `download` retrieves selected complete processed tables or recipe shards;
+  `download --raw` retrieves complete original sources.
 - `publish` uploads existing outputs without processing again.
 - `raw-clean` explicitly removes selected reproducible raw downloads.
 - `clean` defaults to retaining aggregate postprocessed results while removing
@@ -126,6 +147,14 @@ Published figures remain download-only and are outside processing/publication.
   changed final outputs.
 - Both cleanup commands support `--dry-run`, use the same deletion plan for
   preview and execution, and tolerate already-missing files.
+
+Shared tables are the unit of processed download and cleanup. Published-result
+tables are shared by schema, and OLMES detail tasks are shared across recipes;
+the system does not claim partial network downloads for row filters. The
+`read_processed_table` API applies Arrow `filters` and `columns` locally to
+known tables. Instance and choice table names address shard directories and can
+be filtered by `recipe`. Sorted storage and Parquet row-group statistics support
+these reads without a separate index.
 
 Preserve custom-input protection: automatic cleanup does not delete arbitrary
 input overrides. Selective cleanup preserves shared cache entries with uncertain
@@ -139,7 +168,7 @@ dependency declarations; remove superseded entry points without compatibility
 wrappers. Keep low-level processors independently callable from Python.
 
 Focus tests on stage ordering, failure retention, remote mismatch protection,
-selection isolation, dry-run accuracy, selective downloads, and equivalent
+schema-family expansion, dry-run accuracy, table-scoped downloads, and equivalent
 behavior through library and CLI entry points. Reuse existing processor and
 publication tests.
 

@@ -137,7 +137,7 @@ EXPECTED_TABLES = {
         ),
     },
     "detailed_tasks": {
-        "path": "processed/olmes-details/{recipe}/tasks.parquet",
+        "path": "processed/olmes-details/tasks.parquet",
         "primary_key": ("recipe", "params", "seed_value", "step", "task"),
         "columns": (
             ("recipe", "string", False),
@@ -172,7 +172,7 @@ EXPECTED_TABLES = {
         ),
     },
     "detailed_instances": {
-        "path": "processed/olmes-details/{recipe}/instances.parquet",
+        "path": "processed/olmes-details/instances/{recipe}.parquet",
         "primary_key": (
             "recipe",
             "params",
@@ -214,7 +214,7 @@ EXPECTED_TABLES = {
         ),
     },
     "detailed_choices": {
-        "path": "processed/olmes-details/{recipe}/choices.parquet",
+        "path": "processed/olmes-details/choices/{recipe}.parquet",
         "primary_key": (
             "recipe",
             "params",

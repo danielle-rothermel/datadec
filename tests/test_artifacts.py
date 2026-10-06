@@ -9,7 +9,7 @@ from datadec.data.artifacts import (
     OLMES_DETAILS_STAGING_FILENAME,
     DataArtifacts,
 )
-from datadec.data.selection import resolve_selection
+from datadec.data.selection import resolve_selection, selected_published_result_sources
 
 
 def test_named_paths_use_the_custom_data_root(tmp_path: Path) -> None:
@@ -28,14 +28,14 @@ def test_named_paths_use_the_custom_data_root(tmp_path: Path) -> None:
     assert artifacts.scaling_law_checkpoint_losses_path() == (
         tmp_path / "processed/scaling-law/checkpoint-losses.parquet"
     )
-    assert artifacts.olmes_details_tasks_path("c4") == (
-        tmp_path / "processed/olmes-details/c4/tasks.parquet"
+    assert artifacts.olmes_details_tasks_path() == (
+        tmp_path / "processed/olmes-details/tasks.parquet"
     )
     assert artifacts.olmes_details_instances_path("c4") == (
-        tmp_path / "processed/olmes-details/c4/instances.parquet"
+        tmp_path / "processed/olmes-details/instances/c4.parquet"
     )
     assert artifacts.olmes_details_choices_path("c4") == (
-        tmp_path / "processed/olmes-details/c4/choices.parquet"
+        tmp_path / "processed/olmes-details/choices/c4.parquet"
     )
 
 
@@ -61,11 +61,11 @@ def test_ppl_selection_owns_only_its_known_paths(tmp_path: Path) -> None:
 def test_detail_selection_owns_archive_outputs_and_staging(tmp_path: Path) -> None:
     artifacts = DataArtifacts(tmp_path)
     selection = resolve_selection(olmes_details=("c4",))
-    output_root = tmp_path / "processed/olmes-details/c4"
+    output_root = tmp_path / "processed/olmes-details"
     outputs = (
         output_root / "tasks.parquet",
-        output_root / "instances.parquet",
-        output_root / "choices.parquet",
+        output_root / "instances/c4.parquet",
+        output_root / "choices/c4.parquet",
     )
 
     assert artifacts.raw_paths(selection) == (
@@ -80,7 +80,7 @@ def test_detail_selection_owns_archive_outputs_and_staging(tmp_path: Path) -> No
         output.with_name(f".{output.name}.backup.tmp") for output in outputs
     }.issubset(intermediates)
     assert artifacts.raw_intermediate_paths(selection) == ()
-    staging = output_root / OLMES_DETAILS_STAGING_FILENAME
+    staging = output_root / "staging/c4" / OLMES_DETAILS_STAGING_FILENAME
     assert {staging, Path(f"{staging}.wal"), Path(f"{staging}.tmp")}.issubset(
         intermediates
     )
@@ -99,11 +99,8 @@ def test_published_unit_owns_only_its_sources_outputs_and_partials(
 ) -> None:
     artifacts = DataArtifacts(tmp_path)
     selection = resolve_selection(units=("new-eval-intermediates",))
-    sources = tuple(
-        source
-        for source in load_published_results_manifest().files
-        if source.publication_unit == "new-eval-intermediates"
-    )
+    manifest = load_published_results_manifest()
+    sources = selected_published_result_sources(("new-eval-intermediates",), manifest)
     raw = tuple(artifacts.published_result_source_path(source) for source in sources)
     processed = tuple(
         artifacts.published_result_output_path(source) for source in sources
@@ -115,6 +112,7 @@ def test_published_unit_owns_only_its_sources_outputs_and_partials(
     raw_intermediates = tuple(path.with_name(f"{path.name}.part") for path in raw)
     assert artifacts.raw_intermediate_paths(selection) == raw_intermediates
     assert set(raw_intermediates).issubset(intermediates)
+    assert len(processed) == 2
     assert len(intermediates) == len(raw) + 2 * len(processed)
     assert not any("outputs2" in str(path) for path in intermediates)
 

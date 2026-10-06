@@ -558,7 +558,7 @@ logical_type = "float64"
 nullable = true
 
 [tables.detailed_tasks]
-path_template = "processed/olmes-details/{recipe}/tasks.parquet"
+path = "processed/olmes-details/tasks.parquet"
 primary_key = ["recipe", "params", "seed_value", "step", "task"]
 sort_key = ["recipe", "params", "seed_value", "step", "task"]
 
@@ -943,7 +943,7 @@ logical_type = "float64"
 nullable = true
 
 [tables.detailed_instances]
-path_template = "processed/olmes-details/{recipe}/instances.parquet"
+path_template = "processed/olmes-details/instances/{recipe}.parquet"
 primary_key = ["recipe", "params", "seed_value", "step", "task", "doc_id"]
 sort_key = ["recipe", "params", "seed_value", "step", "task", "doc_id"]
 
@@ -1093,7 +1093,7 @@ logical_type = "float64"
 nullable = true
 
 [tables.detailed_choices]
-path_template = "processed/olmes-details/{recipe}/choices.parquet"
+path_template = "processed/olmes-details/choices/{recipe}.parquet"
 primary_key = [
   "recipe",
   "params",

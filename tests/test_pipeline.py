@@ -23,6 +23,11 @@ from datadec.data.verify import (
 )
 
 
+@pytest.fixture(autouse=True)
+def _disable_task_summary_restore(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(pipeline, "restore_task_summaries", Mock(return_value=()))
+
+
 def _selection(
     *,
     ppl: bool = False,
@@ -132,6 +137,11 @@ def test_pipeline_orders_selected_stages_and_defaults_to_aggregate_retention(
     )
     monkeypatch.setattr(
         pipeline,
+        "restore_task_summaries",
+        lambda *_args, **_kwargs: events.append("restore:olmes-detail-tasks") or (),
+    )
+    monkeypatch.setattr(
+        pipeline,
         "preprocess_ppl",
         lambda *_args, **_kwargs: events.append("process:ppl"),
     )
@@ -190,6 +200,7 @@ def test_pipeline_orders_selected_stages_and_defaults_to_aggregate_retention(
 
     assert events == [
         "download",
+        "restore:olmes-detail-tasks",
         "process:ppl",
         "process:olmes",
         "process:olmes-details:c4",
@@ -228,9 +239,7 @@ def test_all_publication_units_validate_before_any_upload(
     monkeypatch.setattr(pipeline, "cleanup_raw", cleanup)
 
     with pytest.raises(ValueError, match="invalid schema"):
-        run_pipeline(
-            PipelineRequest(DataArtifacts(tmp_path), _selection(ppl=True))
-        )
+        run_pipeline(PipelineRequest(DataArtifacts(tmp_path), _selection(ppl=True)))
 
     publish.assert_not_called()
     cleanup.assert_not_called()
@@ -259,10 +268,14 @@ def test_failures_retain_local_artifacts_and_skip_cleanup(
 
     monkeypatch.setattr(pipeline, "download_sources", download)
     monkeypatch.setattr(pipeline, "preprocess_ppl", process)
-    monkeypatch.setattr(pipeline, "publication_units", Mock(return_value=(_unit("ppl"),)))
+    monkeypatch.setattr(
+        pipeline, "publication_units", Mock(return_value=(_unit("ppl"),))
+    )
     monkeypatch.setattr(pipeline, "validate_publication_unit", Mock())
     monkeypatch.setattr(pipeline, "verify_selected_outputs", verify)
-    monkeypatch.setattr(pipeline, "publish_unit", Mock(return_value=_publication("ppl")))
+    monkeypatch.setattr(
+        pipeline, "publish_unit", Mock(return_value=_publication("ppl"))
+    )
     monkeypatch.setattr(pipeline, "clean_data", cleanup)
 
     with pytest.raises(RuntimeError, match=f"{failed_stage} failed"):
@@ -293,9 +306,7 @@ def test_partial_upload_failure_retains_data_and_skips_cleanup(
     monkeypatch.setattr(pipeline, "clean_data", cleanup)
 
     with pytest.raises(RuntimeError, match="second upload failed"):
-        run_pipeline(
-            PipelineRequest(DataArtifacts(tmp_path), _selection(ppl=True))
-        )
+        run_pipeline(PipelineRequest(DataArtifacts(tmp_path), _selection(ppl=True)))
 
     assert publish.call_count == 2
     assert retained.read_text() == "retry output"
@@ -385,7 +396,9 @@ def test_base_only_selection_never_processes_details(
     monkeypatch.setattr(pipeline, "preprocess_olmes", preprocess_olmes)
     monkeypatch.setattr(pipeline, "preprocess_olmes_details", preprocess_details)
     monkeypatch.setattr(pipeline, "publication_units", Mock(return_value=()))
-    monkeypatch.setattr(pipeline, "verify_selected_outputs", Mock(return_value=_report()))
+    monkeypatch.setattr(
+        pipeline, "verify_selected_outputs", Mock(return_value=_report())
+    )
 
     run_pipeline(
         PipelineRequest(
@@ -422,7 +435,9 @@ def test_explicit_cleanup_modes(
     monkeypatch.setattr(pipeline, "download_sources", Mock(return_value=()))
     monkeypatch.setattr(pipeline, "preprocess_ppl", Mock())
     monkeypatch.setattr(pipeline, "publication_units", Mock(return_value=()))
-    monkeypatch.setattr(pipeline, "verify_selected_outputs", Mock(return_value=_report()))
+    monkeypatch.setattr(
+        pipeline, "verify_selected_outputs", Mock(return_value=_report())
+    )
     monkeypatch.setattr(pipeline, "cleanup_raw", cleanup_raw)
     monkeypatch.setattr(pipeline, "clean_data", clean_data)
 
@@ -464,9 +479,7 @@ def test_verbose_output_reports_diagnostics_without_blocking(
     monkeypatch.setattr(pipeline, "download_sources", Mock(return_value=()))
     monkeypatch.setattr(pipeline, "preprocess_scaling_law", Mock())
     monkeypatch.setattr(pipeline, "publication_units", Mock(return_value=()))
-    monkeypatch.setattr(
-        pipeline, "verify_selected_outputs", Mock(return_value=report)
-    )
+    monkeypatch.setattr(pipeline, "verify_selected_outputs", Mock(return_value=report))
 
     result = run_pipeline(
         PipelineRequest(

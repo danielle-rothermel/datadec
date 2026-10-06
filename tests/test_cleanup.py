@@ -42,6 +42,7 @@ def test_default_cleanup_keeps_base_outputs_and_verifies_all_deleted_finals_firs
         artifacts.get_path("olmes_processed"),
         artifacts.scaling_law_evaluations_path(),
         artifacts.scaling_law_checkpoint_losses_path(),
+        artifacts.olmes_details_tasks_path(),
         *(
             artifacts.published_result_output_path(source)
             for source in load_published_results_manifest().files
@@ -79,8 +80,8 @@ def test_default_cleanup_keeps_base_outputs_and_verifies_all_deleted_finals_firs
         }
         result = clean_data(artifacts, selection, mode=CleanupMode.DEFAULT)
 
-    assert len(base) == 55
-    assert len(finals - base) == 75
+    assert len(base) == 12
+    assert len(finals - base) == 50
     assert set(result.removed_paths) == set(preview.would_remove_paths)
     assert set(tmp_path.rglob("*.parquet")) == base
     assert all(path.read_text() == "data" for path in base)
@@ -136,7 +137,8 @@ def test_default_cleanup_preserves_unselected_recipe(tmp_path: Path) -> None:
         _write(path)
     with patch("datadec.data.cleanup.verify_published_unit"):
         clean_data(artifacts, selected, mode=CleanupMode.DEFAULT)
-    assert all(not path.exists() for path in artifacts.processed_paths(selected))
+    assert artifacts.olmes_details_tasks_path().exists()
+    assert all(not path.exists() for path in artifacts.processed_paths(selected)[1:])
     assert all(path.exists() for path in artifacts.processed_paths(other))
 
 
@@ -350,7 +352,7 @@ def test_clean_remote_failure_blocks_all_deletion(tmp_path: Path) -> None:
 def test_clean_verifies_only_existing_files_in_partial_unit(tmp_path: Path) -> None:
     artifacts = DataArtifacts(tmp_path)
     selection = resolve_selection(olmes_details=("c4",))
-    tasks = artifacts.olmes_details_tasks_path("c4")
+    tasks = artifacts.olmes_details_tasks_path()
     _write(tasks)
 
     with patch("datadec.data.cleanup.verify_published_unit") as verify:

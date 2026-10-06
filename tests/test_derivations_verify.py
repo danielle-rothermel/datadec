@@ -96,9 +96,10 @@ def _verification_paths(
         tokens=tokens,
     )
     _write_parquet(
-        paths.olmes_details_tasks_path("fixture"),
+        paths.olmes_details_tasks_path(),
         [
             {
+                "recipe": "fixture",
                 "params": "1B",
                 "step": 1,
                 **checkpoint_enrichment("1B", 1),
@@ -178,8 +179,7 @@ def test_base_selection_does_not_require_or_discover_detail_outputs(
         tmp_path,
         raw_scaling_uses_nominal_compute=False,
     )
-    unrelated_detail = paths.olmes_details_tasks_path("unrelated")
-    unrelated_detail.parent.mkdir(parents=True)
+    unrelated_detail = paths.olmes_details_tasks_path()
     unrelated_detail.write_text(
         "not a parquet file",
         encoding="utf-8",

@@ -14,13 +14,15 @@ from pydantic import ValidationError
 from datadec.config import (
     PUBLISHED_RESULT_SCHEMAS,
     PublishedResultFile,
+    PublishedResultSchema,
     PublishedResultsManifest,
 )
 from datadec.data.artifacts import DataArtifacts
-from datadec.data.selection import published_result_units, resolve_published_result_units
-from datadec.data.preprocess.published_results import (
-    preprocess_published_results,
+from datadec.data.selection import (
+    published_result_units,
+    resolve_published_result_units,
 )
+from datadec.data.preprocess.published_results import preprocess_published_results
 
 FOLDER_URL = "https://drive.google.com/drive/folders/1weYlEOlHrA_fzT2OsRa40uLc4EKTGz1D"
 
@@ -138,12 +140,42 @@ def _manifest(*sources: PublishedResultFile) -> PublishedResultsManifest:
     return PublishedResultsManifest(folder_url=FOLDER_URL, files=sources)
 
 
-def _write_csv(path: Path, header: list[str], row: list[str]) -> None:
+def _write_csv(path: Path, header: list[str], rows: list[list[str]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as output:
         writer = csv.writer(output)
         writer.writerow(header)
-        writer.writerow(row)
+        writer.writerows(rows)
+
+
+def _valid_row(schema_name: PublishedResultSchema, **overrides: str) -> list[str]:
+    schema = PUBLISHED_RESULT_SCHEMAS[schema_name]
+    values = {
+        column.name: (
+            "text"
+            if column.logical_type == "string"
+            else "1"
+            if column.logical_type == "int64"
+            else "1.25"
+        )
+        for column in schema.columns
+    }
+    values.update(overrides)
+    return [values[column.name] for column in schema.columns]
+
+
+def _write_source_csv(
+    paths: DataArtifacts,
+    source: PublishedResultFile,
+    rows: list[list[str]],
+) -> None:
+    assert source.schema is not None
+    schema = PUBLISHED_RESULT_SCHEMAS[source.schema]
+    _write_csv(
+        paths.published_result_source_path(source),
+        [column.name for column in schema.columns],
+        rows,
+    )
 
 
 def test_schema_contracts_pin_exact_column_order_types_and_nullability() -> None:
@@ -181,7 +213,7 @@ def test_manifest_units_follow_stable_source_order_and_all_semantics() -> None:
     ) == ("outputs2", "per-task-arc-easy")
 
 
-def test_manifest_rejects_wrong_path_to_unit_membership() -> None:
+def test_manifest_rejects_wrong_path_membership() -> None:
     with pytest.raises(
         ValidationError, match="publication_unit does not match its source path"
     ):
@@ -189,9 +221,6 @@ def test_manifest_rejects_wrong_path_to_unit_membership() -> None:
             "per_task_out/arc_easy_out/1_metric_transformed.csv",
             unit="outputs2",
         )
-
-
-def test_manifest_rejects_wrong_path_to_schema_membership() -> None:
     with pytest.raises(ValidationError, match="schema does not match its source path"):
         _source(
             "outputs2/davidh_new_evals_means_df.csv",
@@ -199,28 +228,52 @@ def test_manifest_rejects_wrong_path_to_schema_membership() -> None:
         )
 
 
-def test_transformed_csv_maps_one_to_one_and_preserves_repr_strings(
+def test_selected_unit_consolidates_complete_schema_family_with_provenance(
     tmp_path: Path,
 ) -> None:
-    source = _source("outputs2/1_metric_transformed.csv")
+    sources = (
+        _source(
+            "per_task_out/arc_easy_out/1_metric_transformed.csv",
+            unit="per-task-arc-easy",
+            file_id="arc",
+        ),
+        _source("outputs2/1_metric_transformed.csv", file_id="output"),
+    )
     paths = DataArtifacts(tmp_path)
-    input_path = paths.published_result_source_path(source)
-    schema = PUBLISHED_RESULT_SCHEMAS["transformed"]
-    _write_csv(
-        input_path,
-        [column.name for column in schema.columns],
-        ["m", "g", "7", "acc", "['a', 'b']", "1.5", "2.5", "[1, 2]", "0.5"],
+    duplicate = _valid_row(
+        "transformed",
+        model="m-a",
+        group="g",
+        seed="7",
+        metric="acc",
+        models="['a', 'b']",
+        raw_values="[1, 2]",
+    )
+    _write_source_csv(paths, sources[0], [duplicate])
+    _write_source_csv(
+        paths,
+        sources[1],
+        [_valid_row("transformed", model="m-z"), duplicate, duplicate],
     )
 
-    results = preprocess_published_results(paths, manifest=_manifest(source))
+    results = preprocess_published_results(
+        paths,
+        units=("outputs2",),
+        manifest=_manifest(*sources),
+    )
 
-    output = paths.published_result_output_path(source)
+    output = paths.published_result_table_path("transformed")
     table = pq.read_table(output)
-    assert output == (
-        tmp_path / "processed/published-results/outputs2/1_metric_transformed.parquet"
-    )
-    assert table.schema.names == [column.name for column in schema.columns]
+    schema = PUBLISHED_RESULT_SCHEMAS["transformed"]
+    assert output == tmp_path / "processed/published-results/transformed.parquet"
+    assert table.schema.names == [
+        "source_file",
+        "source_unit",
+        *(column.name for column in schema.columns),
+    ]
     assert table.schema.types == [
+        pa.string(),
+        pa.string(),
         pa.string(),
         pa.string(),
         pa.int64(),
@@ -231,11 +284,27 @@ def test_transformed_csv_maps_one_to_one_and_preserves_repr_strings(
         pa.string(),
         pa.float64(),
     ]
-    assert table.column("models").to_pylist() == ["['a', 'b']"]
-    assert table.column("raw_values").to_pylist() == ["[1, 2]"]
-    assert input_path.is_file()
-    assert results[0].publication_unit == "outputs2"
-    assert results[0].files[0].row_count == 1
+    assert table.num_rows == 4
+    assert table.column("source_unit").to_pylist() == [
+        "outputs2",
+        "outputs2",
+        "outputs2",
+        "per-task-arc-easy",
+    ]
+    assert table.column("model").to_pylist() == ["m-a", "m-a", "m-z", "m-a"]
+    assert table.column("models").to_pylist()[:2] == ["['a', 'b']"] * 2
+    assert table.column("raw_values").to_pylist()[:2] == ["[1, 2]"] * 2
+    assert not (
+        tmp_path / "processed/published-results/outputs2/1_metric_transformed.parquet"
+    ).exists()
+    assert len(results) == 1
+    assert results[0].schema == "transformed"
+    assert results[0].output_path == output
+    assert results[0].row_count == 4
+    assert [(file.source.id, file.row_count) for file in results[0].files] == [
+        ("arc", 1),
+        ("output", 3),
+    ]
 
 
 def test_prediction_nullable_numeric_blanks_become_null(tmp_path: Path) -> None:
@@ -255,34 +324,26 @@ def test_prediction_nullable_numeric_blanks_become_null(tmp_path: Path) -> None:
             values.append("3")
         else:
             values.append("1.25")
-    _write_csv(
-        paths.published_result_source_path(source),
-        [column.name for column in schema.columns],
-        values,
-    )
+    _write_source_csv(paths, source, [values])
 
     preprocess_published_results(paths, manifest=_manifest(source))
 
-    table = pq.read_table(paths.published_result_output_path(source))
+    table = pq.read_table(paths.published_result_table_path("prediction_model_scale"))
+    assert table.column("source_file").to_pylist() == [source.path]
+    assert table.column("source_unit").to_pylist() == ["outputs2"]
     assert table.column("three_way_accuracy").to_pylist() == [None]
     assert table.column("compute").to_pylist() == [None]
     assert table.column("proportion_target").to_pylist() == [None]
     assert table.column("mix_pairs_correct").to_pylist() == ["['kept', 'as', 'text']"]
 
 
-def test_required_numeric_blank_is_rejected_without_replacing_output(
+def test_required_numeric_blank_is_rejected_without_replacing_family(
     tmp_path: Path,
 ) -> None:
     source = _source("outputs2/1_metric_transformed.csv")
     paths = DataArtifacts(tmp_path)
-    schema = PUBLISHED_RESULT_SCHEMAS["transformed"]
-    input_path = paths.published_result_source_path(source)
-    _write_csv(
-        input_path,
-        [column.name for column in schema.columns],
-        ["m", "g", "", "metric", "[]", "1", "2", "[]", "0.5"],
-    )
-    output = paths.published_result_output_path(source)
+    _write_source_csv(paths, source, [_valid_row("transformed", seed="")])
+    output = paths.published_result_table_path("transformed")
     output.parent.mkdir(parents=True)
     output.write_bytes(b"existing")
 
@@ -299,37 +360,73 @@ def test_wrong_header_order_and_malformed_rows_are_rejected(tmp_path: Path) -> N
     input_path = paths.published_result_source_path(source)
     schema = PUBLISHED_RESULT_SCHEMAS["transformed"]
     header = [column.name for column in schema.columns]
-    _write_csv(input_path, [header[1], header[0], *header[2:]], ["x"] * len(header))
+    _write_csv(input_path, [header[1], header[0], *header[2:]], [["x"] * len(header)])
     with pytest.raises(ValueError, match="header mismatch"):
         preprocess_published_results(paths, manifest=_manifest(source))
 
-    _write_csv(input_path, header, ["x"] * (len(header) - 1))
+    _write_csv(input_path, header, [["x"] * (len(header) - 1)])
     with pytest.raises(Exception, match="column"):
         preprocess_published_results(paths, manifest=_manifest(source))
 
 
-def test_target_pairs_preserve_index_order_and_orientation(tmp_path: Path) -> None:
-    source = _source(
-        "outputs2/0_target_pairs.json", schema="target_pairs", file_id="pairs"
+def test_target_pair_families_preserve_index_orientation_and_provenance(
+    tmp_path: Path,
+) -> None:
+    sources = (
+        _source(
+            "per_task_out/arc_easy_out/0_target_pairs.json",
+            unit="per-task-arc-easy",
+            schema="target_pairs",
+            file_id="arc-pairs",
+        ),
+        _source(
+            "outputs2/0_target_pairs.json",
+            schema="target_pairs",
+            file_id="output-pairs",
+        ),
     )
     paths = DataArtifacts(tmp_path)
-    input_path = paths.published_result_source_path(source)
-    input_path.parent.mkdir(parents=True)
-    pairs = [[f"left-{index}", f"right-{index}"] for index in range(300)]
-    input_path.write_text(json.dumps(pairs), encoding="utf-8")
+    for prefix, source in zip(("arc", "output"), sources, strict=True):
+        input_path = paths.published_result_source_path(source)
+        input_path.parent.mkdir(parents=True, exist_ok=True)
+        pairs = [
+            [f"{prefix}-left-{index}", f"{prefix}-right-{index}"]
+            for index in range(300)
+        ]
+        input_path.write_text(json.dumps(pairs), encoding="utf-8")
 
-    preprocess_published_results(paths, manifest=_manifest(source))
+    preprocess_published_results(
+        paths,
+        units=("outputs2",),
+        manifest=_manifest(*sources),
+    )
 
-    table = pq.read_table(paths.published_result_output_path(source))
-    assert table.schema.names == ["pair_index", "model_1", "model_2"]
-    assert table.schema.types == [pa.int64(), pa.string(), pa.string()]
-    assert table.column("pair_index").to_pylist() == list(range(300))
-    assert table.column("model_1").to_pylist()[:2] == ["left-0", "left-1"]
-    assert table.column("model_2").to_pylist()[-2:] == [
-        "right-298",
-        "right-299",
+    table = pq.read_table(paths.published_result_table_path("target_pairs"))
+    assert table.schema.names == [
+        "source_file",
+        "source_unit",
+        "pair_index",
+        "model_1",
+        "model_2",
     ]
-    assert input_path.is_file()
+    assert table.schema.types == [
+        pa.string(),
+        pa.string(),
+        pa.int64(),
+        pa.string(),
+        pa.string(),
+    ]
+    assert table.num_rows == 600
+    assert table.column("source_unit").to_pylist()[:2] == ["outputs2"] * 2
+    assert table.column("pair_index").to_pylist()[:3] == [0, 1, 2]
+    assert table.column("model_1").to_pylist()[:2] == [
+        "output-left-0",
+        "output-left-1",
+    ]
+    assert table.column("model_2").to_pylist()[-2:] == [
+        "arc-right-298",
+        "arc-right-299",
+    ]
 
 
 @pytest.mark.parametrize(
@@ -344,7 +441,9 @@ def test_target_pairs_preserve_index_order_and_orientation(tmp_path: Path) -> No
 def test_target_pairs_reject_invalid_or_empty_entries(
     tmp_path: Path, bad_pair: object
 ) -> None:
-    source = _source("outputs2/0_target_pairs.json", schema="target_pairs")
+    source = _source(
+        "outputs2/0_target_pairs.json", schema="target_pairs", file_id="pairs"
+    )
     paths = DataArtifacts(tmp_path)
     input_path = paths.published_result_source_path(source)
     input_path.parent.mkdir(parents=True)
@@ -356,28 +455,61 @@ def test_target_pairs_reject_invalid_or_empty_entries(
         preprocess_published_results(paths, manifest=_manifest(source))
 
 
-def test_second_replacement_failure_rolls_back_every_output(tmp_path: Path) -> None:
+def test_missing_expanded_family_source_preserves_existing_output(
+    tmp_path: Path,
+) -> None:
     sources = (
-        _source("outputs2/1_metric_transformed.csv", file_id="metric"),
-        _source("outputs2/1_primary_transformed.csv", file_id="primary"),
+        _source("outputs2/1_metric_transformed.csv", file_id="output"),
+        _source(
+            "per_task_out/arc_easy_out/1_metric_transformed.csv",
+            unit="per-task-arc-easy",
+            file_id="arc",
+        ),
     )
     paths = DataArtifacts(tmp_path)
-    schema = PUBLISHED_RESULT_SCHEMAS["transformed"]
-    header = [column.name for column in schema.columns]
-    for source in sources:
-        _write_csv(
-            paths.published_result_source_path(source),
-            header,
-            ["m", "g", "7", "metric", "[]", "1", "2", "[]", "0.5"],
+    _write_source_csv(paths, sources[0], [_valid_row("transformed")])
+    output = paths.published_result_table_path("transformed")
+    output.parent.mkdir(parents=True)
+    output.write_bytes(b"existing-family")
+
+    with pytest.raises(FileNotFoundError, match="arc_easy_out"):
+        preprocess_published_results(
+            paths,
+            units=("outputs2",),
+            manifest=_manifest(*sources),
         )
-        output = paths.published_result_output_path(source)
+
+    assert output.read_bytes() == b"existing-family"
+    assert not output.with_name(f".{output.name}.tmp").exists()
+
+
+def test_second_family_replacement_failure_rolls_back_every_family(
+    tmp_path: Path,
+) -> None:
+    sources = (
+        _source("outputs2/1_metric_transformed.csv", file_id="metric"),
+        _source(
+            "cheap_decisions_stacked_rc_pred_all.csv",
+            unit="cheap-decisions",
+            schema="cheap_decisions",
+            file_id="cheap",
+        ),
+    )
+    paths = DataArtifacts(tmp_path)
+    for source in sources:
+        assert source.schema is not None
+        _write_source_csv(paths, source, [_valid_row(source.schema)])
+
+    outputs = {
+        schema: paths.published_result_table_path(schema)
+        for schema in ("transformed", "cheap_decisions")
+    }
+    for schema, output in outputs.items():
         output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_bytes(f"old-{source.id}".encode())
+        output.write_bytes(f"old-{schema}".encode())
 
     real_replace = os.replace
-    output_destinations = {
-        paths.published_result_output_path(source) for source in sources
-    }
+    output_destinations = set(outputs.values())
     replacement_count = 0
 
     def fail_second_output(source: Path, destination: Path) -> None:
@@ -397,23 +529,18 @@ def test_second_replacement_failure_rolls_back_every_output(tmp_path: Path) -> N
     ):
         preprocess_published_results(paths, manifest=_manifest(*sources))
 
-    for source in sources:
-        output = paths.published_result_output_path(source)
-        assert output.read_bytes() == f"old-{source.id}".encode()
+    for schema, output in outputs.items():
+        assert output.read_bytes() == f"old-{schema}".encode()
         assert not output.with_name(f".{output.name}.tmp").exists()
         assert not output.with_name(f".{output.name}.backup.tmp").exists()
+    for source in sources:
         assert paths.published_result_source_path(source).is_file()
 
 
 def test_preprocessing_uses_no_network_clients(tmp_path: Path) -> None:
     source = _source("outputs2/1_metric_transformed.csv")
     paths = DataArtifacts(tmp_path)
-    schema = PUBLISHED_RESULT_SCHEMAS["transformed"]
-    _write_csv(
-        paths.published_result_source_path(source),
-        [column.name for column in schema.columns],
-        ["m", "g", "7", "metric", "[]", "1", "2", "[]", "0.5"],
-    )
+    _write_source_csv(paths, source, [_valid_row("transformed")])
     with (
         patch("datadec.data.download.urlopen") as urlopen,
         patch("datadec.data.download.load_dataset") as load_dataset,

@@ -19,7 +19,11 @@ from datadec.config import (
 )
 from datadec.data import download
 from datadec.data.download import download_sources
-from datadec.data.selection import resolve_olmes_detail_recipes, resolve_selection
+from datadec.data.selection import (
+    resolve_olmes_detail_recipes,
+    resolve_selection,
+    selected_published_result_sources,
+)
 from datadec.data.artifacts import DataArtifacts
 
 PUBLISHED_RESULTS_FOLDER_URL = (
@@ -370,9 +374,7 @@ def test_verbose_status_identifies_source_destination_and_reuse(
     output.parent.mkdir(parents=True)
     _write_dataset_parquet(output)
 
-    download_sources(
-        DataArtifacts(tmp_path), resolve_selection(ppl=True), verbose=True
-    )
+    download_sources(DataArtifacts(tmp_path), resolve_selection(ppl=True), verbose=True)
 
     assert capsys.readouterr().out == f"ppl: reused -> {output}\n"
 
@@ -679,12 +681,12 @@ def test_drive_selectors_are_disjoint_complete_and_deterministic(
     )
     published = download_sources(
         DataArtifacts(tmp_path),
-        resolve_selection(published_results=True),
+        resolve_selection(units=("outputs2",)),
         published_results_manifest=manifest,
     )
     combined = download_sources(
         DataArtifacts(tmp_path),
-        resolve_selection(scaling_law=True, published_results=True),
+        resolve_selection(scaling_law=True, units=("outputs2",)),
         published_results_manifest=manifest,
     )
     figures = download_sources(
@@ -762,7 +764,7 @@ def test_real_manifest_drive_selectors_pin_counts_bytes_and_use_no_network(
     urlopen.assert_not_called()
 
 
-def test_raw_published_results_downloads_only_selected_publication_unit(
+def test_raw_published_results_downloads_every_source_in_selected_schema_families(
     tmp_path: Path,
 ) -> None:
     manifest = load_published_results_manifest()
@@ -787,11 +789,12 @@ def test_raw_published_results_downloads_only_selected_publication_unit(
         )
 
     selected_sources = [item.args[1] for item in download_file.call_args_list]
-    expected_sources = [
-        source
-        for source in manifest.files
-        if source.category == "published_results"
-        and source.publication_unit == "outputs2"
-    ]
-    assert selected_sources == expected_sources
+    expected_sources = selected_published_result_sources(("outputs2",), manifest)
+    assert selected_sources == list(expected_sources)
+    assert {source.schema for source in expected_sources} == {
+        "transformed",
+        "prediction_model_scale",
+        "target_pairs",
+    }
+    assert {source.publication_unit for source in expected_sources} > {"outputs2"}
     assert len(results) == len(expected_sources)

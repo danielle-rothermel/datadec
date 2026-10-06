@@ -7,11 +7,11 @@ from typing import Literal
 
 from datadec.config import (
     CHECKPOINT_ENRICHMENT_TYPES,
-    OLMESTableContract,
     PPL_IDENTITY_COLUMNS,
     PPL_METRIC_COLUMNS,
     PUBLISHED_RESULT_SCHEMAS,
-    PublishedResultFile,
+    OLMESTableContract,
+    PublishedResultSchema,
     PublishedResultsManifest,
     PublishingContract,
     ScalingLawTableContract,
@@ -21,7 +21,7 @@ from datadec.config import (
     load_scaling_law_contract,
 )
 from datadec.data.artifacts import DataArtifacts
-from datadec.data.selection import DatasetSelection, resolve_published_result_units
+from datadec.data.selection import DatasetSelection, selected_published_result_sources
 
 type ParquetLogicalType = Literal["string", "int64", "float64", "bool"]
 
@@ -143,6 +143,26 @@ def scaling_law_publication_unit(
     )
 
 
+def olmes_details_tasks_publication_unit(
+    artifacts: DataArtifacts,
+    *,
+    contract: PublishingContract | None = None,
+    output_path: Path | None = None,
+) -> PublicationUnit:
+    publishing = contract or load_publishing_contract()
+    return PublicationUnit(
+        name="olmes-detail-tasks",
+        files=(
+            PublicationFile(
+                output_path or artifacts.olmes_details_tasks_path(),
+                publishing.olmes_details.tasks_remote_path,
+                _publication_schema(load_olmes_contract().tables.detailed_tasks),
+            ),
+        ),
+        commit_message="Publish consolidated OLMES task summaries",
+    )
+
+
 def olmes_details_publication_unit(
     artifacts: DataArtifacts,
     recipe: str,
@@ -151,43 +171,30 @@ def olmes_details_publication_unit(
     output_tasks_path: Path | None = None,
     output_instances_path: Path | None = None,
     output_choices_path: Path | None = None,
+    include_tasks: bool = True,
 ) -> PublicationUnit:
     publishing = contract or load_publishing_contract()
     olmes = load_olmes_contract()
-    detail_contract = publishing.olmes_details
+    detail = publishing.olmes_details
+    tasks = olmes_details_tasks_publication_unit(
+        artifacts, contract=publishing, output_path=output_tasks_path
+    )
     return PublicationUnit(
         name=f"olmes-details:{recipe}",
         files=(
+            *(tasks.files if include_tasks else ()),
             PublicationFile(
-                local_path=(
-                    output_tasks_path or artifacts.olmes_details_tasks_path(recipe)
-                ),
-                remote_path=detail_contract.tasks_remote_path_template.format(
-                    recipe=recipe
-                ),
-                expected_schema=_publication_schema(olmes.tables.detailed_tasks),
+                output_instances_path or artifacts.olmes_details_instances_path(recipe),
+                detail.instances_remote_path_template.format(recipe=recipe),
+                _publication_schema(olmes.tables.detailed_instances),
             ),
             PublicationFile(
-                local_path=(
-                    output_instances_path
-                    or artifacts.olmes_details_instances_path(recipe)
-                ),
-                remote_path=detail_contract.instances_remote_path_template.format(
-                    recipe=recipe
-                ),
-                expected_schema=_publication_schema(olmes.tables.detailed_instances),
-            ),
-            PublicationFile(
-                local_path=(
-                    output_choices_path or artifacts.olmes_details_choices_path(recipe)
-                ),
-                remote_path=detail_contract.choices_remote_path_template.format(
-                    recipe=recipe
-                ),
-                expected_schema=_publication_schema(olmes.tables.detailed_choices),
+                output_choices_path or artifacts.olmes_details_choices_path(recipe),
+                detail.choices_remote_path_template.format(recipe=recipe),
+                _publication_schema(olmes.tables.detailed_choices),
             ),
         ),
-        commit_message=detail_contract.commit_message_template.format(recipe=recipe),
+        commit_message=detail.commit_message_template.format(recipe=recipe),
     )
 
 
@@ -200,54 +207,45 @@ def published_results_publication_units(
 ) -> tuple[PublicationUnit, ...]:
     publishing = contract or load_publishing_contract()
     published_results = manifest or load_published_results_manifest()
-    selected_units = resolve_published_result_units(units, published_results)
-    result: list[PublicationUnit] = []
-    for unit in selected_units:
-        sources = tuple(
-            source
-            for source in published_results.files
-            if source.category == "published_results"
-            and source.publication_unit == unit
-        )
-        result.append(
-            PublicationUnit(
-                name=f"published-results:{unit}",
-                files=tuple(
-                    _published_result_publication_file(
-                        artifacts,
-                        source,
-                        remote_root=publishing.published_results.remote_root,
-                    )
-                    for source in sources
+    sources = selected_published_result_sources(units, published_results)
+    schemas = tuple(
+        dict.fromkeys(source.schema for source in sources if source.schema is not None)
+    )
+    return tuple(
+        PublicationUnit(
+            name=f"published-results:{schema}",
+            files=(
+                _published_result_publication_file(
+                    artifacts,
+                    schema,
+                    remote_root=publishing.published_results.remote_root,
                 ),
-                commit_message=(
-                    publishing.published_results.commit_message_template.format(
-                        unit=unit
-                    )
-                ),
-            )
+            ),
+            commit_message=publishing.published_results.commit_message_template.format(
+                unit=schema
+            ),
         )
-    return tuple(result)
+        for schema in schemas
+    )
 
 
 def _published_result_publication_file(
     artifacts: DataArtifacts,
-    source: PublishedResultFile,
+    schema_name: PublishedResultSchema,
     *,
     remote_root: str,
 ) -> PublicationFile:
-    schema_name = source.schema
-    if schema_name is None:
-        raise ValueError(f"published result has no schema: {source.path}")
     schema = PUBLISHED_RESULT_SCHEMAS[schema_name]
     return PublicationFile(
-        local_path=artifacts.published_result_output_path(source),
-        remote_path=(
-            PurePosixPath(remote_root) / source.parquet_relative_path()
-        ).as_posix(),
-        expected_schema=tuple(
-            PublicationColumn(column.name, column.logical_type, column.nullable)
-            for column in schema.columns
+        local_path=artifacts.published_result_table_path(schema_name),
+        remote_path=(PurePosixPath(remote_root) / f"{schema_name}.parquet").as_posix(),
+        expected_schema=(
+            PublicationColumn("source_file", "string", False),
+            PublicationColumn("source_unit", "string", False),
+            *(
+                PublicationColumn(column.name, column.logical_type, column.nullable)
+                for column in schema.columns
+            ),
         ),
     )
 
@@ -265,8 +263,14 @@ def publication_units(
         units.append(ppl_publication_unit(artifacts, contract=publishing))
     if selection.olmes:
         units.append(olmes_publication_unit(artifacts, contract=publishing))
+    if selection.olmes_details:
+        units.append(
+            olmes_details_tasks_publication_unit(artifacts, contract=publishing)
+        )
     units.extend(
-        olmes_details_publication_unit(artifacts, recipe, contract=publishing)
+        olmes_details_publication_unit(
+            artifacts, recipe, contract=publishing, include_tasks=False
+        )
         for recipe in selection.olmes_details
     )
     if selection.scaling_law:
@@ -289,6 +293,7 @@ __all__ = [
     "PublicationFile",
     "PublicationUnit",
     "olmes_details_publication_unit",
+    "olmes_details_tasks_publication_unit",
     "olmes_publication_unit",
     "ppl_publication_unit",
     "publication_units",

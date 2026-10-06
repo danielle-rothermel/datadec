@@ -1045,37 +1045,82 @@ def _export_parquet(
     )
 
 
+def _export_upserted_tasks(
+    connection: duckdb.DuckDBPyConnection,
+    *,
+    recipe: str,
+    table: OLMESTableContract,
+    output_path: Path,
+) -> PendingParquetExport:
+    columns = ", ".join(quote_identifier(column.name) for column in table.columns)
+    sort_key = ", ".join(quote_identifier(column) for column in table.sort_key)
+    selected_tasks = f"SELECT {columns} FROM tasks"
+    if output_path.is_file():
+        retained_tasks = (
+            f"SELECT {columns} FROM read_parquet({sql_literal(output_path)}) "
+            f"WHERE recipe IS DISTINCT FROM {sql_literal(recipe)}"
+        )
+        selected_tasks = f"{retained_tasks} UNION ALL {selected_tasks}"
+    return prepare_parquet_export(
+        connection,
+        select_sql=f"""
+            SELECT {columns}
+            FROM ({selected_tasks})
+            ORDER BY {sort_key}
+        """,
+        output_path=output_path,
+    )
+
+
 def _finalize_outputs(
     connection: duckdb.DuckDBPyConnection,
     *,
+    recipe: str,
     contract: OLMESContract,
     tasks_path: Path,
     instances_path: Path,
     choices_path: Path,
 ) -> tuple[int, int, int]:
     _validate_staging_counts(connection)
-    exports = (
-        _export_parquet(
-            connection,
-            table_name="tasks",
-            table=contract.tables.detailed_tasks,
-            output_path=tasks_path,
-        ),
-        _export_parquet(
-            connection,
-            table_name="instances",
-            table=contract.tables.detailed_instances,
-            output_path=instances_path,
-        ),
-        _export_parquet(
-            connection,
-            table_name="choices",
-            table=contract.tables.detailed_choices,
-            output_path=choices_path,
-        ),
-    )
-    replace_parquet_exports(exports)
-    return tuple(export.row_count for export in exports)
+    recipe_task_count_row = connection.execute(
+        "SELECT count(*) FROM tasks WHERE recipe = ?", [recipe]
+    ).fetchone()
+    assert recipe_task_count_row is not None
+    recipe_task_count = int(recipe_task_count_row[0])
+
+    output_paths = (tasks_path, instances_path, choices_path)
+    exports: list[PendingParquetExport] = []
+    try:
+        exports.append(
+            _export_upserted_tasks(
+                connection,
+                recipe=recipe,
+                table=contract.tables.detailed_tasks,
+                output_path=tasks_path,
+            )
+        )
+        exports.append(
+            _export_parquet(
+                connection,
+                table_name="instances",
+                table=contract.tables.detailed_instances,
+                output_path=instances_path,
+            )
+        )
+        exports.append(
+            _export_parquet(
+                connection,
+                table_name="choices",
+                table=contract.tables.detailed_choices,
+                output_path=choices_path,
+            )
+        )
+        replace_parquet_exports(tuple(exports))
+    except BaseException:
+        for output_path in output_paths:
+            remove_owned_file(output_path.with_name(f".{output_path.name}.tmp"))
+        raise
+    return recipe_task_count, exports[1].row_count, exports[2].row_count
 
 
 def _remove_completed_staging_database(staging_path: Path) -> None:
@@ -1107,7 +1152,7 @@ def preprocess_olmes_details(
     contract = contract or load_olmes_contract()
     _assert_all_detailed_schema_parity(contract)
     resolved_input = input_path or _recipe_tar_path(paths, recipe)
-    resolved_tasks = output_tasks_path or paths.olmes_details_tasks_path(recipe)
+    resolved_tasks = output_tasks_path or paths.olmes_details_tasks_path()
     resolved_instances = output_instances_path or paths.olmes_details_instances_path(
         recipe
     )
@@ -1115,12 +1160,12 @@ def preprocess_olmes_details(
     if not resolved_input.is_file():
         raise FileNotFoundError(f"OLMES detail archive not found: {resolved_input}")
 
-    resolved_tasks.parent.mkdir(parents=True, exist_ok=True)
     staging_path = (
         paths.olmes_details_staging_path(recipe)
         if output_tasks_path is None
         else _staging_database_path(resolved_tasks)
     )
+    staging_path.parent.mkdir(parents=True, exist_ok=True)
     connection = duckdb.connect(str(staging_path))
     memory_filesystem = MemoryFileSystem()
     connection.register_filesystem(memory_filesystem)
@@ -1219,6 +1264,7 @@ def preprocess_olmes_details(
             )
         task_count, instance_count, choice_count = _finalize_outputs(
             connection,
+            recipe=recipe,
             contract=contract,
             tasks_path=resolved_tasks,
             instances_path=resolved_instances,

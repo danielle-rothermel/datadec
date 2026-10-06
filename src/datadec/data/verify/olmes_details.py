@@ -7,9 +7,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pyarrow.dataset as ds
 
 from datadec.config import OLMESContract, load_olmes_contract
 from datadec.data.artifacts import DataArtifacts
+from datadec.data.read import read_processed_table
 
 _CHECKPOINT_MEMBER_RE = re.compile(
     r"^(?P<recipe>[^/]+)/(?P<params>[^/]+)/seed-(?P<seed_value>\d+)/step-(?P<step>\d+)\.tar\.gz$"
@@ -263,9 +265,22 @@ def verify_olmes_details(
     contract: OLMESContract | None = None,
 ) -> OlmesVerificationResult:
     contract = contract or load_olmes_contract()
-    tasks_df = pd.read_parquet(paths.olmes_details_tasks_path(recipe))
-    instances_df = pd.read_parquet(paths.olmes_details_instances_path(recipe))
-    choices_df = pd.read_parquet(paths.olmes_details_choices_path(recipe))
+    recipe_filter = ds.field("recipe") == recipe
+    tasks_df = read_processed_table(
+        paths,
+        "olmes-details/tasks",
+        filters=recipe_filter,
+    ).to_pandas()
+    instances_df = read_processed_table(
+        paths,
+        "olmes-details/instances",
+        filters=recipe_filter,
+    ).to_pandas()
+    choices_df = read_processed_table(
+        paths,
+        "olmes-details/choices",
+        filters=recipe_filter,
+    ).to_pandas()
     verify_detail_counts(
         tasks_df=tasks_df,
         instances_df=instances_df,

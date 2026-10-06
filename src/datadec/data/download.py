@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
-from dataclasses import dataclass, replace
 import hashlib
 import os
-from pathlib import Path
 import re
 import shutil
 import tempfile
+from collections.abc import Mapping
+from dataclasses import dataclass, replace
+from pathlib import Path
 from typing import Literal, Protocol, cast
 from urllib.request import Request, urlopen
 
@@ -22,14 +22,19 @@ from datadec.config import (
     PublishedResultFile,
     PublishedResultsManifest,
     SourceManifest,
-    load_publishing_contract,
     load_published_results_manifest,
+    load_publishing_contract,
     load_source_manifest,
 )
 from datadec.data.artifacts import DataArtifacts
-from datadec.data.publication import PublicationFile, PublicationUnit, publication_units
+from datadec.data.publication import (
+    PublicationFile,
+    PublicationUnit,
+    olmes_details_tasks_publication_unit,
+    publication_units,
+)
 from datadec.data.publish import validate_publication_unit
-from datadec.data.selection import DatasetSelection
+from datadec.data.selection import DatasetSelection, selected_published_result_sources
 
 _GOOGLE_DRIVE_DOWNLOAD_URL = (
     "https://drive.usercontent.google.com/download?id={file_id}"
@@ -92,8 +97,10 @@ def _matches_file_identity(
     path: Path, *, expected_size: int, expected_sha256: str
 ) -> bool:
     try:
-        return path.is_file() and path.stat().st_size == expected_size and (
-            _sha256(path) == expected_sha256
+        return (
+            path.is_file()
+            and path.stat().st_size == expected_size
+            and (_sha256(path) == expected_sha256)
         )
     except OSError:
         return False
@@ -139,8 +146,6 @@ def _download_dataset_source(
     return DownloadResult(source.id, destination, "downloaded")
 
 
-
-
 def _download_detail_source(
     paths: DataArtifacts,
     source: DetailSource,
@@ -181,8 +186,6 @@ def _download_detail_source(
         description=f"downloaded OLMES detail archive for {recipe}",
     )
     return DownloadResult(result_source, destination, "downloaded")
-
-
 
 
 def _response_status(response: object) -> int:
@@ -285,7 +288,6 @@ def download_sources(
     manifest: SourceManifest | None = None,
     published_results_manifest: PublishedResultsManifest | None = None,
 ) -> tuple[DownloadResult, ...]:
-
     manifest = manifest or load_source_manifest()
     results: list[DownloadResult] = []
 
@@ -316,12 +318,20 @@ def download_sources(
             categories.append("published_results")
         if selection.published_figures:
             categories.append("published_figures")
-        selected_units = set(selection.published_results)
+        selected_sources = (
+            {
+                source.path
+                for source in selected_published_result_sources(
+                    selection.published_results, drive_manifest
+                )
+            }
+            if selection.published_results
+            else set()
+        )
         for category in categories:
             for source in drive_manifest.files:
                 if source.category == category and (
-                    category != "published_results"
-                    or source.publication_unit in selected_units
+                    category != "published_results" or source.path in selected_sources
                 ):
                     record(_download_published_result_file(paths, source, force=force))
 
@@ -367,9 +377,48 @@ def download_processed_outputs(
         raise ValueError(
             "published figures are raw-only; use download_sources for that selection"
         )
+    units = publication_units(artifacts, selection)
+    return _download_units(
+        artifacts, units, force=force, hf_token=hf_token, api=api, verbose=verbose
+    )
 
+
+def restore_task_summaries(
+    artifacts: DataArtifacts,
+    *,
+    hf_token: str | None = None,
+) -> tuple[DownloadResult, ...]:
+    """Restore the shared published task table before adding a recipe locally."""
+    if artifacts.olmes_details_tasks_path().exists():
+        return ()
     publishing = load_publishing_contract()
-    units = publication_units(artifacts, selection, contract=publishing)
+    api = HfApi(token=hf_token)
+    remote = api.get_paths_info(
+        publishing.target.repo_id,
+        [publishing.olmes_details.tasks_remote_path],
+        repo_type="dataset",
+        revision=publishing.target.revision,
+    )
+    if not remote:
+        return ()
+    return _download_units(
+        artifacts,
+        (olmes_details_tasks_publication_unit(artifacts),),
+        hf_token=hf_token,
+        api=api,
+    )
+
+
+def _download_units(
+    artifacts: DataArtifacts,
+    units: tuple[PublicationUnit, ...],
+    *,
+    force: bool = False,
+    hf_token: str | None = None,
+    api: HfApi | None = None,
+    verbose: bool = False,
+) -> tuple[DownloadResult, ...]:
+    publishing = load_publishing_contract()
     files = tuple((unit, file) for unit in units for file in unit.files)
     if not files:
         return ()
@@ -466,4 +515,9 @@ def download_processed_outputs(
     return tuple(results)
 
 
-__all__ = ["DownloadResult", "download_processed_outputs", "download_sources"]
+__all__ = [
+    "DownloadResult",
+    "download_processed_outputs",
+    "download_sources",
+    "restore_task_summaries",
+]

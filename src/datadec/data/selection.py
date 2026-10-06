@@ -5,8 +5,9 @@ from dataclasses import dataclass
 
 from datadec.config import (
     DetailSource,
-    PublishedResultUnit,
+    PublishedResultFile,
     PublishedResultsManifest,
+    PublishedResultUnit,
     load_published_results_manifest,
     load_source_manifest,
 )
@@ -63,6 +64,24 @@ def resolve_published_result_units(
         return available
     requested_set = set(requested)
     return tuple(unit for unit in available if unit in requested_set)
+
+
+def selected_published_result_sources(
+    units: Sequence[str], manifest: PublishedResultsManifest
+) -> tuple[PublishedResultFile, ...]:
+    """Expand source-group selectors to complete consolidated schema families."""
+    selected_units = set(resolve_published_result_units(units, manifest))
+    families = {
+        source.schema
+        for source in manifest.files
+        if source.category == "published_results"
+        and source.publication_unit in selected_units
+    }
+    return tuple(
+        source
+        for source in manifest.files
+        if source.category == "published_results" and source.schema in families
+    )
 
 
 def resolve_selection(
@@ -125,4 +144,5 @@ __all__ = [
     "resolve_olmes_detail_recipes",
     "resolve_published_result_units",
     "resolve_selection",
+    "selected_published_result_sources",
 ]

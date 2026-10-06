@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import os
 import tarfile
 from pathlib import Path
 from unittest.mock import patch
@@ -38,6 +39,7 @@ DETAILED_INSTANCE_METRICS = CONTRACT.metrics.detailed_instances
 DETAILED_CHOICE_METRICS = CONTRACT.metrics.detailed_choices
 
 RECIPE = "dolma1.7-no-math-no-code"
+OTHER_RECIPE = "c4"
 PARAMS = "150M"
 SEED_VALUE = 14
 STEP = 1250
@@ -415,6 +417,133 @@ def test_output_rows_are_sorted_by_contract_sort_keys(tmp_path: Path) -> None:
         )
 
 
+def test_shared_tasks_upsert_preserves_other_recipes_and_replaces_rerun(
+    tmp_path: Path,
+) -> None:
+    paths = DataArtifacts(tmp_path)
+    first_archive = _build_fixture_archive(tmp_path, recipe=RECIPE)
+    first_result = preprocess_olmes_details(
+        paths, RECIPE, input_path=first_archive, contract=CONTRACT
+    )
+    other_archive = _build_fixture_archive(
+        tmp_path,
+        recipe=OTHER_RECIPE,
+        step=STEP + 10,
+    )
+    other_result = preprocess_olmes_details(
+        paths, OTHER_RECIPE, input_path=other_archive, contract=CONTRACT
+    )
+
+    tasks = pd.read_parquet(paths.olmes_details_tasks_path())
+    assert first_result.row_count == 1
+    assert other_result.row_count == 1
+    assert tasks[["recipe", "step"]].to_records(index=False).tolist() == [
+        (OTHER_RECIPE, STEP + 10),
+        (RECIPE, STEP),
+    ]
+
+    replacement_archive = _build_fixture_archive(
+        tmp_path,
+        recipe=RECIPE,
+        step=STEP + 1,
+        num_instances=1,
+    )
+    replacement_result = preprocess_olmes_details(
+        paths, RECIPE, input_path=replacement_archive, contract=CONTRACT
+    )
+
+    tasks = pd.read_parquet(paths.olmes_details_tasks_path())
+    assert replacement_result.row_count == 1
+    assert replacement_result.instance_count == 1
+    assert replacement_result.choice_count == 4
+    assert tasks[["recipe", "step"]].to_records(index=False).tolist() == [
+        (OTHER_RECIPE, STEP + 10),
+        (RECIPE, STEP + 1),
+    ]
+
+
+def test_custom_tasks_path_uses_shared_upsert_behavior(tmp_path: Path) -> None:
+    paths = DataArtifacts(tmp_path)
+    custom_root = tmp_path / "custom"
+    custom_tasks = custom_root / "tasks.parquet"
+    first_archive = _build_fixture_archive(tmp_path, recipe=RECIPE)
+    preprocess_olmes_details(
+        paths,
+        RECIPE,
+        input_path=first_archive,
+        output_tasks_path=custom_tasks,
+        output_instances_path=custom_root / "instances" / f"{RECIPE}.parquet",
+        output_choices_path=custom_root / "choices" / f"{RECIPE}.parquet",
+        contract=CONTRACT,
+    )
+    other_archive = _build_fixture_archive(
+        tmp_path,
+        recipe=OTHER_RECIPE,
+        step=STEP + 10,
+    )
+    preprocess_olmes_details(
+        paths,
+        OTHER_RECIPE,
+        input_path=other_archive,
+        output_tasks_path=custom_tasks,
+        output_instances_path=custom_root / "instances" / f"{OTHER_RECIPE}.parquet",
+        output_choices_path=custom_root / "choices" / f"{OTHER_RECIPE}.parquet",
+        contract=CONTRACT,
+    )
+
+    tasks = pd.read_parquet(custom_tasks)
+    assert tasks[["recipe", "step"]].to_records(index=False).tolist() == [
+        (OTHER_RECIPE, STEP + 10),
+        (RECIPE, STEP),
+    ]
+
+
+def test_failed_atomic_replace_preserves_all_existing_outputs(tmp_path: Path) -> None:
+    paths = DataArtifacts(tmp_path)
+    archive = _build_fixture_archive(tmp_path)
+    initial_result = preprocess_olmes_details(
+        paths, RECIPE, input_path=archive, contract=CONTRACT
+    )
+    outputs = (
+        initial_result.output_tasks_path,
+        initial_result.output_instances_path,
+        initial_result.output_choices_path,
+    )
+    original_contents = tuple(path.read_bytes() for path in outputs)
+
+    replacement_archive = _build_fixture_archive(
+        tmp_path,
+        step=STEP + 1,
+        num_instances=1,
+    )
+    instances_temporary_path = outputs[1].with_name(f".{outputs[1].name}.tmp")
+    real_replace = os.replace
+
+    def fail_instances_replace(source: str | Path, destination: str | Path) -> None:
+        if Path(source) == instances_temporary_path:
+            raise OSError("simulated replacement failure")
+        real_replace(source, destination)
+
+    with (
+        patch(
+            "datadec.data.preprocess.duckdb.os.replace",
+            side_effect=fail_instances_replace,
+        ),
+        pytest.raises(OSError, match="simulated replacement failure"),
+    ):
+        preprocess_olmes_details(
+            paths,
+            RECIPE,
+            input_path=replacement_archive,
+            contract=CONTRACT,
+        )
+
+    assert tuple(path.read_bytes() for path in outputs) == original_contents
+    assert all(
+        not path.with_name(f".{path.name}.tmp").exists() for path in outputs
+    )
+
+
 def test_config_json_is_canonical_sorted_string(tmp_path: Path) -> None:
     archive = _build_fixture_archive(tmp_path)
     _, tasks, _, _ = _preprocess_fixture(tmp_path, archive)
@@ -475,7 +604,7 @@ def test_invalid_prediction_rolls_back_checkpoint(tmp_path: Path) -> None:
         preprocess_olmes_details(paths, RECIPE, input_path=archive, contract=CONTRACT)
 
     staging_path = (
-        paths.olmes_details_tasks_path(RECIPE).parent / ".olmes-details.duckdb"
+        paths.olmes_details_staging_path(RECIPE)
     )
     with duckdb.connect(str(staging_path), read_only=True) as connection:
         assert connection.execute(
@@ -500,7 +629,7 @@ def test_archive_without_checkpoints_preserves_existing_outputs(tmp_path: Path) 
         pass
     paths = DataArtifacts(tmp_path)
     outputs = (
-        paths.olmes_details_tasks_path(RECIPE),
+        paths.olmes_details_tasks_path(),
         paths.olmes_details_instances_path(RECIPE),
         paths.olmes_details_choices_path(RECIPE),
     )
@@ -577,7 +706,7 @@ def test_preprocess_writes_typed_output(tmp_path: Path) -> None:
     instances = pd.read_parquet(result.output_instances_path)
     choices = pd.read_parquet(result.output_choices_path)
 
-    assert result.output_path == paths.olmes_details_tasks_path(RECIPE)
+    assert result.output_path == paths.olmes_details_tasks_path()
     assert result.output_instances_path == paths.olmes_details_instances_path(RECIPE)
     assert result.output_choices_path == paths.olmes_details_choices_path(RECIPE)
     assert result.row_count == 1
@@ -625,7 +754,7 @@ def test_preprocess_resumes_after_committed_checkpoint(tmp_path: Path) -> None:
         preprocess_olmes_details(paths, RECIPE, input_path=archive, contract=CONTRACT)
 
     staging_path = (
-        paths.olmes_details_tasks_path(RECIPE).parent / ".olmes-details.duckdb"
+        paths.olmes_details_staging_path(RECIPE)
     )
     assert staging_path.is_file()
     with duckdb.connect(str(staging_path), read_only=True) as connection:
@@ -658,7 +787,7 @@ def test_preprocess_does_not_download_or_upload(tmp_path: Path) -> None:
         preprocess_olmes_details(paths, RECIPE)
 
     download_sources.assert_not_called()
-    assert paths.olmes_details_tasks_path(RECIPE).is_file()
+    assert paths.olmes_details_tasks_path().is_file()
     assert paths.olmes_details_instances_path(RECIPE).is_file()
     assert paths.olmes_details_choices_path(RECIPE).is_file()
 
