@@ -145,7 +145,7 @@ def test_eval_item_writes_sweep_pairs_and_continues_sequence(tmp_path):
     assert [p.name for p in paths] == [f"0043-ge-{rid}.json"]
     item = json.loads(paths[0].read_text())
     assert item["kind"] == "eval" and item["class"] == "small" and item["cwd"] == str(REPO)
-    assert item["command"] == ["uv", "run", "python", "-m", "datadec.po.run_item", "--sweep-dir", str(sweep_dir)]
+    assert item["command"] == ["uv", "run", "python", "scripts/po_run_sweep.py", "--sweep-dir", str(sweep_dir)]
     assert item["complete"] == {"type": "sweep", "sweep_dir": str(sweep_dir)} and item["followup"] is None
     assert write_eval_item(run_dir, pool, REPO) == (sweep_dir, [])  # rerun: sweep reused, no duplicate item
 

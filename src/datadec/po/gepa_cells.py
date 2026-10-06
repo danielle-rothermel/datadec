@@ -348,7 +348,7 @@ def eval_item(spec: SweepSpec, sweep_dir: Path, job: dict, repo: Path) -> dict:
     return {
         "schema": POOL_ITEM_SCHEMA, "name": spec.name, "kind": "eval", "class": item_class,
         "est_minutes": EVAL_EST_MINUTES[item_class], "cwd": str(repo),
-        "command": ["uv", "run", "python", "-m", "datadec.po.run_item", "--sweep-dir", str(sweep_dir)],
+        "command": ["uv", "run", "python", "scripts/po_run_sweep.py", "--sweep-dir", str(sweep_dir)],
         "followup": None, "env_files": [],
         "complete": {"type": "sweep", "sweep_dir": str(sweep_dir)},
         "meta": {"model": spec.model, "revision": spec.revision, "task": spec.task,
