@@ -1,7 +1,7 @@
 # DataDecide
 
-Library and scripts for downloading, preprocessing, and publishing DataDecide
-evaluation artifacts.
+Library and CLI for downloading, processing, validating, publishing, and
+cleaning DataDecide evaluation artifacts.
 
 ## Data layout
 
@@ -11,9 +11,9 @@ Artifacts live under `data/` by default:
 |------|-------------|
 | `raw/ppl.parquet` | Raw perplexity export |
 | `raw/olmes.parquet` | Raw aggregate OLMES export |
-| `raw/olmes-details/models/{recipe}.tar.gz` | Per-recipe OLMES detail archive; removed after verified publication by default |
-| `raw/scaling-law/*.csv` | Three Google Drive scaling-law sources; removed after verified publication by default |
-| `reference/published-results/{structured source path}` | 51 Google Drive CSV/JSON sources; removed per verified publication unit by default |
+| `raw/olmes-details/models/{recipe}.tar.gz` | Per-recipe OLMES detail archive |
+| `raw/scaling-law/*.csv` | Three Google Drive scaling-law sources |
+| `reference/published-results/{structured source path}` | 51 Google Drive CSV/JSON sources |
 | `reference/published-results/{figure path}` | 80 download-only PDF/PNG figures |
 | `processed/ppl.parquet` | Typed PPL output |
 | `processed/olmes.parquet` | Typed aggregate OLMES output |
@@ -45,43 +45,72 @@ join: tokens, exact-parameter FLOP compute, model architecture/training details,
 OLMES, both scaling-law tables, and OLMES detail tasks. Instances and choices
 remain evaluation-detail tables keyed to their parent task checkpoint.
 
-## Download, preprocess, and publish
+## CLI lifecycle
 
-Download and preprocess are separate steps. Preprocess functions read local
-files only and never trigger downloads or network work. Their repository CLIs
-publish final Parquet outputs to `drotherm/dd_parsed` by default after local
-preprocessing succeeds. Pass `--no-upload` for a local-only run or
-`--keep-sources` to retain cleanup-eligible non-Parquet sources after a verified
-upload.
+Every command requires an explicit dataset selection. The applicable selectors
+are `--ppl`, `--olmes`, repeatable `--olmes-details RECIPE`, `--scaling-law`,
+`--published-results`, repeatable `--unit UNIT`, and `--all`. A `--unit`
+selection implies published results; `--published-results` without units
+selects every structured publication unit. `--data-dir` changes the artifact
+root for any command.
+
+`--all` means all processable data: it includes all 25 multi-gigabyte OLMES
+detail recipes as well as PPL, aggregate OLMES, scaling-law data, and every
+structured published-result unit. Use explicit selectors for an aggregate-only
+run:
 
 ```bash
-# Download selected sources
-uv run python scripts/download.py --ppl --olmes --olmes-details dolma1.7-no-math-no-code
+# Download, process, verify, publish, and then remove selected raw sources
+uv run datadec run --ppl --olmes --scaling-law --published-results
 
-# Download the three raw scaling-law CSVs (2.86 GB)
-uv run python scripts/download.py --scaling-law
+# Select individual OLMES detail recipes or structured publication units
+uv run datadec run \
+  --olmes-details dolma1.7-no-math-no-code \
+  --olmes-details c4
+uv run datadec run --unit cheap-decisions --unit per-task-arc-challenge
 
-# Download the 51 structured published results (8.97 GB)
-uv run python scripts/download.py --published-results
+# Run locally and retain raw and processed artifacts
+uv run datadec run --ppl --olmes --no-upload
+```
 
-# Optionally download the 80 published PDF/PNG figures (83 MB)
-uv run python scripts/download.py --published-figures
+`run` downloads missing raw sources, processes the selection, validates its
+outputs, publishes final Parquet files to `drotherm/dd_parsed`, verifies every
+remote copy at an immutable commit, and only then applies cleanup. Its default
+cleanup is `raw`. `--cleanup all` additionally verifies and removes the selected
+processed outputs, while `--cleanup none` retains raw and processed artifacts.
+With `--no-upload`, cleanup defaults to `none`; requesting `raw` or `all` at the
+same time is rejected before any work starts. Processing, validation, or
+publication failures retain raw inputs and final outputs for diagnosis or retry.
+Cleanup itself is not transactional if a filesystem deletion fails.
 
-# Preprocess and publish aggregate sources
-uv run python scripts/preprocess_ppl.py
-uv run python scripts/preprocess_olmes.py
-uv run python scripts/preprocess_scaling_law.py
+`download` retrieves verified processed outputs by default. Add `--raw` to
+retrieve original sources instead:
 
-# Preprocess and publish OLMES detail archives (tasks + instances + choices)
-uv run python scripts/preprocess_olmes_details.py --recipe dolma1.7-no-math-no-code
+```bash
+uv run datadec download --ppl --olmes
+uv run datadec download --raw --ppl --olmes --scaling-law
+uv run datadec download --raw --published-results
+```
 
-# Convert and publish all structured published-result units
-uv run python scripts/preprocess_published_results.py
+The 80 published PDF/PNG figures are raw reference artifacts. Select them with
+`--published-figures` only on raw download or cleanup operations; they cannot be
+processed or published by DataDecide.
 
-# Publish already-processed outputs without recomputing them
-uv run python scripts/publish.py --ppl --olmes --scaling-law
-uv run python scripts/publish.py --olmes-details dolma1.7-no-math-no-code
-uv run python scripts/publish.py --published-results
+```bash
+uv run datadec download --raw --published-figures
+```
+
+`publish` uploads and verifies existing selected outputs without processing
+them again. `raw-clean` removes selected reproducible raw downloads. `clean`
+also removes owned intermediates and processed outputs, but first verifies
+every existing selected final output against its immutable remote copy. Both
+cleanup commands support `--dry-run` and tolerate files that are already
+missing.
+
+```bash
+uv run datadec publish --ppl --olmes --scaling-law
+uv run datadec raw-clean --scaling-law --dry-run
+uv run datadec clean --unit cheap-decisions --dry-run
 ```
 
 Scaling-law preprocessing requires all three local raw CSVs. It validates the
@@ -90,30 +119,50 @@ invalid source groups, resolves the historical `baseline` alias and source
 overlaps by configured policy, and derives corrected token/compute schedules
 from the pinned batch sizes and exact model parameter counts. It writes both
 output tables only after both temporary parquet files validate successfully.
-After both final tables validate, the CLI publishes them in one atomic commit
-and deletes the three raw CSVs only after immutable remote verification.
+After both final tables validate, `run` publishes them in one atomic commit and
+removes the three raw CSVs only after immutable remote verification when the
+selected cleanup policy permits it.
 
-Select all three Drive-backed options to reconstruct all 134 source files
-(11.92 GB). The downloads use a pinned inventory from the public Drive folder
+Select all three Drive-backed source categories to reconstruct all 134 source
+files (11.92 GB). Downloads use a pinned inventory from the public Drive folder
 rather than crawling its current contents.
 
-All preprocess CLIs accept `--data-dir` (default: repo `data/`). Override paths explicitly when needed:
+The lifecycle CLI operates on canonical artifact paths. The low-level
+processors remain directly callable from Python for research workflows with
+custom inputs and outputs; no CLI path-override interface is provided. For
+example, aggregate OLMES supports explicit input and output paths:
 
-```bash
-uv run python scripts/preprocess_olmes.py --input path/to/raw.parquet --output path/to/out.parquet
+```python
+from pathlib import Path
 
-uv run python scripts/preprocess_olmes_details.py \
-  --recipe dolma1.7-no-math-no-code \
-  --input path/to/recipe.tar.gz \
-  --output-tasks path/to/tasks.parquet \
-  --output-instances path/to/instances.parquet \
-  --output-choices path/to/choices.parquet
+from datadec.data.artifacts import DataArtifacts
+from datadec.data.preprocess import preprocess_olmes
+
+artifacts = DataArtifacts(Path("data"))
+preprocess_olmes(
+    artifacts,
+    input_path=Path("path/to/raw.parquet"),
+    output_path=Path("path/to/out.parquet"),
+)
 ```
 
-OLMES detail path overrides require exactly one recipe. A custom `--input` is
-never deleted automatically. To convert or publish selected published-result
-units, repeat `--unit` on `preprocess_published_results.py`; omit it for all 15
-units.
+`preprocess_olmes_details` likewise accepts explicit archive and table paths.
+Custom inputs supplied to these processors are outside automatic cleanup
+ownership.
+
+## Library organization
+
+| Module | Responsibility |
+| --- | --- |
+| `datadec.config` | Validated dataset, schema, source, and publication contracts |
+| `datadec.data.selection` | Deterministic dataset, recipe, and publication-unit selection |
+| `datadec.data.artifacts` | Canonical paths and explicit artifact ownership |
+| `datadec.data.preprocess` | Local-input/local-output dataset processors |
+| `datadec.data.verify` | Selection-aware output and cross-source verification |
+| `datadec.data.download` | Verified raw-source and processed-output downloads |
+| `datadec.data.publication` / `publish` | Atomic publication units, upload, and immutable remote verification |
+| `datadec.data.cleanup` | Scoped raw and full cleanup plans |
+| `datadec.data.pipeline` | End-to-end stage coordination and cleanup policy |
 
 ## OLMES detail preprocessing
 
@@ -127,7 +176,9 @@ Nullable byte/unconditional fields remain null when absent in the source checkpo
 
 ## Verification
 
-**Default tests** (`uv run pytest`) use small tar fixtures and run in about a second. They cover schema mapping, nullability, CLI wiring, and verification logic — but not full live archives.
+**Default tests** (`uv run pytest`) use small fixtures. They cover schema
+mapping, nullability, lifecycle coordination, CLI wiring, and verification
+logic, but not full live archives.
 
 **Manual verification** is for representative recipes after download + preprocess. This checks:
 
@@ -137,15 +188,11 @@ Nullable byte/unconditional fields remain null when absent in the source checkpo
 
 `bits_per_byte_corr` is declared non-reconstructible from the detail slice in `configs/olmes.toml` and is excluded from reconstruction checks.
 
-```bash
-uv run python scripts/preprocess_olmes_details.py --recipe dolma1.7-no-math-no-code --no-upload
-uv run python scripts/verify_olmes_details.py --recipe dolma1.7-no-math-no-code
-uv run python scripts/verify_preprocessed_derivations.py
-```
-
-The derivation verifier covers PPL, aggregate OLMES, scaling-law evaluations,
-scaling-law checkpoint losses, and OLMES detail task outputs. It excludes the
-instance and choice tables. It checks every available raw token/compute value
+Checkpoint derivation verification covers PPL, aggregate OLMES, scaling-law
+evaluations, scaling-law checkpoint losses, and OLMES detail task outputs.
+These derivation checks exclude the instance and choice tables; selected detail
+verification separately checks their counts and metric reconstruction.
+Derivation verification checks every available raw token/compute value
 against the canonical schedule and reports when a raw source instead encodes
 nominal-parameter compute. No current preprocessing source records learning-rate
 schedule values, so LR derivations can be checked for internal consistency but
@@ -161,9 +208,9 @@ rows, 489,258 contained token and compute evidence: their token values all
 matched, their compute values all matched nominal-parameter compute, and all
 therefore differed from the standardized exact-parameter compute. Embedded
 OLMES detail model configuration had zero contradictions across 35,772 task
-rows. Because the raw Google Drive distinction is intentional evidence rather
-than a standardized-output failure, the verifier reports those 489,258 raw
-exact-compute differences and exits nonzero.
+rows. The raw Google Drive distinction is diagnostic evidence: it is reported
+without blocking the pipeline. Exact-compute mismatches in generated outputs
+remain correctness failures and stop publication and cleanup.
 
 Measured full local preprocessing wall times for that validation were 0.78s
 for PPL, 30.58s for aggregate OLMES, 228.94s for scaling-law, and 863.36s for

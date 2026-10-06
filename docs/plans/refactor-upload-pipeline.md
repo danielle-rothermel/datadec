@@ -10,7 +10,7 @@
 - [x] Add shared, scoped cleanup with dry-run support.
 - [x] Implement the full pipeline coordinator in `src`.
 - [x] Consolidate the Typer CLI in `src` and retire superseded scripts.
-- [ ] Update callers, documentation, packaging, and focused tests together.
+- [x] Update callers, documentation, packaging, and focused tests together.
 
 ## Implementation log
 
@@ -29,6 +29,8 @@
 - **Step 7 — Implement the full pipeline coordinator in `src`:** Added the typed coordinator: raw download, explicit local processors, all schemas and selected checks, immutable publication, then cleanup. No-upload defaults retain files; contradictory cleanup is rejected before side effects. All 386 integrated tests passed, including failure retention and partial-publication checks.
 
 - **Step 8 — Consolidate the Typer CLI in `src` and retire superseded scripts:** Added the library-owned Typer CLI and tiny scripts/data.py launcher; removed superseded download, processing and publication scripts and tests. Shared selection, dry-run and diagnostics are covered; the installed CLI uses a working-directory-relative data root. All 374 integrated tests passed.
+
+- **Step 9 — Update callers, documentation, packaging, and focused tests together:** Updated supported commands, library ownership and cleanup guarantees; moved Typer to runtime and added the packaged datadec entry point. All 374 tests, full src type check, lockfile check, wheel build and installed-wheel CLI/configuration-resource checks passed.
 
 ## Goal
 
@@ -76,7 +78,9 @@ unchanged except for required import updates.
 5. Publish final outputs and verify every remote copy.
 6. Apply cleanup only after the complete selected run succeeds.
 
-On failure, retain raw inputs and final outputs for retry. Earlier successful
+On processing, validation, or publication failure, retain raw inputs and final
+outputs for retry. Cleanup is not transactional on filesystem deletion failure.
+Earlier successful
 uploads may remain remote: publication is atomic per publication unit, not
 across the entire run. Preserve existing OLMES checkpoint resumption; other
 processing stages may recompute on retry without a new persistent run ledger.
