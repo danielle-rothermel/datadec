@@ -285,11 +285,12 @@ Full-recipe detail preprocessing and verification can take a long time and requi
 
 ## Paper reproduction
 
-`repro.claims` provides `QuoteLocation` and `read_quotes` for reading claim
-quotes from downloaded paper source files. The initial claim locations live in
+`repro.claims` provides `Claim`, `QuoteLocation`, and `read_quotes` for reading
+claim quotes from downloaded paper source files. Each claim holds one assertion
+and its locations across paper sections. The claim inventory lives in
 [`scripts/repro/claims.py`](scripts/repro/claims.py), whose docstring describes
 the pinned paper source and required download layout. Once those files are
-available, print the 74 claim IDs and their quotes with:
+available, print the 64 distinct claim IDs and all their quotes with:
 
 ```bash
 uv run python scripts/repro/claims.py

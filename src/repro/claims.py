@@ -13,17 +13,35 @@ class QuoteLocation:
     line: int
     start: int
     end: int
+    section: str
 
 
-def read_quotes(claims: Mapping[str, QuoteLocation], paper_dir: Path) -> dict[str, str]:
-    """Read quotes from the supplied paper directory, preserving claim order."""
+@dataclass(frozen=True, slots=True)
+class Claim:
+    """One assertion with its occurrences in the paper."""
+
+    statement: str
+    locations: tuple[QuoteLocation, ...]
+
+
+def read_quotes(
+    claims: Mapping[str, Claim], paper_dir: Path
+) -> dict[str, tuple[str, ...]]:
+    """Read all quotes per claim, preserving claim and source-location order."""
     sources = {
         source_file: (paper_dir / source_file).read_text(encoding="utf-8").splitlines()
-        for source_file in {location.source_file for location in claims.values()}
+        for source_file in {
+            location.source_file
+            for claim in claims.values()
+            for location in claim.locations
+        }
     }
     return {
-        claim_id: sources[location.source_file][location.line - 1][
-            location.start : location.end
-        ]
-        for claim_id, location in claims.items()
+        claim_id: tuple(
+            sources[location.source_file][location.line - 1][
+                location.start : location.end
+            ]
+            for location in claim.locations
+        )
+        for claim_id, claim in claims.items()
     }
