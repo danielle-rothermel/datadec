@@ -283,6 +283,18 @@ instance rows and 74,384,622 choice rows in addition to its task rows.
 
 Full-recipe detail preprocessing and verification can take a long time and require multi-GB local data; they are intentionally excluded from the default test suite.
 
+## Paper reproduction
+
+`repro.claims` provides `QuoteLocation` and `read_quotes` for reading claim
+quotes from downloaded paper source files. The initial claim locations live in
+[`scripts/repro/claims.py`](scripts/repro/claims.py), whose docstring describes
+the pinned paper source and required download layout. Once those files are
+available, print the 74 claim IDs and their quotes with:
+
+```bash
+uv run python scripts/repro/claims.py
+```
+
 ## Development
 
 ```bash

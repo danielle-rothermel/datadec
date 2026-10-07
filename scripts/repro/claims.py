@@ -1,6 +1,6 @@
 """Read and print the paper quotes for 74 primary reproduction claims.
 
-Run: python3 scripts/repro/claims.py
+Run: uv run python scripts/repro/claims.py
 
 Paper: DataDecide: How to Predict Best Pretraining Data with Small Experiments
 Authors: Ian Magnusson et al. (2025). License: CC BY 4.0.
@@ -19,21 +19,11 @@ Five targets derived from figure readings have no textual quote and are omitted:
 DD-0356, DD-0368, DD-0369, DD-0413, DD-0414.
 """
 
-from dataclasses import dataclass
 from pathlib import Path
 
+from repro.claims import QuoteLocation, read_quotes
+
 PAPER_DIR = Path(__file__).resolve().parents[2] / "data/raw/repro-paper/2504.11393v2"
-
-
-@dataclass(frozen=True, slots=True)
-class QuoteLocation:
-    """A source line (1-based) and Python character slice (0-based, end exclusive)."""
-
-    source_file: str
-    line: int
-    start: int
-    end: int
-
 
 CLAIMS: dict[str, QuoteLocation] = {
     "DD-0010": QuoteLocation("example_paper.tex", 239, 0, 199),
@@ -115,13 +105,7 @@ CLAIMS: dict[str, QuoteLocation] = {
 
 def main() -> None:
     """Read each quote from the paper download and print it after its claim ID."""
-    sources = {
-        source_file: (PAPER_DIR / source_file).read_text(encoding="utf-8").splitlines()
-        for source_file in {location.source_file for location in CLAIMS.values()}
-    }
-    for claim_id, location in CLAIMS.items():
-        line = sources[location.source_file][location.line - 1]
-        quote = line[location.start : location.end]
+    for claim_id, quote in read_quotes(CLAIMS, PAPER_DIR).items():
         print(f"{claim_id}\n{quote}\n")
 
 
