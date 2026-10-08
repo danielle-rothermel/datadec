@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from eval.ranking import UnavailableRankingError, predict_recipe_ranking
+from eval import UnavailableRankingError, predict_recipe_ranking
 
 
 @pytest.fixture

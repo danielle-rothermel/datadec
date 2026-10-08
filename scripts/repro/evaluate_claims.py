@@ -1,85 +1,125 @@
-"""Run the paper-specific single-scale experiments on local processed OLMES."""
+"""Run configured single-scale experiments on local processed OLMES."""
 
 import argparse
+from collections import Counter
+from collections.abc import Mapping
 from dataclasses import asdict
 from hashlib import file_digest
 import json
+import logging
 from pathlib import Path
 
-from repro.claims import load_claims
-from repro.evaluate import (
-    curve_summary,
-    evaluate_claims,
-    proxy_comparisons,
-    recipe_crossovers,
-)
-from repro.ranking import (
-    METRICS,
-    SMALL_SEEDS,
-    TARGET_SEEDS,
-    load_evaluations,
-    matched_compute_comparisons,
-    observed_checkpoints,
-    sweep_rankings,
-)
+import pandas as pd
+
+from datadec.data.artifacts import DataArtifacts
+from repro.aggregation import load_evaluations
+from repro.claim_evaluation import evaluate_claims
+from repro.claims import Claim, load_claims
+from repro.config import DEFAULT_CONFIG_PATH, EvaluationConfig, load_evaluation_config
+from repro.checkpoints import observed_checkpoints
+from repro.diagnostics.compute_matches import matched_compute_comparisons
+from repro.diagnostics.crossovers import recipe_crossovers
+from repro.diagnostics.curves import curve_summary
+from repro.diagnostics.proxies import proxy_comparisons
+from repro.results import ClaimEvidence
+from repro.sweep import sweep_rankings
 
 
 ROOT = Path(__file__).resolve().parents[2]
+LOGGER = logging.getLogger(__name__)
 
 
-def main() -> None:
+def parse_arguments(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data-dir", type=Path, default=ROOT / "data")
+    parser.add_argument("--config", type=Path, default=ROOT / DEFAULT_CONFIG_PATH)
     parser.add_argument(
-        "--output-dir", type=Path, default=ROOT / "outputs/repro/ranking"
+        "--data-dir", type=Path, help="override the configured data directory"
+    )
+    parser.add_argument(
+        "--output-dir", type=Path, help="override the configured output directory"
     )
     parser.add_argument(
         "--matched-compute-tolerance",
         type=float,
-        default=0.05,
-        help="maximum relative compute undershoot (default: 0.05)",
+        help="override the configured maximum relative compute undershoot",
     )
-    args = parser.parse_args()
-    if not 0 <= args.matched_compute_tolerance <= 1:
+    args = parser.parse_args(argv)
+    if (
+        args.matched_compute_tolerance is not None
+        and not 0 <= args.matched_compute_tolerance <= 1
+    ):
         parser.error("--matched-compute-tolerance must be between 0 and 1")
-    source = args.data_dir / "processed/olmes.parquet"
-    print(f"Reading {source}", flush=True)
-    with source.open("rb") as file:
-        source_sha256 = file_digest(file, "sha256").hexdigest()
-    evaluations = load_evaluations(args.data_dir)
-    sweep = sweep_rankings(
-        evaluations, progress=lambda message: print(message, flush=True)
+    return args
+
+
+def resolve_config(args: argparse.Namespace) -> EvaluationConfig:
+    """Resolve TOML paths from the checkout and apply explicit CLI overrides."""
+    config = load_evaluation_config(args.config)
+    values = config.model_dump()
+    run = config.run.model_dump()
+    run["data_dir"] = (
+        args.data_dir if args.data_dir is not None else ROOT / config.run.data_dir
     )
-    claims = load_claims(ROOT / "configs/repro_claims/magnusson2025-datadecide.toml")
-    evidence = evaluate_claims(sweep)
-    output = args.output_dir
-    output.mkdir(parents=True, exist_ok=True)
+    run["output_dir"] = (
+        args.output_dir if args.output_dir is not None else ROOT / config.run.output_dir
+    )
+    run["claim_inventory"] = ROOT / config.run.claim_inventory
+    if args.matched_compute_tolerance is not None:
+        run["matched_compute_tolerance"] = args.matched_compute_tolerance
+    values["run"] = run
+    return EvaluationConfig.model_validate(values)
+
+
+def load_run_claims(config: EvaluationConfig) -> dict[str, Claim]:
+    """Check configured claim references before starting the expensive sweep."""
+    claims = load_claims(config.run.claim_inventory)
+    unknown = (
+        set(config.claims) | set(config.skipped_math_code_claims)
+    ) - claims.keys()
+    if unknown:
+        raise ValueError(f"unknown claim IDs in evaluation config: {sorted(unknown)}")
+    return claims
+
+
+def configure_logging() -> None:
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+
+
+def hash_file(path: Path) -> str:
+    with path.open("rb") as file:
+        return file_digest(file, "sha256").hexdigest()
+
+
+def write_analysis_tables(
+    output: Path,
+    evaluations: pd.DataFrame,
+    sweep: pd.DataFrame,
+    config: EvaluationConfig,
+) -> None:
     sweep.to_parquet(output / "rankings.parquet")
     curve_summary(sweep).to_csv(output / "curves.csv", index=False)
-    proxy_comparisons(sweep).to_parquet(
+    proxy_comparisons(sweep, config).to_parquet(
         output / "proxy_comparisons.parquet", index=False
     )
-    recipe_crossovers(evaluations).to_csv(output / "recipe_crossovers.csv", index=False)
-    matched_compute_comparisons(
-        sweep,
-        relative_tolerance=args.matched_compute_tolerance,
-    ).to_csv(output / "matched_compute.csv", index=False)
+    recipe_crossovers(evaluations, config).to_csv(
+        output / "recipe_crossovers.csv", index=False
+    )
+    matched_compute_comparisons(sweep, config).to_csv(
+        output / "matched_compute.csv", index=False
+    )
     observed_checkpoints(evaluations).to_csv(output / "checkpoints.csv", index=False)
-    report = {
+
+
+def build_claim_report(
+    evidence: tuple[ClaimEvidence, ...],
+    claims: Mapping[str, Claim],
+    config: EvaluationConfig,
+    source: Path,
+    source_sha256: str,
+) -> dict[str, object]:
+    return {
         "input": {"path": str(source.resolve()), "sha256": source_sha256},
-        "target": {"size": "1B", "step": 69369, "seeds": TARGET_SEEDS},
-        "predictor_seeds": {"1B": TARGET_SEEDS, "other_sizes": SMALL_SEEDS},
-        "metrics": METRICS,
-        "matched_compute_tolerance": args.matched_compute_tolerance,
-        "skipped_math_code_claims": [
-            "DD-0017",
-            "DD-0018",
-            "DD-0213",
-            "DD-0222",
-            "DD-0224",
-            "DD-0226",
-            "DD-0227",
-        ],
+        "configuration": config.model_dump(mode="json"),
         "claims": [
             {
                 **asdict(item),
@@ -91,9 +131,11 @@ def main() -> None:
             for item in evidence
         ],
     }
-    (output / "claims.json").write_text(
-        json.dumps(report, indent=2, allow_nan=False) + "\n"
-    )
+
+
+def render_claim_markdown(
+    evidence: tuple[ClaimEvidence, ...], claims: Mapping[str, Claim]
+) -> str:
     lines = [
         "# Single-scale claim evidence",
         "",
@@ -113,12 +155,48 @@ def main() -> None:
                 "",
             ]
         )
-    (output / "claims.md").write_text("\n".join(lines))
-    for status in sorted({item.status for item in evidence}):
-        print(
-            f"{status}: {sum(item.status == status for item in evidence)}", flush=True
-        )
-    print(f"Wrote claim evidence to {output.resolve()}", flush=True)
+    return "\n".join(lines)
+
+
+def write_run_outputs(
+    evaluations: pd.DataFrame,
+    sweep: pd.DataFrame,
+    evidence: tuple[ClaimEvidence, ...],
+    claims: Mapping[str, Claim],
+    config: EvaluationConfig,
+    source: Path,
+    source_sha256: str,
+) -> None:
+    output = config.run.output_dir
+    output.mkdir(parents=True, exist_ok=True)
+    write_analysis_tables(output, evaluations, sweep, config)
+    report = build_claim_report(evidence, claims, config, source, source_sha256)
+    (output / "claims.json").write_text(
+        json.dumps(report, indent=2, allow_nan=False) + "\n"
+    )
+    (output / "claims.md").write_text(render_claim_markdown(evidence, claims))
+
+
+def log_summary(evidence: tuple[ClaimEvidence, ...], output: Path) -> None:
+    for status, count in sorted(Counter(item.status for item in evidence).items()):
+        LOGGER.info("%s: %s", status, count)
+    LOGGER.info("Wrote claim evidence to %s", output.resolve())
+
+
+def main() -> None:
+    config = resolve_config(parse_arguments())
+    configure_logging()
+    claims = load_run_claims(config)
+    source = DataArtifacts(config.run.data_dir).get_path("olmes_processed")
+    LOGGER.info("Reading %s", source)
+    source_sha256 = hash_file(source)
+    evaluations = load_evaluations(config.run.data_dir, config)
+    sweep = sweep_rankings(evaluations, config, progress=LOGGER.info)
+    evidence = evaluate_claims(sweep, config)
+    write_run_outputs(
+        evaluations, sweep, evidence, claims, config, source, source_sha256
+    )
+    log_summary(evidence, config.run.output_dir)
 
 
 if __name__ == "__main__":

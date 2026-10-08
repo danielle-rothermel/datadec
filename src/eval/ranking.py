@@ -1,118 +1,10 @@
 """Predict recipe order at one exact checkpoint from another checkpoint."""
 
-from dataclasses import dataclass
-
 import numpy as np
 import pandas as pd
 
-
-class UnavailableRankingError(ValueError):
-    """The requested checkpoint, recipes, seeds, or finite scores are missing."""
-
-
-@dataclass(frozen=True, slots=True)
-class Checkpoint:
-    size: str
-    step: int
-    compute: float
-
-
-@dataclass(frozen=True, slots=True)
-class PairwiseDecision:
-    recipe_a: str
-    recipe_b: str
-    predictor_sign: int
-    target_sign: int
-
-    @property
-    def correct(self) -> bool:
-        return self.predictor_sign == self.target_sign
-
-
-@dataclass(frozen=True, slots=True)
-class SeedRanking:
-    seed: str
-    predictor_scores: tuple[float, ...]
-    decisions: tuple[PairwiseDecision, ...]
-
-    @property
-    def decision_accuracy(self) -> float:
-        return sum(pair.correct for pair in self.decisions) / len(self.decisions)
-
-
-@dataclass(frozen=True, slots=True)
-class RankingResult:
-    predictor: Checkpoint
-    predicted: Checkpoint
-    task: str
-    predictor_task_metric: str
-    predicted_task_metric: str
-    recipes: tuple[str, ...]
-    target_seeds: tuple[str, ...]
-    target_scores: tuple[float, ...]
-    seed_rankings: tuple[SeedRanking, ...]
-
-    @property
-    def decision_accuracy(self) -> float:
-        return float(np.mean([r.decision_accuracy for r in self.seed_rankings]))
-
-    @property
-    def decision_accuracy_std(self) -> float:
-        """Population standard deviation across predictor seeds (ddof=0)."""
-        return float(np.std([r.decision_accuracy for r in self.seed_rankings]))
-
-    @property
-    def compute_ratio(self) -> float:
-        return self.predictor.compute / self.predicted.compute
-
-
-def _checkpoint_rows(
-    evaluations: pd.DataFrame, size: str, step: int, task: str
-) -> pd.DataFrame:
-    if isinstance(evaluations.index, pd.MultiIndex) and evaluations.index.names == [
-        "params",
-        "step",
-        "task",
-    ]:
-        try:
-            return evaluations.loc[[(size, step, task)]]
-        except KeyError as error:
-            raise UnavailableRankingError(
-                f"missing checkpoint: {size}, step {step}, {task}"
-            ) from error
-    rows = evaluations.loc[
-        (evaluations["params"] == size)
-        & (evaluations["step"] == step)
-        & (evaluations["task"] == task)
-    ]
-    if rows.empty:
-        raise UnavailableRankingError(
-            f"missing checkpoint: {size}, step {step}, {task}"
-        )
-    return rows
-
-
-def _scores(
-    rows: pd.DataFrame,
-    metric: str,
-    recipes: tuple[str, ...],
-    seeds: tuple[str, ...],
-) -> tuple[pd.DataFrame, float]:
-    if not seeds or len(set(seeds)) != len(seeds):
-        raise ValueError("seeds must be nonempty and unique")
-    selected = rows.loc[rows["seed"].isin(seeds)]
-    if selected.duplicated(["data", "seed"]).any():
-        raise ValueError("duplicate recipe/seed rows at checkpoint")
-    scores = selected.pivot(index="data", columns="seed", values=metric)
-    if set(scores.index) != set(recipes) or set(scores.columns) != set(seeds):
-        raise UnavailableRankingError("checkpoint does not contain all recipes/seeds")
-    scores = scores.reindex(index=list(recipes), columns=list(seeds))
-    if not np.isfinite(scores.to_numpy(dtype=float, na_value=np.nan)).all():
-        raise UnavailableRankingError(f"missing or non-finite {metric} scores")
-    compute = selected["compute"].unique()
-    if len(compute) != 1 or not np.isfinite(compute[0]) or compute[0] < 0:
-        raise ValueError("checkpoint compute must be one finite nonnegative value")
-    return scores, float(compute[0])
+from eval.checkpoint_scores import checkpoint_rows, checkpoint_scores
+from eval.results import Checkpoint, PairwiseDecision, RankingResult, SeedRanking
 
 
 def predict_recipe_ranking(
@@ -142,8 +34,8 @@ def predict_recipe_ranking(
     """
     if predictor_step < 0 or predicted_step < 0:
         raise ValueError("checkpoint steps must be nonnegative")
-    predictor = _checkpoint_rows(evaluations, predictor_size, predictor_step, task)
-    target = _checkpoint_rows(evaluations, predicted_size, predicted_step, task)
+    predictor = checkpoint_rows(evaluations, predictor_size, predictor_step, task)
+    target = checkpoint_rows(evaluations, predicted_size, predicted_step, task)
     recipes = (
         recipes if recipes is not None else tuple(sorted(predictor["data"].unique()))
     )
@@ -159,10 +51,10 @@ def predict_recipe_ranking(
         if predicted_seeds is not None
         else tuple(sorted(target["seed"].unique()))
     )
-    pred_scores, pred_compute = _scores(
+    pred_scores, pred_compute = checkpoint_scores(
         predictor, predictor_task_metric, recipes, predictor_seeds
     )
-    target_scores, target_compute = _scores(
+    target_scores, target_compute = checkpoint_scores(
         target, predicted_task_metric, recipes, predicted_seeds
     )
     if target_compute <= 0:

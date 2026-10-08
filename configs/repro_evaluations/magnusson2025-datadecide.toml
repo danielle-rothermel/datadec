@@ -1,0 +1,274 @@
+# Default single-scale experiment and claim-analysis policy for DataDecide.
+# Claim statements and paper locations remain in the separate claim inventory.
+sweep_metric_group = "all"
+default_supporting_tables = ["curves.csv", "proxy_comparisons.parquet"]
+skipped_math_code_claims = [
+  "DD-0017",
+  "DD-0018",
+  "DD-0213",
+  "DD-0222",
+  "DD-0224",
+  "DD-0226",
+  "DD-0227",
+]
+
+[run]
+data_dir = "data"
+output_dir = "outputs/repro/ranking"
+claim_inventory = "configs/repro_claims/magnusson2025-datadecide.toml"
+matched_compute_tolerance = 0.05
+
+[target]
+size = "1B"
+step = 69369
+metric = "primary_metric"
+seeds = ["default", "large aux 2", "large aux 3"]
+
+[predictors]
+default_seeds = ["default", "small aux 2", "small aux 3"]
+
+[predictors.seeds_by_size]
+1B = ["default", "large aux 2", "large aux 3"]
+
+[aggregation]
+benchmark_group = "benchmarks"
+macro_task = "olmes"
+subject_task = "mmlu"
+subject_prefix = "mmlu_"
+subject_count = 57
+
+[task_groups]
+benchmarks = [
+  "arc_challenge",
+  "arc_easy",
+  "boolq",
+  "csqa",
+  "hellaswag",
+  "mmlu",
+  "openbookqa",
+  "piqa",
+  "socialiqa",
+  "winogrande",
+]
+other_tasks = ["boolq", "csqa", "openbookqa", "piqa", "socialiqa", "winogrande"]
+
+[metric_groups]
+all = [
+  "primary_metric",
+  "acc_raw",
+  "acc_per_token",
+  "acc_per_char",
+  "correct_prob",
+  "correct_prob_per_token",
+  "correct_prob_per_char",
+  "total_prob",
+  "total_prob_per_token",
+  "total_prob_per_char",
+  "norm_correct_prob",
+  "norm_correct_prob_per_token",
+  "norm_correct_prob_per_char",
+  "margin",
+  "margin_per_token",
+  "margin_per_char",
+]
+primary = ["primary_metric"]
+character_proxies = [
+  "correct_prob_per_char",
+  "total_prob_per_char",
+  "norm_correct_prob_per_char",
+  "margin_per_char",
+]
+likelihood_proxies = [
+  "correct_prob",
+  "correct_prob_per_token",
+  "correct_prob_per_char",
+  "total_prob",
+  "total_prob_per_token",
+  "total_prob_per_char",
+  "norm_correct_prob",
+  "norm_correct_prob_per_token",
+  "norm_correct_prob_per_char",
+  "margin",
+  "margin_per_token",
+  "margin_per_char",
+]
+
+[criteria.high_predictability]
+accuracy_gt = 0.8
+
+[claims.DD-0010]
+tasks = ["olmes"]
+metric_groups = ["primary"]
+judgment = "Judge whether the measured baseline is strong."
+
+[claims.DD-0011]
+tasks = ["olmes"]
+metric_groups = ["primary"]
+predictor_size = "150M"
+judgment = "Compare observed 150M checkpoints with approximately 0.80; a fully trained endpoint may be absent."
+
+[claims.DD-0014]
+tasks = ["mmlu"]
+metric_groups = ["likelihood_proxies"]
+max_compute_ratio = 0.0001
+criterion = "high_predictability"
+judgment = "Strictly >0.80 within 0.0001 of target compute."
+
+[claims.DD-0015]
+tasks = ["arc_easy", "arc_challenge"]
+metric_groups = ["likelihood_proxies"]
+max_compute_ratio = 0.0001
+criterion = "high_predictability"
+judgment = "Require the >0.80 budget bound separately for both ARC tasks."
+
+[claims.DD-0016]
+tasks = ["hellaswag"]
+metric_groups = ["likelihood_proxies"]
+max_compute_ratio = 0.0001
+criterion = "high_predictability"
+judgment = "Strictly >0.80 within 0.0001 of target compute."
+
+[claims.DD-0051]
+task_groups = ["benchmarks"]
+metric_groups = ["primary"]
+judgment = "Compare task budget-to-accuracy curves and choose what counts as good prediction."
+
+[claims.DD-0052]
+tasks = ["arc_easy", "arc_challenge", "mmlu", "hellaswag"]
+metric_groups = ["primary"]
+judgment = "Judge how much less compute constitutes the claimed difference."
+
+[claims.DD-0053]
+tasks = ["socialiqa"]
+metric_groups = ["primary"]
+judgment = "Judge difficulty across observed sizes and budgets."
+
+[claims.DD-0055]
+task_groups = ["benchmarks"]
+metric_groups = ["primary", "character_proxies"]
+judgment = "Choose the small-scale regime and equivalence tolerance."
+
+[claims.DD-0148]
+task_groups = ["benchmarks"]
+metric_groups = ["primary"]
+judgment = "Compare tasks at identical checkpoint compute; judge significance."
+
+[claims.DD-0149]
+tasks = ["arc_easy"]
+metric_groups = ["primary"]
+judgment = "Choose small scale and predictable thresholds."
+
+[claims.DD-0150]
+tasks = ["arc_easy", "hellaswag"]
+metric_groups = ["primary"]
+judgment = "Choose a common accuracy threshold and judge the compute gap."
+
+[claims.DD-0164]
+tasks = ["olmes"]
+metric_groups = ["primary"]
+judgment = "Judge the overall compute trend, accounting for local reversals."
+
+[claims.DD-0165]
+tasks = ["olmes"]
+metric_groups = ["primary"]
+supporting_tables = ["matched_compute.csv"]
+judgment = "Inspect matched-compute comparisons using the reported tolerance; choose accuracy equivalence tolerance."
+
+[claims.DD-0168]
+task_groups = ["other_tasks"]
+metric_groups = ["primary"]
+judgment = "Judge reliability relative to ARC, MMLU, and HellaSwag."
+
+[claims.DD-0169]
+tasks = ["olmes"]
+metric_groups = ["primary"]
+judgment = "Judge roughly log-linear fit and deviations, not just positive slope."
+
+[claims.DD-0175]
+tasks = ["arc_easy"]
+metric_groups = ["primary"]
+max_compute_ratio = 1e-05
+judgment = "At <=0.00001 target compute, choose what predictable and consistently mean."
+
+[claims.DD-0176]
+tasks = ["boolq"]
+metric_groups = ["primary"]
+judgment = "Choose a nontrivial threshold and compare intermediate 1B with other scales."
+
+[claims.DD-0177]
+tasks = ["hellaswag"]
+metric_groups = ["primary"]
+judgment = "Choose a change point and judge flat-then-log-linear behavior."
+
+[claims.DD-0178]
+tasks = ["socialiqa"]
+metric_groups = ["primary"]
+judgment = "Choose a change point and judge flat-then-log-linear behavior."
+
+[claims.DD-0179]
+tasks = ["winogrande"]
+metric_groups = ["primary"]
+judgment = "Choose a change point and judge flat-then-log-linear behavior."
+
+[claims.DD-0194]
+task_groups = ["benchmarks"]
+metric_groups = ["primary"]
+supporting_tables = ["recipe_crossovers.csv"]
+judgment = "Inspect recipe-order crossovers between observed completed scales; judge frequently. Missing endpoints limit coverage."
+
+[claims.DD-0196]
+task_groups = ["benchmarks"]
+metrics = ["primary_metric", "correct_prob_per_char", "total_prob_per_char"]
+judgment = "Choose small-scale and equivalence thresholds."
+
+[claims.DD-0197]
+task_groups = ["benchmarks"]
+metric_groups = ["all"]
+judgment = "Compare raw/token/character curves and judge similar."
+
+[claims.DD-0198]
+task_groups = ["benchmarks"]
+metric_groups = ["all"]
+judgment = "Define optimality across checkpoints and count tasks by normalization."
+
+[claims.DD-0199]
+task_groups = ["benchmarks"]
+metric_groups = ["all"]
+judgment = "Choose small scales, most, and equivalence tolerance."
+
+[claims.DD-0202]
+task_groups = ["benchmarks"]
+metric_groups = ["primary", "character_proxies"]
+judgment = "Classify the observed task curves into the proposed two types."
+
+[claims.DD-0203]
+task_groups = ["benchmarks"]
+metric_groups = ["primary", "character_proxies"]
+judgment = "Identify tasks with near-identical improving curves and choose similarity tolerance."
+
+[claims.DD-0204]
+task_groups = ["benchmarks"]
+metric_groups = ["primary", "character_proxies"]
+judgment = "Identify flat Correct/Total Prob curves approached by other proxies."
+
+[claims.DD-0205]
+task_groups = ["benchmarks"]
+metric_groups = ["primary", "character_proxies"]
+min_compute_ratio = 0.1
+judgment = "Judge the tendency to overtake within the last order of magnitude."
+
+[claims.DD-0206]
+task_groups = ["benchmarks"]
+metrics = ["correct_prob_per_char", "total_prob_per_char"]
+min_compute_ratio = 0.1
+judgment = "Judge near-target decreases relative to seed variation."
+
+[claims.DD-0207]
+task_groups = ["benchmarks"]
+metrics = ["primary_metric", "norm_correct_prob_per_char", "margin_per_char"]
+judgment = "Judge tracking; the incorrect-answer penalty is a metric-definition claim requiring separate inspection."
+
+[claims.DD-0208]
+task_groups = ["benchmarks"]
+metric_groups = ["primary", "character_proxies"]
+judgment = "Choose small-scale and benefit thresholds, then count benefiting tasks (claimed count: five)."

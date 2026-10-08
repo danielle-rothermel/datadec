@@ -298,8 +298,9 @@ uv run python scripts/repro/claims.py
 ```
 
 For ranking experiments, run `uv run python scripts/repro/evaluate_claims.py`
-with local processed OLMES data. See [reproduction](docs/reproduction.md) for
-setup, evaluation semantics, and claim evidence outputs.
+with local processed OLMES data. Experiment settings and claim analysis scopes
+live in [`configs/repro_evaluations/`](configs/repro_evaluations/). See
+[reproduction](docs/reproduction.md) for setup, module layout, and evidence outputs.
 
 ## Development
 

@@ -14,8 +14,9 @@ if it is not already present, then run from the repository root:
 ```bash
 uv run datadec download --olmes
 uv run python scripts/repro/evaluate_claims.py
-# Optional paths and maximum relative compute undershoot for matched comparisons:
+# Optional experiment config, paths, and maximum relative compute undershoot:
 uv run python scripts/repro/evaluate_claims.py \
+  --config configs/repro_evaluations/magnusson2025-datadecide.toml \
   --data-dir data --output-dir outputs/repro/ranking \
   --matched-compute-tolerance 0.05
 ```
@@ -23,6 +24,55 @@ uv run python scripts/repro/evaluate_claims.py \
 The runner reads local data and writes ignored run artifacts. It does not fit
 scaling laws. Math/code, seed-noise, and scaling-law claims are outside this
 experiment; missing recipe identities in other source tables are not guessed.
+
+## Configuration and module layout
+
+The default experiment lives in
+`configs/repro_evaluations/magnusson2025-datadecide.toml`. It owns run paths,
+target size/step/metric/seeds, predictor seed sets, benchmark aggregation,
+sweep metrics, compute matching tolerance, and claim analysis scopes. Claim
+statements and paper locations remain in the separate `repro_claims` inventory.
+The default evaluation config is also included in the wheel.
+
+Named task and metric groups keep repeated selections in one place. Each
+`[claims.<id>]` entry selects explicit names and/or named groups, an optional
+predictor size and compute range, supporting tables, and the judgment still
+required. Numerical claims reference a criterion in `[criteria]`; the runner
+applies the criterion without branching on claim IDs. The configured
+`accuracy_gt` bound is strict and must be met separately for every selected
+task. These paper wrappers use higher-is-better metrics.
+
+Use `--config PATH` to choose another experiment. Paths inside the TOML resolve
+from the repository root; explicit CLI paths resolve from the current working
+directory. `--data-dir`, `--output-dir`, and `--matched-compute-tolerance`
+override the corresponding TOML settings. `claims.json` records the effective,
+validated configuration, including overrides. Invalid references, unknown
+fields, and invalid compute ranges fail before the sweep.
+
+```text
+configs/
+  repro_claims/magnusson2025-datadecide.toml       # Claims and paper locations
+  repro_evaluations/magnusson2025-datadecide.toml  # Experiment and analysis policy
+src/
+  eval/
+    checkpoint_scores.py  # Exact selection and recipe/seed coverage
+    ranking.py            # Generic predict_recipe_ranking algorithm
+    results.py            # Scores, checkpoints, and pairwise result types
+  repro/
+    claims.py             # Inventory parsing and quote lookup
+    config.py             # Validated experiment config and group resolution
+    aggregation.py        # Local OLMES reads and macro averages
+    checkpoints.py        # Observed schedules and compute-budget selection
+    sweep.py              # Paper ranking policy and experiment execution
+    claim_evaluation.py   # Evidence selection and numerical verdicts
+    results.py            # Claim status and evidence types
+    diagnostics/
+      curves.py           # Compute/accuracy slopes and reversals
+      proxies.py          # Proxy advantages at identical checkpoints
+      crossovers.py       # Recipe-order reversals across completed scales
+      compute_matches.py  # Intermediate/completed compute comparisons
+scripts/repro/evaluate_claims.py  # CLI, logging, and output helpers; main orchestrates
+```
 
 ## Generic evaluation API
 
@@ -37,20 +87,22 @@ standard deviation.
 from pathlib import Path
 
 from eval import predict_recipe_ranking
-from repro.ranking import load_evaluations, SMALL_SEEDS, TARGET_SEEDS
+from repro.aggregation import load_evaluations
+from repro.config import load_evaluation_config
 
-rows = load_evaluations(Path("data"))
+config = load_evaluation_config()
+rows = load_evaluations(Path("data"), config)
 result = predict_recipe_ranking(
     rows,
     predictor_size="150M",
-    predicted_size="1B",
+    predicted_size=config.target.size,
     task="hellaswag",
     predictor_task_metric="correct_prob_per_char",
-    predicted_task_metric="primary_metric",
+    predicted_task_metric=config.target.metric,
     predictor_step=37500,
-    predicted_step=69369,
-    predictor_seeds=SMALL_SEEDS,
-    predicted_seeds=TARGET_SEEDS,
+    predicted_step=config.target.step,
+    predictor_seeds=config.predictors.seeds_for("150M"),
+    predicted_seeds=config.target.seeds,
 )
 print(result.decision_accuracy, result.compute_ratio)
 ```
@@ -59,7 +111,7 @@ Steps are exact and separate on each side. Metric direction defaults to higher
 is better; callers using losses must set the appropriate
 `predictor_higher_is_better` or `predicted_higher_is_better` flag to false.
 The generic helper infers omitted recipe/seed sets from observed rows. Pass
-explicit sets to enforce expected coverage; `repro.ranking.paper_ranking` does
+explicit sets to enforce expected coverage; `repro.sweep.paper_ranking` does
 this using the catalog recipes and paper seed labels.
 
 Each target recipe's score is the mean over target seeds. Every predictor seed
@@ -103,7 +155,7 @@ Outputs under `outputs/repro/ranking/`:
 
 | File | Contents |
 | --- | --- |
-| `claims.json` | Input SHA-256, policy, claim IDs/statements/source locations, statuses, evidence row IDs, remaining judgments |
+| `claims.json` | Input SHA-256, effective configuration, claim IDs/statements/source locations, statuses, evidence row IDs, remaining judgments |
 | `claims.md` | Readable claim evidence and remaining validation todo |
 | `rankings.parquet` | One row per checkpoint/task/metric, seed accuracies, compute, recipe/pair counts, coverage failures; index `evidence_id` |
 | `checkpoints.csv` | Observed compute and schedule-completion coverage |
@@ -112,7 +164,8 @@ Outputs under `outputs/repro/ranking/`:
 | `matched_compute.csv` | Completed/intermediate evidence IDs, actual compute gaps, accuracy differences |
 | `recipe_crossovers.csv` | Strict recipe-order reversals between adjacent observed completed scales, using seed means |
 
-The candidate claim scopes are declared in `repro.evaluate`. DD-0014, DD-0015,
+The candidate claim scopes are declared in the evaluation TOML and applied by
+`repro.claim_evaluation`. DD-0014, DD-0015,
 and DD-0016 state explicit numerical existence bounds: at least one observed
 continuous proxy/checkpoint must exceed 0.80 decision accuracy within 0.0001
 of target compute. ARC is evaluated separately on both Easy and Challenge;

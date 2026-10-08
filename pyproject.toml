@@ -37,6 +37,7 @@ allow-direct-references = true
 packages = ["src/datadec", "src/eval", "src/repro"]
 
 [tool.hatch.build.targets.wheel.force-include]
+"configs/repro_evaluations/magnusson2025-datadecide.toml" = "repro/configs/repro_evaluations/magnusson2025-datadecide.toml"
 "configs/catalog.toml" = "datadec/configs/catalog.toml"
 "configs/olmes.toml" = "datadec/configs/olmes.toml"
 "configs/publishing.toml" = "datadec/configs/publishing.toml"
