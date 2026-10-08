@@ -1,7 +1,8 @@
 # DataDecide paper source
 
-These files support the claim quote lookups in
-[`scripts/repro/claims.py`](../../../scripts/repro/claims.py):
+These files support the claim quote locations in
+[`configs/repro_claims/magnusson2025-datadecide.toml`](../../../configs/repro_claims/magnusson2025-datadecide.toml),
+printed by [`scripts/repro/claims.py`](../../../scripts/repro/claims.py):
 
 - `example_paper.tex` — main paper text and appendix.
 - `tables/pred_error.tex` — scaling-law prediction-error table.
