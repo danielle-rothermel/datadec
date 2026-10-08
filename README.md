@@ -214,6 +214,78 @@ index is not maintained.
 | `datadec.data.publication` / `publish` | Atomic publication units, upload, and immutable remote verification |
 | `datadec.data.cleanup` | Scoped raw and full cleanup plans |
 | `datadec.data.pipeline` | End-to-end stage coordination and cleanup policy |
+| `datadec.models` | DataDecide checkpoint naming, `hf_olmo` to native conversion, final-step evidence, model cards, private republication |
+| `datadec.eval` | OLMES cloze requests for ARC-Challenge, likelihood decision rules, converted-checkpoint verification |
+
+## Converted checkpoints
+
+The authors' DataDecide checkpoints declare `model_type: hf_olmo`, which only
+loads with the `ai2-olmo` package. `datadec.models` converts one checkpoint
+commit to a native transformers class and republishes it privately under the
+`drotherm` namespace. Every DataDecide size uses pre-norm blocks with RMSNorm
+carrying a learned scale, SwiGLU, RoPE, no biases, no QKV clipping and untied
+embeddings, which is exactly the Llama layout, so the target class is
+`LlamaForCausalLM` (transformers' native `olmo` class uses a non-parametric
+LayerNorm and cannot hold these weights). Fused projections are split and
+nothing else changes; any source config outside that layout is refused.
+Tokenizer files are copied byte for byte, and `conversion.json` records the
+tensor and config mapping.
+
+Naming, seed literals, and final-step sources are declared in
+[`configs/checkpoints.toml`](configs/checkpoints.toml):
+
+- repo `drotherm/DataDecide-<recipe>-<size>`, branch `step<N>-seed<k>`, where
+  `k` is the seed ordinal (0 is the authors' default seed 6198; 1 and 2 are
+  the auxiliary seeds, 14 and 15 below 1B and 4 and 5 at 1B)
+- tag `final-seed<k>` on the step the authors treated as final, taken from
+  their final default-seed checkpoint list when it names the run and from the
+  paper's model table otherwise; the last step in
+  `allenai/DataDecide-eval-results` is recorded too, and every disagreement
+  is stated on the model card
+
+Each conversion is checked for logit equivalence before publication: the
+original is loaded with `hf_olmo` in a throwaway `uv run --isolated`
+environment that installs `ai2-olmo` (it is never a datadec dependency), and
+the conversion is loaded with datadec's transformers on the same token ids.
+The card records the maximum absolute logit difference and argmax agreement.
+
+```bash
+# Needs a Hub token with write access and `datadec download --olmes`.
+uv run python scripts/models/convert_checkpoint.py \
+  --recipe dclm-baseline --size 150M --seed 0 --step 38157 \
+  --work-dir /tmp/datadec-convert
+```
+
+Published so far: `drotherm/DataDecide-dclm-baseline-150M`, branch
+`step38157-seed0`, tag `final-seed0` (maximum absolute logit difference 0.0).
+
+## Converted-model verification
+
+`datadec.eval.olmes_rc` builds OLMES cloze requests for ARC-Challenge from
+dr-hf `SourceRow`s: five fixed shots copied from the OLMES repository,
+`Question: ...\nAnswer:` queries, space-prefixed continuations, and `Answer:`
+as the unconditional context. Two golden tests pin it: the OLMES paper's
+Figure 5 prompt byte for byte, and (opt-in, `-m hub`) every ARC-Challenge
+request string published in `allenai/DataDecide-eval-instances`.
+
+`scripts/verify_converted_model.py` runs the flow end to end without OLMES:
+it pins `allenai/ai2_arc` through dr-hf, takes the `test` origin subset,
+scores the converted checkpoint through a dr-providers `LocalModelProvider`,
+applies the raw, per-token, per-char, per-byte and PMI decision rules, and
+compares predictions and per-choice log-likelihoods with the processed
+`olmes-details` instance and choice tables of the original checkpoint.
+
+```bash
+uv run datadec download --olmes-details dclm-baseline
+uv run python scripts/verify_converted_model.py \
+  --recipe dclm-baseline --size 150M --seed 0 --step 38157 \
+  --report docs/verification/datadecide-dclm-150M.md
+```
+
+The 150M DCLM-Baseline result is in
+[`docs/verification/datadecide-dclm-150M.md`](docs/verification/datadecide-dclm-150M.md):
+predicted indices agree on all 1172 items under every rule, and the mean
+absolute `sum_logits` difference is under 1e-5 nats.
 
 ## OLMES detail preprocessing
 
@@ -313,4 +385,11 @@ See [reproduction](docs/reproduction.md) for run selection, setup, and dataset d
 uv run ruff check src scripts tests
 uv run ty check src
 uv run pytest
+uv run pytest -m hub   # opt-in tests that read the Hugging Face Hub
 ```
+
+During development datadec resolves `dr-hf` and `dr-providers` from local
+worktrees through `[tool.uv.sources]` path entries, and `[tool.uv]` holds
+`huggingface-hub` on 1.x because transformers 5.19 requires tokenizers 0.23,
+which caps `huggingface-hub` below 2.0 while dr-hf 0.1.2 declares 2.2 or
+newer.
