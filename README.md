@@ -285,7 +285,8 @@ Full-recipe detail preprocessing and verification can take a long time and requi
 
 ## Paper reproduction
 
-The reproduction tools link paper claims to their source passages. Claim
+The reproduction tools link paper claims to their source passages and evaluate
+recipe-ranking predictions across checkpoints and metrics. Claim
 inventories live in [`configs/repro_claims/`](configs/repro_claims/), with
 reusable loading and quote lookup helpers in [`src/repro/`](src/repro/).
 Paper source text and attribution are bundled under [`docs/papers/`](docs/papers/).
@@ -295,6 +296,10 @@ From the repository root, list the DataDecide claims and their quotes:
 ```bash
 uv run python scripts/repro/claims.py
 ```
+
+For ranking experiments, run `uv run python scripts/repro/evaluate_claims.py`
+with local processed OLMES data. See [reproduction](docs/reproduction.md) for
+setup, evaluation semantics, and claim evidence outputs.
 
 ## Development
 
