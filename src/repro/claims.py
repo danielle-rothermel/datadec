@@ -1,4 +1,4 @@
-"""Locate and read claim quotes in downloaded paper source files."""
+"""Locate and read claim quotes in paper source files."""
 
 from collections.abc import Mapping
 from dataclasses import dataclass

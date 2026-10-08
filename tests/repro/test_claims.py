@@ -1,8 +1,30 @@
 import runpy
+import subprocess
+import sys
 from pathlib import Path
 from typing import cast
 
 from repro.claims import Claim, QuoteLocation, read_quotes
+
+
+def test_claim_command_uses_bundled_paper_from_any_working_directory(
+    tmp_path: Path,
+) -> None:
+    script = Path(__file__).resolve().parents[2] / "scripts/repro/claims.py"
+    result = subprocess.run(
+        [sys.executable, str(script)],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    lines = result.stdout.splitlines()
+    assert sum(line.startswith("DD-") for line in lines) == 64
+    assert sum(line.startswith("  ") for line in lines) == 74
+    assert "DD-0011: A 150M single-scale ranking" in result.stdout
+    assert r"\rankingMethod{}" in result.stdout
+    assert result.stderr == ""
 
 
 def test_read_quotes_uses_source_lines_and_character_ranges(tmp_path: Path) -> None:

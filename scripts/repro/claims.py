@@ -7,8 +7,8 @@ Authors: Ian Magnusson et al. (2025). License: CC BY 4.0.
 Source download: https://arxiv.org/src/2504.11393v2
 Archive SHA-256: 20dc7aa3f920fe465ddf2e12d6f72fff6e8bb3567f53e34f5555a6da138542d1
 
-Extract example_paper.tex and tables/pred_error.tex from that archive into
-<repository>/data/raw/repro-paper/2504.11393v2/ before running.
+The required source files are committed in docs/papers/2504.11393v2/.
+Its README records attribution, licensing, and source hashes.
 
 Each claim owns one assertion and all its paper locations. IDs use the first
 occurrence's number from PR #43's registry at commit
@@ -16,7 +16,7 @@ e56139f8a9539cca4c7d9847279b3b02d77d7f5c. Comments on merged entries record
 which original claim entries they cover. Different assertions sharing a quote
 remain separate, including task-specific and quantitative claims.
 
-Quotes are read from the downloaded v2 source, preserving LaTeX macros.
+Quotes are read from the bundled v2 source, preserving LaTeX macros.
 Table rows give relative error followed by absolute error, both in percent.
 Five targets derived from figure readings have no textual quote and are omitted:
 DD-0356, DD-0368, DD-0369, DD-0413, DD-0414.
@@ -26,7 +26,7 @@ from pathlib import Path
 
 from repro.claims import Claim, QuoteLocation, read_quotes
 
-PAPER_DIR = Path(__file__).resolve().parents[2] / "data/raw/repro-paper/2504.11393v2"
+PAPER_DIR = Path(__file__).resolve().parents[2] / "docs/papers/2504.11393v2"
 
 CLAIMS: dict[str, Claim] = {
     # Paper entries: DD-0010, DD-0192

@@ -285,16 +285,26 @@ Full-recipe detail preprocessing and verification can take a long time and requi
 
 ## Paper reproduction
 
-`repro.claims` provides `Claim`, `QuoteLocation`, and `read_quotes` for reading
-claim quotes from downloaded paper source files. Each claim holds one assertion
-and its locations across paper sections. The claim inventory lives in
-[`scripts/repro/claims.py`](scripts/repro/claims.py), whose docstring describes
-the pinned paper source and required download layout. Once those files are
-available, print the 64 distinct claim IDs and all their quotes with:
+From the repository root, print the 64 distinct claim IDs and statements,
+followed by all 74 section-labelled source quotes:
 
 ```bash
 uv run python scripts/repro/claims.py
 ```
+
+The required arXiv v2 paper text is committed in
+[`docs/papers/2504.11393v2/`](docs/papers/2504.11393v2/README.md), so no paper or
+evaluation-data download is needed. Use Python 3.12 or newer and `uv`;
+`uv run` installs the project and its dependencies on first use. Output preserves
+the paper's LaTeX macros. This command lists claims and quotes; it does not run
+reproduction experiments.
+
+[`scripts/repro/claims.py`](scripts/repro/claims.py) owns the claim inventory.
+Repeated assertions share one claim with multiple paper locations. The
+`repro.claims` module provides the frozen `Claim` and `QuoteLocation` dataclasses
+and the `read_quotes` helper. Source provenance, licensing, and hashes are
+recorded beside the bundled text. Five figure-only targets without textual
+quotes are documented as omitted in the script's docstring.
 
 ## Development
 
