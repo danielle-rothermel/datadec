@@ -4,11 +4,10 @@ import numpy as np
 import pandas as pd
 
 from datadec.config import load_olmes_contract
-from repro.config import EvaluationConfig
 
 
 def recipe_crossovers(
-    evaluations: pd.DataFrame, config: EvaluationConfig
+    evaluations: pd.DataFrame, *, tasks: tuple[str, ...], metric: str
 ) -> pd.DataFrame:
     """Count strict recipe-order reversals across adjacent completed model scales.
 
@@ -17,11 +16,9 @@ def recipe_crossovers(
     not count as strict crossovers. The diagnostic does not fit scaling laws.
     """
     rows = evaluations.reset_index(drop=True)
-    rows = rows.loc[
-        (rows["step"] >= rows["total_steps"]) & rows["task"].isin(config.benchmarks)
-    ]
+    rows = rows.loc[(rows["step"] >= rows["total_steps"]) & rows["task"].isin(tasks)]
     scores = (
-        rows.groupby(["task", "params", "compute", "data"])[config.target.metric]
+        rows.groupby(["task", "params", "compute", "data"])[metric]
         .mean()
         .unstack("data")
     )

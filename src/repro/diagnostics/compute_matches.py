@@ -3,17 +3,16 @@
 import pandas as pd
 
 from repro.checkpoints import select_compute_budget
-from repro.config import EvaluationConfig
 
 
 def matched_compute_comparisons(
-    sweep: pd.DataFrame, config: EvaluationConfig
+    sweep: pd.DataFrame, *, baseline_metric: str, relative_tolerance: float
 ) -> pd.DataFrame:
     """Compare observed scheduled endpoints to other sizes within a budget tolerance."""
     checkpoints = sweep.rename(
         columns={"predictor_size": "params", "predictor_step": "step"}
     )[["params", "step", "compute"]].drop_duplicates()
-    primary = sweep.loc[sweep["available"] & (sweep["metric"] == config.target.metric)]
+    primary = sweep.loc[sweep["available"] & (sweep["metric"] == baseline_metric)]
     records = []
     for endpoint in primary.loc[primary["schedule_complete"]].itertuples():
         for size in checkpoints["params"].unique():
@@ -23,7 +22,7 @@ def matched_compute_comparisons(
                 checkpoints,
                 size,
                 endpoint.compute,
-                relative_tolerance=config.run.matched_compute_tolerance,
+                relative_tolerance=relative_tolerance,
             )
             match = primary.loc[
                 (primary["predictor_size"] == size)

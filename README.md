@@ -291,23 +291,21 @@ inventories live in [`configs/repro_claims/`](configs/repro_claims/), with
 reusable loading and quote lookup helpers in [`src/repro/`](src/repro/).
 Paper source text and attribution are bundled under [`docs/papers/`](docs/papers/).
 
-From the repository root, list the DataDecide claims and their quotes:
+From the repository root, view DataDecide claims, extracted paper quotes, and
+any locally saved analysis evidence with Rich formatting:
 
 ```bash
 uv run python scripts/repro/claims.py
 ```
 
-With local processed OLMES data, compute claim results, then report saved
-measurements alongside quotes extracted from the paper:
+To generate evidence with local processed OLMES data:
 
 ```bash
 uv run python scripts/repro/evaluate_claims.py
-uv run python scripts/repro/report_claims.py --run-dir outputs/repro/ranking
 ```
 
-Experiment settings and claim analysis scopes live in
-[`configs/repro_evaluations/`](configs/repro_evaluations/). See
-[reproduction](docs/reproduction.md) for setup, module layout, and dataset details.
+Experiment settings live in [`configs/repro_evaluations/`](configs/repro_evaluations/).
+See [reproduction](docs/reproduction.md) for run selection, setup, and dataset details.
 
 ## Development
 

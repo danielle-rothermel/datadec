@@ -2,15 +2,13 @@
 
 import pandas as pd
 
-from repro.config import EvaluationConfig
 
-
-def proxy_comparisons(sweep: pd.DataFrame, config: EvaluationConfig) -> pd.DataFrame:
+def proxy_comparisons(sweep: pd.DataFrame, *, baseline_metric: str) -> pd.DataFrame:
     """Align proxies with curated target Accuracy at exactly the same checkpoint."""
     available = sweep.loc[sweep["available"]]
     key = ["predictor_size", "predictor_step", "task"]
     baseline = available.loc[
-        available["metric"] == config.target.metric, [*key, "decision_accuracy"]
+        available["metric"] == baseline_metric, [*key, "decision_accuracy"]
     ].rename(columns={"decision_accuracy": "primary_accuracy"})
     result = available.reset_index().merge(
         baseline, on=key, how="left", validate="many_to_one"

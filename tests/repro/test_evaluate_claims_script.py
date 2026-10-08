@@ -156,7 +156,8 @@ judgment = "Configured numerical bound."
     assert metadata["configuration"]["target"]["step"] == 10
     assert metadata["configuration"]["run"]["matched_compute_tolerance"] == 0.02
     assert metadata["input"]["sha256"]
-    assert "supported: 1" in result.stderr
+    assert "Saved analysis report to" in result.stderr
+    assert "scripts/repro/claims.py --run-dir" in result.stderr
     assert set(path.name for path in output.iterdir()) == {
         "rankings.parquet",
         "curves.csv",
@@ -171,29 +172,57 @@ judgment = "Configured numerical bound."
     # or analysis rerun. Only the paper and claim inventory remain necessary.
     (data_dir / "processed/olmes.parquet").unlink()
     config_path.unlink()
-    subprocess.run(
+    viewed = subprocess.run(
         [
             sys.executable,
-            str(ROOT / "scripts/repro/report_claims.py"),
+            str(ROOT / "scripts/repro/claims.py"),
             "--run-dir",
             str(output),
+            "--width",
+            "120",
         ],
         capture_output=True,
         text=True,
         check=True,
     )
-    report = json.loads((output / "claims.json").read_text())
-    assert set(report) == {"input", "configuration", "claims"}
-    claim = report["claims"][0]
-    assert claim["status"] == "supported"
-    assert "summary" not in claim
-    assert claim["measurements"][0]["best"]["decision_accuracy"] == 1.0
+    from repro.datasets import read_claim_results
+
+    claim = read_claim_results(output / "claim_results.parquet")[0]
+    assert claim.status == "supported"
+    assert claim.measurements[0].best.decision_accuracy == 1.0
     from repro.claims import load_claims, read_quotes
 
     quotes = read_quotes(
         load_claims(ROOT / config.run.claim_inventory), ROOT / config.run.paper_dir
     )
-    assert claim["quotes"][0]["text"] == quotes["DD-0014"][0]
-    markdown = (output / "claims.md").read_text()
-    assert quotes["DD-0014"][0] in markdown
-    assert "1.000000" in markdown
+    assert "DD-0014 · supported" in viewed.stdout
+    assert "1.000000" in viewed.stdout
+    assert "No relevant evidence has been extracted." in viewed.stdout
+    # Rich wraps passages for the terminal; the loaded source remains exact.
+    from repro.reporting import load_claim_report
+
+    report = load_claim_report(
+        ROOT / config.run.claim_inventory, ROOT / config.run.paper_dir, output
+    )
+    selected = next(c for c in report.claims if c.claim_id == "DD-0014")
+    assert selected.quotes[0].text == quotes["DD-0014"][0]
+    assert (
+        len([line for line in viewed.stdout.splitlines() if line.startswith("DD-")])
+        == 64
+    )
+    # Automatic discovery uses the same saved report; viewing is read-only.
+    latest = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/repro/claims.py"),
+            "--reports-dir",
+            str(tmp_path),
+            "--width",
+            "120",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    assert latest.stdout == viewed.stdout
+    assert not (output / "claims.md").exists()

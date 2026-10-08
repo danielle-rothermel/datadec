@@ -1,35 +1,55 @@
 # DataDecide single-scale reproduction
 
 The claim inventory in `configs/repro_claims/magnusson2025-datadecide.toml`
-links unique claims to passages in the bundled paper source. List those passages
-without downloading anything:
+links unique claims to passages in the bundled paper source. View all claims
+and extracted quotes without downloading anything:
 
 ```bash
 uv run python scripts/repro/claims.py
 ```
 
-To generate single-scale ranking evidence, download the processed OLMES table
-if it is not already present, then run from the repository root:
+The Rich viewer adds evidence from the most recent completed run for this
+inventory under `outputs/repro/`, searching recursively. Recency is the
+modification time of `run.json`, which evaluation writes last; a completed run
+must also contain `claim_results.parquet`. Incomplete directories and runs for
+other inventories are excluded. If a saved run is malformed, viewing fails
+rather than silently substituting older evidence. Claims missing from the
+selected run explicitly say no relevant evidence has been extracted.
+
+Select a specific run or a different search directory:
+
+```bash
+uv run python scripts/repro/claims.py --run-dir outputs/repro/ranking
+uv run python scripts/repro/claims.py --reports-dir outputs/repro
+# Optional fixed width, useful for redirected output:
+uv run python scripts/repro/claims.py --width 120
+```
+
+The viewer is read-only: it loads saved measurements/verdicts and extracts
+paper passages. It does not rerun analysis or require the original OLMES input
+or evaluation TOML. Terminal output uses colors when supported and plain text
+when redirected. The evidence tables show per-task observed maxima, seed
+standard deviations, predictor checkpoints/metrics, compute ratios, and coverage.
+Full seed scores, FLOPs, and evidence IDs remain in the saved dataset.
+
+To generate evidence, download the processed OLMES table if absent, then run
+from the repository root:
 
 ```bash
 uv run datadec download --olmes
 uv run python scripts/repro/evaluate_claims.py
-uv run python scripts/repro/report_claims.py --run-dir outputs/repro/ranking
 # Optional experiment config, paths, and maximum relative compute undershoot:
 uv run python scripts/repro/evaluate_claims.py \
   --config configs/repro_evaluations/magnusson2025-datadecide.toml \
-  --data-dir data --output-dir outputs/repro/ranking \
+  --data-dir data --output-dir outputs/repro/custom \
   --matched-compute-tolerance 0.05
-uv run python scripts/repro/report_claims.py --run-dir outputs/repro/ranking
 ```
 
-Evaluation reads local data and writes ignored analysis datasets. Reporting
-loads those saved datasets and extracts the quoted passages from the paper.
-Reports can be regenerated without the processed OLMES input or evaluation
-TOML; the run manifest retains the effective config. The claim inventory and
-paper text must remain available at the paths recorded in that manifest.
-Math/code, seed-noise, and scaling-law claims are outside this experiment;
-missing recipe identities in other source tables are not guessed.
+Evaluation writes a local analysis report as structured datasets and a run
+manifest, then prints the claims command for that run. Use a fresh output
+directory for each new run. Reports stay ignored. Math/code, seed-noise, and
+scaling-law claims are outside this experiment; missing recipe identities in
+other source tables are not guessed.
 
 ## Configuration and module layout
 
@@ -37,8 +57,8 @@ The default experiment lives in
 `configs/repro_evaluations/magnusson2025-datadecide.toml`. It owns run paths,
 paper source directory, target size/step/metric/seeds, predictor seed sets,
 benchmark aggregation, sweep metrics, compute matching tolerance, and claim
-analysis scopes. Claim
-statements and paper locations remain in the separate `repro_claims` inventory.
+analysis scopes. Claim statements and paper locations remain in the separate
+`repro_claims` inventory.
 The default evaluation config is also included in the wheel.
 
 Named task and metric groups keep repeated selections in one place. Each
@@ -53,8 +73,8 @@ Use `--config PATH` to choose another experiment. Paths inside the TOML resolve
 from the repository root; explicit CLI paths resolve from the current working
 directory. `--data-dir`, `--output-dir`, and `--matched-compute-tolerance`
 override the corresponding TOML settings. `run.json` records the input SHA-256
-and effective, validated configuration, including overrides. Reporting loads
-this manifest rather than rereading the evaluation TOML. Invalid references,
+and effective, validated configuration, including overrides. The claims viewer
+loads this manifest rather than rereading the evaluation TOML. Invalid references,
 unknown fields, and invalid compute ranges fail before the sweep.
 
 ```text
@@ -72,17 +92,18 @@ src/
     aggregation.py        # Local OLMES reads and macro averages
     checkpoints.py        # Observed schedules and compute-budget selection
     sweep.py              # Paper ranking policy and experiment execution
+    observations.py       # Typed observations and sweep DataFrame conversion
     claim_evaluation.py   # Evidence selection and numerical verdicts
     results.py            # Claim status and computed measurement types
     datasets.py           # Claim-results Parquet schema and run manifest I/O
-    reporting.py          # Load saved results, extract quotes, render reports
+    reporting.py          # Join claims and saved evidence; render with Rich
     diagnostics/
       curves.py           # Compute/accuracy slopes and reversals
       proxies.py          # Proxy advantages at identical checkpoints
       crossovers.py       # Recipe-order reversals across completed scales
       compute_matches.py  # Intermediate/completed compute comparisons
-scripts/repro/evaluate_claims.py  # Run analyses and save datasets
-scripts/repro/report_claims.py    # Load datasets and generate reports
+scripts/repro/evaluate_claims.py  # Run analyses, save report, print viewer command
+scripts/repro/claims.py           # View paper quotes and latest/specified evidence
 ```
 
 ## Generic evaluation API
@@ -168,8 +189,6 @@ Outputs under `outputs/repro/ranking/`:
 | --- | --- |
 | `claim_results.parquet` | One computed record per claim: verdict, per-task coverage, best observed score and checkpoint/metric/compute/seed details, applied bound, evidence IDs, remaining criterion notes |
 | `run.json` | Input SHA-256 and effective configuration, including claim-inventory and paper-source paths |
-| `claims.json` | Reporting output: saved measurements/verdicts plus quotes extracted from paper source and their locations |
-| `claims.md` | Reporting output: paper quotes, measured numerical tables, verdicts, and remaining criteria |
 | `rankings.parquet` | One row per checkpoint/task/metric, seed accuracies, compute, recipe/pair counts, coverage failures; index `evidence_id` |
 | `checkpoints.csv` | Observed compute and schedule-completion coverage |
 | `curves.csv` | Per-size descriptive log-compute slopes, R², adjacent decreases, and endpoints |
@@ -186,12 +205,16 @@ separate diagnostic datasets retain curve, proxy, compute-match, and crossover
 measurements. Best observations are descriptive maxima over the selected grid,
 not aggregate evidence that every qualitative assertion is true.
 
-Reporting reads the persisted verdict and measurements, then uses the claim
-inventory's source locations to extract quotes from paper text. Numerical
-values and verdicts are not recalculated during reporting. Authored `judgment`
+The claims viewer reads persisted verdicts and measurements, then uses the
+claim inventory's source locations to extract quotes from paper text. Numerical
+values and verdicts are not recalculated during viewing. Authored `judgment`
 text in the config describes the analysis criterion or a remaining research
-decision; it is not a computed finding. Use a fresh output directory for a new
-run and run the reporting command after evaluation to generate its reports.
+decision; it is not a computed finding.
+
+Sweep observations have a frozen typed owner in `repro.observations`; the
+DataFrame conversion owns their tabular column names and null representation.
+Diagnostic functions take only their required metric, task, and tolerance
+arguments; the runner supplies these from validated configuration.
 
 The candidate claim scopes are declared in the evaluation TOML and applied by
 `repro.claim_evaluation`. DD-0014, DD-0015,

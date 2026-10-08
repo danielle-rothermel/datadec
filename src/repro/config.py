@@ -119,8 +119,7 @@ class EvaluationConfig(_ConfigModel):
             claim.metrics, claim.metric_groups, self.metric_groups
         )
 
-    @model_validator(mode="after")
-    def validate_references(self) -> Self:
+    def _validate_aggregation(self) -> None:
         if self.aggregation.benchmark_group not in self.task_groups:
             raise ValueError("unknown benchmark task group")
         if self.sweep_metric_group not in self.metric_groups:
@@ -131,10 +130,14 @@ class EvaluationConfig(_ConfigModel):
             raise ValueError("macro task cannot be one of its own benchmarks")
         if self.target.metric not in self.metrics:
             raise ValueError("target metric must be included in sweep metrics")
+
+    def _validate_groups(self) -> None:
         for groups in (self.task_groups, self.metric_groups):
             for name, values in groups.items():
                 if not values or len(set(values)) != len(values):
                     raise ValueError(f"invalid selection group: {name}")
+
+    def _validate_seeds(self) -> None:
         seed_sets = (
             self.target.seeds,
             self.predictors.default_seeds,
@@ -142,6 +145,8 @@ class EvaluationConfig(_ConfigModel):
         )
         if any(not seeds or len(set(seeds)) != len(seeds) for seeds in seed_sets):
             raise ValueError("seed sets must be nonempty and unique")
+
+    def _validate_claims(self) -> None:
         for claim_id, claim in self.claims.items():
             if not self.tasks_for(claim) or set(self.tasks_for(claim)) - set(
                 self.tasks
@@ -155,6 +160,13 @@ class EvaluationConfig(_ConfigModel):
                 raise ValueError(f"unknown criterion for {claim_id}: {claim.criterion}")
         if set(self.claims) & set(self.skipped_math_code_claims):
             raise ValueError("an evaluated claim cannot also be skipped")
+
+    @model_validator(mode="after")
+    def validate_references(self) -> Self:
+        self._validate_aggregation()
+        self._validate_groups()
+        self._validate_seeds()
+        self._validate_claims()
         return self
 
 

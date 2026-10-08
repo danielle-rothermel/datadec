@@ -84,3 +84,26 @@ def write_run_metadata(metadata: RunMetadata, path: Path) -> None:
 
 def read_run_metadata(path: Path) -> RunMetadata:
     return RunMetadata.model_validate_json(path.read_text(encoding="utf-8"))
+
+
+def latest_run(reports_dir: Path, claim_inventory: Path) -> Path | None:
+    """Find the newest completed run for this inventory by manifest mtime.
+
+    The evaluator writes run.json last. Directories missing either the manifest
+    or claim dataset are incomplete; malformed completed runs remain errors.
+    """
+    manifests = sorted(
+        reports_dir.rglob("run.json"),
+        key=lambda path: (path.stat().st_mtime_ns, str(path)),
+        reverse=True,
+    )
+    for manifest in manifests:
+        if not (manifest.parent / "claim_results.parquet").is_file():
+            continue
+        metadata = read_run_metadata(manifest)
+        if (
+            metadata.configuration.run.claim_inventory.resolve()
+            == claim_inventory.resolve()
+        ):
+            return manifest.parent
+    return None

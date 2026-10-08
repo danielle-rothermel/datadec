@@ -9,7 +9,7 @@ from repro.diagnostics.compute_matches import matched_compute_comparisons
 
 
 def test_proxy_comparisons_align_exact_checkpoint(sweep, config):
-    comparison = proxy_comparisons(sweep, config)
+    comparison = proxy_comparisons(sweep, baseline_metric=config.target.metric)
     proxy = comparison.loc[comparison["metric"] == "correct_prob_per_char"]
     assert proxy["advantage_over_primary"].tolist() == pytest.approx(
         [0.21] * len(proxy)
@@ -28,23 +28,15 @@ def test_matched_compute_requires_completed_endpoint_and_tolerance(sweep, config
     sweep = pd.concat([sweep, endpoint], ignore_index=True)
     pairs = matched_compute_comparisons(
         sweep,
-        config.model_copy(
-            update={
-                "run": config.run.model_copy(update={"matched_compute_tolerance": 0.02})
-            }
-        ),
+        baseline_metric="primary_metric",
+        relative_tolerance=0.02,
     )
     assert len(pairs) == 1
     assert pairs.iloc[0]["accuracy_difference"] == pytest.approx(-0.1)
     assert matched_compute_comparisons(
         sweep,
-        config.model_copy(
-            update={
-                "run": config.run.model_copy(
-                    update={"matched_compute_tolerance": 0.001}
-                )
-            }
-        ),
+        baseline_metric="primary_metric",
+        relative_tolerance=0.001,
     ).empty
 
 
@@ -68,7 +60,11 @@ def crossover_raw(raw, config):
 
 
 def test_crossovers_use_completed_scales_and_strict_order(crossover_raw, config):
-    result = recipe_crossovers(prepare_evaluations(crossover_raw, config), config)
+    result = recipe_crossovers(
+        prepare_evaluations(crossover_raw, config),
+        tasks=config.benchmarks,
+        metric=config.target.metric,
+    )
     assert len(result) == 10
     assert result["strict_crossovers"].eq(24).all()
     assert result["pair_count"].eq(300).all()
@@ -80,7 +76,11 @@ def test_crossovers_reject_recipe_absent_from_all_completed_scales(
     absent_recipe = crossover_raw["data"].iloc[0]
     incomplete = crossover_raw.loc[crossover_raw["data"] != absent_recipe]
     with pytest.raises(ValueError, match="requires all catalog recipes"):
-        recipe_crossovers(prepare_evaluations(incomplete, config), config)
+        recipe_crossovers(
+            prepare_evaluations(incomplete, config),
+            tasks=config.benchmarks,
+            metric=config.target.metric,
+        )
 
 
 def test_crossovers_reject_recipe_absent_from_one_completed_scale(
@@ -94,4 +94,8 @@ def test_crossovers_reject_recipe_absent_from_one_completed_scale(
         )
     ]
     with pytest.raises(ValueError, match="incomplete recipe coverage"):
-        recipe_crossovers(prepare_evaluations(incomplete, config), config)
+        recipe_crossovers(
+            prepare_evaluations(incomplete, config),
+            tasks=config.benchmarks,
+            metric=config.target.metric,
+        )

@@ -6,8 +6,10 @@ import pandas as pd
 
 from datadec.config import load_olmes_contract
 from eval import RankingResult, UnavailableRankingError, predict_recipe_ranking
+from eval.results import Checkpoint
 from repro.checkpoints import observed_checkpoints
 from repro.config import EvaluationConfig
+from repro.observations import RankingObservation, observations_frame
 
 
 def paper_ranking(
@@ -59,32 +61,14 @@ def sweep_rankings(
     checkpoints = checkpoints.loc[
         (checkpoints["compute"] > 0) & (checkpoints["compute"] <= target_compute)
     ]
-    records = []
+    observations: list[RankingObservation] = []
+    target_checkpoint = Checkpoint(target_size, target_step, target_compute)
     for size, group in checkpoints.groupby("params", sort=False):
         if progress:
             progress(f"Evaluating {size}: {len(group)} checkpoints")
         for checkpoint in group.itertuples(index=False):
             for task in config.tasks:
                 for metric in config.metrics:
-                    record = {
-                        "predictor_size": size,
-                        "predictor_step": int(checkpoint.step),
-                        "target_size": target_size,
-                        "target_step": target_step,
-                        "task": task,
-                        "metric": metric,
-                        "compute": float(checkpoint.compute),
-                        "target_compute": target_compute,
-                        "compute_ratio": float(checkpoint.compute) / target_compute,
-                        "schedule_complete": bool(checkpoint.schedule_complete),
-                        "available": False,
-                        "reason": "",
-                        "decision_accuracy": None,
-                        "decision_accuracy_std": None,
-                        "seed_accuracies": None,
-                        "recipe_count": None,
-                        "pair_count": None,
-                    }
                     try:
                         result = paper_ranking(
                             evaluations,
@@ -95,19 +79,21 @@ def sweep_rankings(
                             metric,
                         )
                     except UnavailableRankingError as error:
-                        record["reason"] = str(error)
-                    else:
-                        record.update(
-                            available=True,
-                            decision_accuracy=result.decision_accuracy,
-                            decision_accuracy_std=result.decision_accuracy_std,
-                            seed_accuracies=[
-                                r.decision_accuracy for r in result.seed_rankings
-                            ],
-                            recipe_count=len(result.recipes),
-                            pair_count=len(result.seed_rankings[0].decisions),
+                        observation = RankingObservation.unavailable(
+                            Checkpoint(
+                                str(size),
+                                int(checkpoint.step),
+                                float(checkpoint.compute),
+                            ),
+                            target_checkpoint,
+                            task,
+                            metric,
+                            schedule_complete=bool(checkpoint.schedule_complete),
+                            reason=str(error),
                         )
-                    records.append(record)
-    result = pd.DataFrame.from_records(records)
-    result.index.name = "evidence_id"
-    return result
+                    else:
+                        observation = RankingObservation.successful(
+                            result, schedule_complete=bool(checkpoint.schedule_complete)
+                        )
+                    observations.append(observation)
+    return observations_frame(observations)

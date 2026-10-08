@@ -18,7 +18,14 @@ def test_claim_command_uses_bundled_paper_from_any_working_directory(
 ) -> None:
     script = Path(__file__).resolve().parents[2] / "scripts/repro/claims.py"
     result = subprocess.run(
-        [sys.executable, str(script)],
+        [
+            sys.executable,
+            str(script),
+            "--reports-dir",
+            str(tmp_path / "no-reports"),
+            "--width",
+            "120",
+        ],
         cwd=tmp_path,
         capture_output=True,
         text=True,
@@ -27,8 +34,10 @@ def test_claim_command_uses_bundled_paper_from_any_working_directory(
 
     lines = result.stdout.splitlines()
     assert sum(line.startswith("DD-") for line in lines) == 64
-    assert sum(line.startswith("  ") for line in lines) == 74
-    assert "DD-0011: A 150M single-scale ranking" in result.stdout
+    assert "DD-0011" in result.stdout
+    assert "A 150M single-scale ranking" in result.stdout
+    assert "No saved analysis report found." in result.stdout
+    assert result.stdout.count("No relevant evidence has been extracted.") == 64
     assert r"\rankingMethod{}" in result.stdout
     assert result.stderr == ""
 

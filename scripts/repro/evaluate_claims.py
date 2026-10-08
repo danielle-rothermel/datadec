@@ -1,9 +1,9 @@
 """Run configured single-scale experiments on local processed OLMES."""
 
 import argparse
-from collections import Counter
 from hashlib import file_digest
 import logging
+import shlex
 from pathlib import Path
 
 import pandas as pd
@@ -101,15 +101,17 @@ def write_analysis_tables(
 ) -> None:
     sweep.to_parquet(output / "rankings.parquet")
     curve_summary(sweep).to_csv(output / "curves.csv", index=False)
-    proxy_comparisons(sweep, config).to_parquet(
+    proxy_comparisons(sweep, baseline_metric=config.target.metric).to_parquet(
         output / "proxy_comparisons.parquet", index=False
     )
-    recipe_crossovers(evaluations, config).to_csv(
-        output / "recipe_crossovers.csv", index=False
-    )
-    matched_compute_comparisons(sweep, config).to_csv(
-        output / "matched_compute.csv", index=False
-    )
+    recipe_crossovers(
+        evaluations, tasks=config.benchmarks, metric=config.target.metric
+    ).to_csv(output / "recipe_crossovers.csv", index=False)
+    matched_compute_comparisons(
+        sweep,
+        baseline_metric=config.target.metric,
+        relative_tolerance=config.run.matched_compute_tolerance,
+    ).to_csv(output / "matched_compute.csv", index=False)
     observed_checkpoints(evaluations).to_csv(output / "checkpoints.csv", index=False)
 
 
@@ -132,10 +134,12 @@ def write_run_outputs(
     write_run_metadata(metadata, output / "run.json")
 
 
-def log_summary(evidence: tuple[ClaimEvidence, ...], output: Path) -> None:
-    for status, count in sorted(Counter(item.status for item in evidence).items()):
-        LOGGER.info("%s: %s", status, count)
-    LOGGER.info("Wrote analysis datasets to %s", output.resolve())
+def log_saved_report(output: Path) -> None:
+    LOGGER.info("Saved analysis report to %s", output.resolve())
+    LOGGER.info(
+        "View claims and evidence: uv run python scripts/repro/claims.py --run-dir %s",
+        shlex.quote(str(output.resolve())),
+    )
 
 
 def main() -> None:
@@ -149,7 +153,7 @@ def main() -> None:
     sweep = sweep_rankings(evaluations, config, progress=LOGGER.info)
     evidence = evaluate_claims(sweep, config)
     write_run_outputs(evaluations, sweep, evidence, config, source, source_sha256)
-    log_summary(evidence, config.run.output_dir)
+    log_saved_report(config.run.output_dir)
 
 
 if __name__ == "__main__":
