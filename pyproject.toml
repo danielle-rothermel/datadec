@@ -67,14 +67,6 @@ datadec = { workspace = true }
 dr-hf = { path = "../dr-hf-pins-subsets", editable = true }
 dr-providers = { path = "../dr-providers-0.3.5-refresh", editable = true }
 
-[tool.uv]
-# Development only, blocks merge: dr-hf 0.1.2 declares huggingface-hub>=2.2
-# while transformers 5.19 requires tokenizers 0.23, which caps huggingface-hub
-# below 2.0. A released dr-hf with the same floor still conflicts, so dr-hf
-# must lower its floor to the 1.x range before release; then delete this
-# override.
-override-dependencies = ["huggingface-hub>=1.33.0,<2"]
-
 [dependency-groups]
 dev = [
     "datadec",
