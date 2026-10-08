@@ -57,7 +57,7 @@ def test_unknown_claim_id_fails_before_running(script, config):
     values["run"]["claim_inventory"] = ROOT / config.run.claim_inventory
     values["claims"]["typo"] = values["claims"].pop("DD-0014")
     with pytest.raises(ValueError, match="unknown claim IDs"):
-        script.load_run_claims(EvaluationConfig.model_validate(values))
+        script.validate_run_claims(EvaluationConfig.model_validate(values))
 
 
 def test_main_runs_custom_toml_and_writes_effective_config(tmp_path, config):
@@ -71,6 +71,7 @@ skipped_math_code_claims = []
 data_dir = "data"
 output_dir = "outputs/repro/ranking"
 claim_inventory = "{config.run.claim_inventory.as_posix()}"
+paper_dir = "{config.run.paper_dir.as_posix()}"
 matched_compute_tolerance = 0.05
 
 [target]
@@ -151,12 +152,10 @@ judgment = "Configured numerical bound."
         text=True,
         check=True,
     )
-    report = json.loads((output / "claims.json").read_text())
-    assert set(report) == {"input", "configuration", "claims"}
-    assert report["configuration"]["target"]["step"] == 10
-    assert report["configuration"]["run"]["matched_compute_tolerance"] == 0.02
-    assert report["claims"][0]["status"] == "supported"
-    assert report["input"]["sha256"]
+    metadata = json.loads((output / "run.json").read_text())
+    assert metadata["configuration"]["target"]["step"] == 10
+    assert metadata["configuration"]["run"]["matched_compute_tolerance"] == 0.02
+    assert metadata["input"]["sha256"]
     assert "supported: 1" in result.stderr
     assert set(path.name for path in output.iterdir()) == {
         "rankings.parquet",
@@ -165,6 +164,36 @@ judgment = "Configured numerical bound."
         "recipe_crossovers.csv",
         "matched_compute.csv",
         "checkpoints.csv",
-        "claims.json",
-        "claims.md",
+        "claim_results.parquet",
+        "run.json",
     }
+    # Reporting must use persisted measurements and config, with no OLMES read
+    # or analysis rerun. Only the paper and claim inventory remain necessary.
+    (data_dir / "processed/olmes.parquet").unlink()
+    config_path.unlink()
+    subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/repro/report_claims.py"),
+            "--run-dir",
+            str(output),
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    report = json.loads((output / "claims.json").read_text())
+    assert set(report) == {"input", "configuration", "claims"}
+    claim = report["claims"][0]
+    assert claim["status"] == "supported"
+    assert "summary" not in claim
+    assert claim["measurements"][0]["best"]["decision_accuracy"] == 1.0
+    from repro.claims import load_claims, read_quotes
+
+    quotes = read_quotes(
+        load_claims(ROOT / config.run.claim_inventory), ROOT / config.run.paper_dir
+    )
+    assert claim["quotes"][0]["text"] == quotes["DD-0014"][0]
+    markdown = (output / "claims.md").read_text()
+    assert quotes["DD-0014"][0] in markdown
+    assert "1.000000" in markdown

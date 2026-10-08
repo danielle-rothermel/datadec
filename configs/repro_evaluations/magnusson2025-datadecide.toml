@@ -16,6 +16,7 @@ skipped_math_code_claims = [
 data_dir = "data"
 output_dir = "outputs/repro/ranking"
 claim_inventory = "configs/repro_claims/magnusson2025-datadecide.toml"
+paper_dir = "docs/papers/2504.11393v2"
 matched_compute_tolerance = 0.05
 
 [target]

@@ -14,23 +14,30 @@ if it is not already present, then run from the repository root:
 ```bash
 uv run datadec download --olmes
 uv run python scripts/repro/evaluate_claims.py
+uv run python scripts/repro/report_claims.py --run-dir outputs/repro/ranking
 # Optional experiment config, paths, and maximum relative compute undershoot:
 uv run python scripts/repro/evaluate_claims.py \
   --config configs/repro_evaluations/magnusson2025-datadecide.toml \
   --data-dir data --output-dir outputs/repro/ranking \
   --matched-compute-tolerance 0.05
+uv run python scripts/repro/report_claims.py --run-dir outputs/repro/ranking
 ```
 
-The runner reads local data and writes ignored run artifacts. It does not fit
-scaling laws. Math/code, seed-noise, and scaling-law claims are outside this
-experiment; missing recipe identities in other source tables are not guessed.
+Evaluation reads local data and writes ignored analysis datasets. Reporting
+loads those saved datasets and extracts the quoted passages from the paper.
+Reports can be regenerated without the processed OLMES input or evaluation
+TOML; the run manifest retains the effective config. The claim inventory and
+paper text must remain available at the paths recorded in that manifest.
+Math/code, seed-noise, and scaling-law claims are outside this experiment;
+missing recipe identities in other source tables are not guessed.
 
 ## Configuration and module layout
 
 The default experiment lives in
 `configs/repro_evaluations/magnusson2025-datadecide.toml`. It owns run paths,
-target size/step/metric/seeds, predictor seed sets, benchmark aggregation,
-sweep metrics, compute matching tolerance, and claim analysis scopes. Claim
+paper source directory, target size/step/metric/seeds, predictor seed sets,
+benchmark aggregation, sweep metrics, compute matching tolerance, and claim
+analysis scopes. Claim
 statements and paper locations remain in the separate `repro_claims` inventory.
 The default evaluation config is also included in the wheel.
 
@@ -45,9 +52,10 @@ task. These paper wrappers use higher-is-better metrics.
 Use `--config PATH` to choose another experiment. Paths inside the TOML resolve
 from the repository root; explicit CLI paths resolve from the current working
 directory. `--data-dir`, `--output-dir`, and `--matched-compute-tolerance`
-override the corresponding TOML settings. `claims.json` records the effective,
-validated configuration, including overrides. Invalid references, unknown
-fields, and invalid compute ranges fail before the sweep.
+override the corresponding TOML settings. `run.json` records the input SHA-256
+and effective, validated configuration, including overrides. Reporting loads
+this manifest rather than rereading the evaluation TOML. Invalid references,
+unknown fields, and invalid compute ranges fail before the sweep.
 
 ```text
 configs/
@@ -65,13 +73,16 @@ src/
     checkpoints.py        # Observed schedules and compute-budget selection
     sweep.py              # Paper ranking policy and experiment execution
     claim_evaluation.py   # Evidence selection and numerical verdicts
-    results.py            # Claim status and evidence types
+    results.py            # Claim status and computed measurement types
+    datasets.py           # Claim-results Parquet schema and run manifest I/O
+    reporting.py          # Load saved results, extract quotes, render reports
     diagnostics/
       curves.py           # Compute/accuracy slopes and reversals
       proxies.py          # Proxy advantages at identical checkpoints
       crossovers.py       # Recipe-order reversals across completed scales
       compute_matches.py  # Intermediate/completed compute comparisons
-scripts/repro/evaluate_claims.py  # CLI, logging, and output helpers; main orchestrates
+scripts/repro/evaluate_claims.py  # Run analyses and save datasets
+scripts/repro/report_claims.py    # Load datasets and generate reports
 ```
 
 ## Generic evaluation API
@@ -155,14 +166,32 @@ Outputs under `outputs/repro/ranking/`:
 
 | File | Contents |
 | --- | --- |
-| `claims.json` | Input SHA-256, effective configuration, claim IDs/statements/source locations, statuses, evidence row IDs, remaining judgments |
-| `claims.md` | Readable claim evidence and remaining validation todo |
+| `claim_results.parquet` | One computed record per claim: verdict, per-task coverage, best observed score and checkpoint/metric/compute/seed details, applied bound, evidence IDs, remaining criterion notes |
+| `run.json` | Input SHA-256 and effective configuration, including claim-inventory and paper-source paths |
+| `claims.json` | Reporting output: saved measurements/verdicts plus quotes extracted from paper source and their locations |
+| `claims.md` | Reporting output: paper quotes, measured numerical tables, verdicts, and remaining criteria |
 | `rankings.parquet` | One row per checkpoint/task/metric, seed accuracies, compute, recipe/pair counts, coverage failures; index `evidence_id` |
 | `checkpoints.csv` | Observed compute and schedule-completion coverage |
 | `curves.csv` | Per-size descriptive log-compute slopes, R², adjacent decreases, and endpoints |
 | `proxy_comparisons.parquet` | Proxy advantage over curated Accuracy at the identical checkpoint |
 | `matched_compute.csv` | Completed/intermediate evidence IDs, actual compute gaps, accuracy differences |
 | `recipe_crossovers.csv` | Strict recipe-order reversals between adjacent observed completed scales, using seed means |
+
+The evaluator writes numerical results without generating prose summaries.
+`claim_results.parquet` stores per-task maxima and their exact witnesses, the
+three predictor seed accuracies and their population standard deviation,
+coverage counts, the applied strict bound (if any), and its outcome. Evidence
+IDs link to every selected checkpoint/metric row in `rankings.parquet`; the
+separate diagnostic datasets retain curve, proxy, compute-match, and crossover
+measurements. Best observations are descriptive maxima over the selected grid,
+not aggregate evidence that every qualitative assertion is true.
+
+Reporting reads the persisted verdict and measurements, then uses the claim
+inventory's source locations to extract quotes from paper text. Numerical
+values and verdicts are not recalculated during reporting. Authored `judgment`
+text in the config describes the analysis criterion or a remaining research
+decision; it is not a computed finding. Use a fresh output directory for a new
+run and run the reporting command after evaluation to generate its reports.
 
 The candidate claim scopes are declared in the evaluation TOML and applied by
 `repro.claim_evaluation`. DD-0014, DD-0015,

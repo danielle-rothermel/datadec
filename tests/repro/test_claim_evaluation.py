@@ -34,3 +34,31 @@ def test_missing_grid_and_zero_compute_cannot_support_bound(sweep, config):
     result = {r.claim_id: r for r in evaluate_claims(sweep, config)}["DD-0016"]
     assert result.status == ClaimStatus.INSUFFICIENT_DATA
     assert not result.evidence_ids
+
+
+def test_measurements_change_with_input_data_and_preserve_witness(sweep, config):
+    results = {r.claim_id: r for r in evaluate_claims(sweep, config)}
+    before = results["DD-0014"].measurements[0]
+    assert before.best.decision_accuracy == 0.81
+    assert before.best.metric == "correct_prob_per_char"
+    assert before.best.compute_ratio == 0.00001
+    assert before.accuracy_gt == 0.8
+    assert before.passes_bound is True
+    index = before.best.evidence_id
+    sweep.loc[index, "decision_accuracy"] = 0.93
+    sweep.at[index, "seed_accuracies"] = [0.92, 0.93, 0.94]
+    updated = {r.claim_id: r for r in evaluate_claims(sweep, config)}["DD-0014"]
+    assert updated.measurements[0].best.decision_accuracy == 0.93
+    assert updated.measurements[0].best.seed_accuracies == (0.92, 0.93, 0.94)
+    assert updated.measurements[0].best.evidence_id == index
+
+
+def test_missing_task_is_recorded_with_no_fabricated_measurement(sweep, config):
+    sweep = sweep.loc[sweep["task"] != "arc_challenge"]
+    result = {r.claim_id: r for r in evaluate_claims(sweep, config)}["DD-0015"]
+    measurements = {m.task: m for m in result.measurements}
+    assert result.status == ClaimStatus.INSUFFICIENT_DATA
+    missing = measurements["arc_challenge"]
+    assert missing.best is None
+    assert missing.available_comparisons == 0
+    assert missing.passes_bound is None

@@ -2,10 +2,7 @@
 
 import argparse
 from collections import Counter
-from collections.abc import Mapping
-from dataclasses import asdict
 from hashlib import file_digest
-import json
 import logging
 from pathlib import Path
 
@@ -14,13 +11,19 @@ import pandas as pd
 from datadec.data.artifacts import DataArtifacts
 from repro.aggregation import load_evaluations
 from repro.claim_evaluation import evaluate_claims
-from repro.claims import Claim, load_claims
+from repro.claims import load_claims
 from repro.config import DEFAULT_CONFIG_PATH, EvaluationConfig, load_evaluation_config
 from repro.checkpoints import observed_checkpoints
 from repro.diagnostics.compute_matches import matched_compute_comparisons
 from repro.diagnostics.crossovers import recipe_crossovers
 from repro.diagnostics.curves import curve_summary
 from repro.diagnostics.proxies import proxy_comparisons
+from repro.datasets import (
+    InputArtifact,
+    RunMetadata,
+    write_claim_results,
+    write_run_metadata,
+)
 from repro.results import ClaimEvidence
 from repro.sweep import sweep_rankings
 
@@ -64,13 +67,14 @@ def resolve_config(args: argparse.Namespace) -> EvaluationConfig:
         args.output_dir if args.output_dir is not None else ROOT / config.run.output_dir
     )
     run["claim_inventory"] = ROOT / config.run.claim_inventory
+    run["paper_dir"] = ROOT / config.run.paper_dir
     if args.matched_compute_tolerance is not None:
         run["matched_compute_tolerance"] = args.matched_compute_tolerance
     values["run"] = run
     return EvaluationConfig.model_validate(values)
 
 
-def load_run_claims(config: EvaluationConfig) -> dict[str, Claim]:
+def validate_run_claims(config: EvaluationConfig) -> None:
     """Check configured claim references before starting the expensive sweep."""
     claims = load_claims(config.run.claim_inventory)
     unknown = (
@@ -78,7 +82,6 @@ def load_run_claims(config: EvaluationConfig) -> dict[str, Claim]:
     ) - claims.keys()
     if unknown:
         raise ValueError(f"unknown claim IDs in evaluation config: {sorted(unknown)}")
-    return claims
 
 
 def configure_logging() -> None:
@@ -110,59 +113,10 @@ def write_analysis_tables(
     observed_checkpoints(evaluations).to_csv(output / "checkpoints.csv", index=False)
 
 
-def build_claim_report(
-    evidence: tuple[ClaimEvidence, ...],
-    claims: Mapping[str, Claim],
-    config: EvaluationConfig,
-    source: Path,
-    source_sha256: str,
-) -> dict[str, object]:
-    return {
-        "input": {"path": str(source.resolve()), "sha256": source_sha256},
-        "configuration": config.model_dump(mode="json"),
-        "claims": [
-            {
-                **asdict(item),
-                "statement": claims[item.claim_id].statement,
-                "locations": [
-                    asdict(location) for location in claims[item.claim_id].locations
-                ],
-            }
-            for item in evidence
-        ],
-    }
-
-
-def render_claim_markdown(
-    evidence: tuple[ClaimEvidence, ...], claims: Mapping[str, Claim]
-) -> str:
-    lines = [
-        "# Single-scale claim evidence",
-        "",
-        "Numerical verdicts concern the observed grid. Qualitative claims require judgment.",
-        "",
-    ]
-    for item in evidence:
-        lines.extend(
-            [
-                f"## {item.claim_id}: {item.status}",
-                "",
-                claims[item.claim_id].statement,
-                "",
-                item.summary,
-                "",
-                f"Remaining judgment / criterion: {item.judgment}",
-                "",
-            ]
-        )
-    return "\n".join(lines)
-
-
 def write_run_outputs(
     evaluations: pd.DataFrame,
     sweep: pd.DataFrame,
     evidence: tuple[ClaimEvidence, ...],
-    claims: Mapping[str, Claim],
     config: EvaluationConfig,
     source: Path,
     source_sha256: str,
@@ -170,32 +124,31 @@ def write_run_outputs(
     output = config.run.output_dir
     output.mkdir(parents=True, exist_ok=True)
     write_analysis_tables(output, evaluations, sweep, config)
-    report = build_claim_report(evidence, claims, config, source, source_sha256)
-    (output / "claims.json").write_text(
-        json.dumps(report, indent=2, allow_nan=False) + "\n"
+    write_claim_results(evidence, output / "claim_results.parquet")
+    metadata = RunMetadata(
+        input=InputArtifact(path=source.resolve(), sha256=source_sha256),
+        configuration=config,
     )
-    (output / "claims.md").write_text(render_claim_markdown(evidence, claims))
+    write_run_metadata(metadata, output / "run.json")
 
 
 def log_summary(evidence: tuple[ClaimEvidence, ...], output: Path) -> None:
     for status, count in sorted(Counter(item.status for item in evidence).items()):
         LOGGER.info("%s: %s", status, count)
-    LOGGER.info("Wrote claim evidence to %s", output.resolve())
+    LOGGER.info("Wrote analysis datasets to %s", output.resolve())
 
 
 def main() -> None:
     config = resolve_config(parse_arguments())
     configure_logging()
-    claims = load_run_claims(config)
+    validate_run_claims(config)
     source = DataArtifacts(config.run.data_dir).get_path("olmes_processed")
     LOGGER.info("Reading %s", source)
     source_sha256 = hash_file(source)
     evaluations = load_evaluations(config.run.data_dir, config)
     sweep = sweep_rankings(evaluations, config, progress=LOGGER.info)
     evidence = evaluate_claims(sweep, config)
-    write_run_outputs(
-        evaluations, sweep, evidence, claims, config, source, source_sha256
-    )
+    write_run_outputs(evaluations, sweep, evidence, config, source, source_sha256)
     log_summary(evidence, config.run.output_dir)
 
 

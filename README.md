@@ -297,10 +297,17 @@ From the repository root, list the DataDecide claims and their quotes:
 uv run python scripts/repro/claims.py
 ```
 
-For ranking experiments, run `uv run python scripts/repro/evaluate_claims.py`
-with local processed OLMES data. Experiment settings and claim analysis scopes
-live in [`configs/repro_evaluations/`](configs/repro_evaluations/). See
-[reproduction](docs/reproduction.md) for setup, module layout, and evidence outputs.
+With local processed OLMES data, compute claim results, then report saved
+measurements alongside quotes extracted from the paper:
+
+```bash
+uv run python scripts/repro/evaluate_claims.py
+uv run python scripts/repro/report_claims.py --run-dir outputs/repro/ranking
+```
+
+Experiment settings and claim analysis scopes live in
+[`configs/repro_evaluations/`](configs/repro_evaluations/). See
+[reproduction](docs/reproduction.md) for setup, module layout, and dataset details.
 
 ## Development
 

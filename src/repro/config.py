@@ -19,6 +19,7 @@ class RunSettings(_ConfigModel):
     data_dir: Path
     output_dir: Path
     claim_inventory: Path
+    paper_dir: Path
     matched_compute_tolerance: float = Field(ge=0, le=1)
 
 
