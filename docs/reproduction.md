@@ -95,7 +95,9 @@ The `src/repro/` wrappers own DataDecide-specific choices:
   be completed runs. For intermediate-versus-completed comparisons, the
   default 5% maximum compute undershoot is an explicit analysis tolerance,
   adjustable with the CLI flag. Unmatched budgets are omitted from that
-  diagnostic; `checkpoints.csv` retains the source coverage.
+  diagnostic; `checkpoints.csv` retains the source coverage. The crossover
+  diagnostic requires the complete catalog recipe set at every included
+  completed scale; missing recipes fail instead of reducing the pair count.
 
 Outputs under `outputs/repro/ranking/`:
 

@@ -177,12 +177,49 @@ def test_matched_compute_requires_completed_endpoint_and_tolerance(sweep):
     assert matched_compute_comparisons(sweep, relative_tolerance=0.001).empty
 
 
-def test_crossovers_use_completed_scales_and_strict_order(raw):
-    raw.loc[raw["params"] == "small", "total_steps"] = 5
-    raw.loc[(raw["params"] == "large") & (raw["data"] == "a"), "primary_metric"] = 2.0
-    result = recipe_crossovers(prepare_evaluations(raw))
+@pytest.fixture
+def crossover_raw(raw):
+    from datadec.config import load_olmes_contract
+
+    recipes = tuple(sorted(load_olmes_contract().recipe_map.values()))
+    first = raw.loc[raw["data"] == "a"].copy()
+    first["data"] = recipes[0]
+    other = raw.loc[raw["data"] == "b"]
+    expanded = pd.concat(
+        [first, *(other.assign(data=recipe) for recipe in recipes[1:])]
+    )
+    expanded.loc[expanded["params"] == "small", "total_steps"] = 5
+    expanded.loc[
+        (expanded["params"] == "large") & (expanded["data"] == recipes[0]),
+        "primary_metric",
+    ] = 2.0
+    return expanded
+
+
+def test_crossovers_use_completed_scales_and_strict_order(crossover_raw):
+    result = recipe_crossovers(prepare_evaluations(crossover_raw))
     assert len(result) == 10
-    assert result["strict_crossovers"].eq(1).all()
+    assert result["strict_crossovers"].eq(24).all()
+    assert result["pair_count"].eq(300).all()
+
+
+def test_crossovers_reject_recipe_absent_from_all_completed_scales(crossover_raw):
+    absent_recipe = crossover_raw["data"].iloc[0]
+    incomplete = crossover_raw.loc[crossover_raw["data"] != absent_recipe]
+    with pytest.raises(ValueError, match="requires all catalog recipes"):
+        recipe_crossovers(prepare_evaluations(incomplete))
+
+
+def test_crossovers_reject_recipe_absent_from_one_completed_scale(crossover_raw):
+    absent_recipe = crossover_raw["data"].iloc[0]
+    incomplete = crossover_raw.loc[
+        ~(
+            (crossover_raw["data"] == absent_recipe)
+            & (crossover_raw["params"] == "small")
+        )
+    ]
+    with pytest.raises(ValueError, match="incomplete recipe coverage"):
+        recipe_crossovers(prepare_evaluations(incomplete))
 
 
 def test_paper_sweep_preserves_missing_seed_evidence():

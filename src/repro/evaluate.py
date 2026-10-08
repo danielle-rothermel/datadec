@@ -10,6 +10,7 @@ from enum import UNIQUE, StrEnum, auto, verify
 import numpy as np
 import pandas as pd
 
+from datadec.config import load_olmes_contract
 from repro.ranking import BENCHMARKS, METRICS, PROXY_FAMILIES
 
 
@@ -296,6 +297,9 @@ def recipe_crossovers(evaluations: pd.DataFrame) -> pd.DataFrame:
         .mean()
         .unstack("data")
     )
+    expected_recipes = set(load_olmes_contract().recipe_map.values())
+    if set(scores.columns) != expected_recipes:
+        raise ValueError("crossover diagnostic requires all catalog recipes")
     records = []
     for task, group in scores.groupby(level="task"):
         group = group.sort_index(level="compute")
