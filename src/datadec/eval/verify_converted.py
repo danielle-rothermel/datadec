@@ -1,0 +1,416 @@
+"""Verify a converted DataDecide checkpoint against published instance results.
+
+The flow, with OLMES nowhere in the loop: read ARC-Challenge at a pinned
+commit through dr-hf, build OLMES cloze requests with ``olmes_rc``, score
+them through a dr-providers ``LocalModelProvider``, apply the decision rules,
+and compare per item and per choice with the DataDecide instance and choice
+tables that datadec processes from ``allenai/DataDecide-eval-instances``.
+"""
+
+from __future__ import annotations
+
+import statistics
+from dataclasses import dataclass, field, replace
+from typing import TYPE_CHECKING, Final
+
+import pyarrow.dataset as ds
+from dr_hf import (
+    DatasetPin,
+    NamedSubset,
+    origin_subsets,
+    read_rows,
+    resolve_dataset_pin,
+)
+
+from datadec.data.read import ProcessedTable, read_processed_table
+from datadec.eval.olmes_rc import (
+    RcRequests,
+    build_arc_challenge_rc_requests,
+)
+from datadec.eval.scoring import ChoiceScore, DecisionRule, predicted_index
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from dr_providers import (
+        LocalExecutionEvidence,
+        LocalModelProvider,
+        ProviderCallConfig,
+        ProviderScoreResponse,
+    )
+
+    from datadec.data.artifacts import DataArtifacts
+
+__all__ = [
+    "ACCEPTANCE",
+    "ArcChallengeSource",
+    "Comparison",
+    "PublishedChoice",
+    "PublishedItem",
+    "PublishedKey",
+    "RuleComparison",
+    "ScoredItem",
+    "ScoringResult",
+    "compare",
+    "load_arc_challenge_test",
+    "load_published",
+    "score_items",
+]
+
+ARC_CHALLENGE_REPO: Final = "allenai/ai2_arc"
+ARC_CHALLENGE_CONFIG: Final = "ARC-Challenge"
+ARC_CHALLENGE_NATIVE_ID: Final = "id"
+ARC_CHALLENGE_SPLIT: Final = "test"
+ARC_CHALLENGE_TASK: Final = "arc_challenge"
+
+# Acceptance thresholds of the verification run.
+ACCEPTANCE: Final = {
+    "min_agreement_pmi": 0.98,
+    "min_agreement_per_char": 0.98,
+    "max_mean_abs_sum_logits_diff": 0.05,
+}
+
+# Published instance columns holding the authors' predicted index per rule.
+# The per-byte column is empty in the source, so the per-byte prediction is
+# derived from the published per-choice ``logits_per_byte`` (bits per byte).
+_PUBLISHED_PREDICTION_COLUMNS: Final = {
+    DecisionRule.RAW: "predicted_index_raw",
+    DecisionRule.PER_TOKEN: "predicted_index_per_token",
+    DecisionRule.PER_CHAR: "predicted_index_per_char",
+    DecisionRule.PMI: "predicted_index_uncond",
+}
+_MISMATCH_EXAMPLES: Final = 5
+
+
+@dataclass(frozen=True, slots=True)
+class ArcChallengeSource:
+    pin: DatasetPin
+    subset: NamedSubset
+    requests: tuple[RcRequests, ...]
+
+
+def load_arc_challenge_test(ref: str = "main") -> ArcChallengeSource:
+    """Pin ARC-Challenge, read every split, keep the ``test`` origin subset."""
+    pin = resolve_dataset_pin(
+        ARC_CHALLENGE_REPO,
+        config=ARC_CHALLENGE_CONFIG,
+        ref=ref,
+        native_id_field=ARC_CHALLENGE_NATIVE_ID,
+    )
+    rows = list(read_rows(pin))
+    subsets = {subset.key.name: subset for subset in origin_subsets(pin, rows)}
+    subset = subsets[ARC_CHALLENGE_SPLIT]
+    by_id = {
+        row.native_id: row for row in rows if row.origin_split == ARC_CHALLENGE_SPLIT
+    }
+    requests = tuple(
+        build_arc_challenge_rc_requests(by_id[native_id])
+        for native_id in subset.native_ids
+    )
+    return ArcChallengeSource(pin=pin, subset=subset, requests=requests)
+
+
+@dataclass(frozen=True, slots=True)
+class ScoredItem:
+    native_id: str
+    gold_index: int
+    choices: tuple[ChoiceScore, ...]
+    conditional_input_tokens: int
+    warnings: int
+
+
+@dataclass(frozen=True, slots=True)
+class ScoringResult:
+    items: tuple[ScoredItem, ...]
+    execution: LocalExecutionEvidence
+
+
+def score_items(
+    provider: LocalModelProvider,
+    config: ProviderCallConfig,
+    requests: Sequence[RcRequests],
+) -> ScoringResult:
+    """One score request per context: the prompt and the unconditional one."""
+    from dr_providers import ProviderScoreRequest  # noqa: PLC0415
+
+    executions: list[LocalExecutionEvidence] = []
+
+    def score(context: str, continuations: tuple[str, ...]) -> ProviderScoreResponse:
+        evidence = provider.invoke(
+            ProviderScoreRequest(
+                config=config, context=context, continuations=continuations
+            )
+        )
+        response = evidence.score_response
+        if (
+            response is None
+            or response.usage is None
+            or evidence.local_execution is None
+        ):
+            raise RuntimeError(f"scoring failed: {evidence.failure}")
+        executions.append(evidence.local_execution)
+        return response
+
+    items = []
+    for request in requests:
+        conditional = score(request.context, request.continuations)
+        unconditional = score(request.unconditional_context, request.continuations)
+        choices = tuple(
+            ChoiceScore.for_continuation(
+                continuation,
+                log_likelihood=cond.log_likelihood,
+                token_count=cond.token_count,
+                unconditional_log_likelihood=uncond.log_likelihood,
+            )
+            for continuation, cond, uncond in zip(
+                request.continuations,
+                conditional.scores,
+                unconditional.scores,
+                strict=True,
+            )
+        )
+        items.append(
+            ScoredItem(
+                native_id=request.native_id,
+                gold_index=request.gold_index,
+                choices=choices,
+                conditional_input_tokens=_prompt_tokens(conditional),
+                warnings=len(conditional.warnings) + len(unconditional.warnings),
+            )
+        )
+    if not executions:
+        raise ValueError("score_items requires at least one request")
+    if any(execution != executions[0] for execution in executions):
+        raise RuntimeError("local execution conditions changed during scoring")
+    return ScoringResult(items=tuple(items), execution=executions[0])
+
+
+def _prompt_tokens(response: ProviderScoreResponse) -> int:
+    if response.usage is None or response.usage.prompt_tokens is None:
+        raise RuntimeError("score response carries no prompt token usage")
+    return response.usage.prompt_tokens
+
+
+@dataclass(frozen=True, slots=True)
+class PublishedKey:
+    """One checkpoint's rows in datadec's processed OLMES detail tables."""
+
+    recipe: str
+    params: str
+    seed: str
+    step: int
+    task: str = ARC_CHALLENGE_TASK
+
+
+@dataclass(frozen=True, slots=True)
+class PublishedChoice:
+    sum_logits: float
+    sum_logits_uncond: float | None
+    num_tokens: int
+    num_tokens_all: int
+    logits_per_byte: float | None
+
+
+@dataclass(frozen=True, slots=True)
+class PublishedItem:
+    native_id: str
+    doc_id: int
+    label: int
+    predictions: dict[DecisionRule, int]
+    choices: tuple[PublishedChoice, ...]
+
+
+def load_published(
+    artifacts: DataArtifacts, key: PublishedKey
+) -> dict[str, PublishedItem]:
+    """Published predictions and per-choice values keyed by native id."""
+    filters = (
+        (ds.field("recipe") == key.recipe)
+        & (ds.field("params") == key.params)
+        & (ds.field("seed") == key.seed)
+        & (ds.field("step") == key.step)
+        & (ds.field("task") == key.task)
+    )
+    instances = read_processed_table(
+        artifacts,
+        ProcessedTable.OLMES_DETAILS_INSTANCES,
+        filters=filters,
+        columns=[
+            "doc_id",
+            "native_id",
+            "label",
+            *_PUBLISHED_PREDICTION_COLUMNS.values(),
+        ],
+    ).to_pylist()
+    choices = read_processed_table(
+        artifacts,
+        ProcessedTable.OLMES_DETAILS_CHOICES,
+        filters=filters,
+        columns=[
+            "doc_id",
+            "choice_index",
+            "sum_logits",
+            "sum_logits_uncond",
+            "num_tokens",
+            "num_tokens_all",
+            "logits_per_byte",
+        ],
+    ).to_pylist()
+    if not instances:
+        raise LookupError(f"no published instances for {key}")
+    by_doc: dict[int, list[dict[str, object]]] = {}
+    for row in sorted(
+        choices,
+        key=lambda r: (int(r["doc_id"]), int(r["choice_index"])),  # type: ignore[arg-type]
+    ):
+        by_doc.setdefault(int(row["doc_id"]), []).append(row)  # type: ignore[arg-type]
+    published = {}
+    for row in instances:
+        doc_id = int(row["doc_id"])
+        doc_choices = tuple(
+            PublishedChoice(
+                sum_logits=float(choice["sum_logits"]),  # type: ignore[arg-type]
+                sum_logits_uncond=_optional_float(choice["sum_logits_uncond"]),
+                num_tokens=int(choice["num_tokens"]),  # type: ignore[arg-type]
+                num_tokens_all=int(choice["num_tokens_all"]),  # type: ignore[arg-type]
+                logits_per_byte=_optional_float(choice["logits_per_byte"]),
+            )
+            for choice in by_doc[doc_id]
+        )
+        predictions = {
+            rule: int(row[column])  # type: ignore[arg-type]
+            for rule, column in _PUBLISHED_PREDICTION_COLUMNS.items()
+        }
+        bits_per_byte = [choice.logits_per_byte for choice in doc_choices]
+        if all(value is not None for value in bits_per_byte):
+            values = [float(value) for value in bits_per_byte]  # type: ignore[arg-type]
+            predictions[DecisionRule.PER_BYTE] = values.index(min(values))
+        native_id = str(row["native_id"])
+        published[native_id] = PublishedItem(
+            native_id=native_id,
+            doc_id=doc_id,
+            label=int(row["label"]),  # type: ignore[arg-type]
+            predictions=predictions,
+            choices=doc_choices,
+        )
+    return published
+
+
+def _optional_float(value: object) -> float | None:
+    return None if value is None else float(value)  # type: ignore[arg-type]
+
+
+@dataclass(frozen=True, slots=True)
+class RuleComparison:
+    rule: DecisionRule
+    agreement: float
+    accuracy_ours: float
+    accuracy_published: float
+    first_mismatches: tuple[str, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class Comparison:
+    items: int
+    choices: int
+    rules: tuple[RuleComparison, ...]
+    sum_logits_mean_abs_diff: float
+    sum_logits_max_abs_diff: float
+    sum_logits_uncond_mean_abs_diff: float
+    sum_logits_uncond_max_abs_diff: float
+    continuation_token_agreement: float
+    context_token_agreement: float
+    warnings: int
+    acceptance: dict[str, bool] = field(default_factory=dict)
+
+    @property
+    def accepted(self) -> bool:
+        return all(self.acceptance.values())
+
+    def rule(self, rule: DecisionRule) -> RuleComparison:
+        return next(item for item in self.rules if item.rule is rule)
+
+
+def compare(
+    ours: Sequence[ScoredItem], published: dict[str, PublishedItem]
+) -> Comparison:
+    """Per-rule agreement and accuracy plus per-choice value differences."""
+    our_ids = {item.native_id for item in ours}
+    if our_ids != set(published):
+        missing = sorted(set(published) - our_ids)[:5]
+        extra = sorted(our_ids - set(published))[:5]
+        raise ValueError(
+            f"item sets differ: published-only {missing}, ours-only {extra}"
+        )
+    rules = []
+    for rule in DecisionRule:
+        agree = 0
+        correct_ours = 0
+        correct_published = 0
+        mismatches: list[str] = []
+        for item in ours:
+            reference = published[item.native_id]
+            ours_index = predicted_index(rule, item.choices)
+            published_index = reference.predictions[rule]
+            agree += ours_index == published_index
+            correct_ours += ours_index == item.gold_index
+            correct_published += published_index == reference.label
+            if ours_index != published_index and len(mismatches) < _MISMATCH_EXAMPLES:
+                mismatches.append(
+                    f"{item.native_id}: ours {ours_index}, published {published_index}"
+                )
+        rules.append(
+            RuleComparison(
+                rule=rule,
+                agreement=agree / len(ours),
+                accuracy_ours=correct_ours / len(ours),
+                accuracy_published=correct_published / len(ours),
+                first_mismatches=tuple(mismatches),
+            )
+        )
+    diffs: list[float] = []
+    uncond_diffs: list[float] = []
+    token_agree = 0
+    context_agree = 0
+    for item in ours:
+        reference = published[item.native_id]
+        if len(reference.choices) != len(item.choices):
+            raise ValueError(f"{item.native_id}: choice counts differ")
+        if reference.label != item.gold_index:
+            raise ValueError(f"{item.native_id}: gold labels differ")
+        for mine, theirs in zip(item.choices, reference.choices, strict=True):
+            diffs.append(abs(mine.log_likelihood - theirs.sum_logits))
+            if (
+                theirs.sum_logits_uncond is not None
+                and mine.unconditional_log_likelihood is not None
+            ):
+                uncond_diffs.append(
+                    abs(mine.unconditional_log_likelihood - theirs.sum_logits_uncond)
+                )
+            token_agree += mine.token_count == theirs.num_tokens
+        # OLMES num_tokens_all counts context plus continuation tokens; the
+        # provider's prompt tokens count each forward input, one token less.
+        context_agree += item.conditional_input_tokens == sum(
+            choice.num_tokens_all - 1 for choice in reference.choices
+        )
+    comparison = Comparison(
+        items=len(ours),
+        choices=len(diffs),
+        rules=tuple(rules),
+        sum_logits_mean_abs_diff=statistics.fmean(diffs),
+        sum_logits_max_abs_diff=max(diffs),
+        sum_logits_uncond_mean_abs_diff=statistics.fmean(uncond_diffs),
+        sum_logits_uncond_max_abs_diff=max(uncond_diffs),
+        continuation_token_agreement=token_agree / len(diffs),
+        context_token_agreement=context_agree / len(ours),
+        warnings=sum(item.warnings for item in ours),
+    )
+    acceptance = {
+        "pmi_agreement": comparison.rule(DecisionRule.PMI).agreement
+        > ACCEPTANCE["min_agreement_pmi"],
+        "per_char_agreement": comparison.rule(DecisionRule.PER_CHAR).agreement
+        > ACCEPTANCE["min_agreement_per_char"],
+        "mean_abs_sum_logits_diff": comparison.sum_logits_mean_abs_diff
+        < ACCEPTANCE["max_mean_abs_sum_logits_diff"],
+    }
+    return replace(comparison, acceptance=acceptance)

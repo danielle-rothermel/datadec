@@ -1,0 +1,82 @@
+# DataDecide checkpoint conversion and republication.
+#
+# Source checkpoints are the authors' Hugging Face repos; converted copies are
+# published privately under the drotherm namespace. Recipe keys and display
+# names come from olmes.toml; model sizes come from catalog.toml.
+
+[source]
+repo_id_template = "allenai/DataDecide-{recipe}-{size}"
+branch_template = "step{step}-seed-{seed_slug}"
+# Only these files are downloaded; the authors' repos also carry optimizer
+# state under training/, which conversion does not need.
+files = [
+  "config.json",
+  "generation_config.json",
+  "model.safetensors",
+  "special_tokens_map.json",
+  "tokenizer.json",
+  "tokenizer_config.json",
+]
+tokenizer_files = [
+  "special_tokens_map.json",
+  "tokenizer.json",
+  "tokenizer_config.json",
+]
+
+[target]
+repo_id_template = "drotherm/DataDecide-{recipe}-{size}"
+branch_template = "step{step}-seed{ordinal}"
+final_tag_template = "final-seed{ordinal}"
+private = true
+
+# Seed ordinals: 0 is the authors' default seed; 1 and 2 are the auxiliary
+# seeds, whose literal values differ by size group. Names and literals follow
+# SEED_MAPPING in checkpoints/README.md of github.com/allenai/DataDecide at
+# commit 68abc496587935b7211e9894206e78f15d535832. The authors' Hub branches
+# spell the names with hyphens (seed-small-aux-2).
+[seeds]
+large_sizes = ["1B"]
+
+[[seeds.ordinals]]
+ordinal = 0
+small = { name = "default", value = 6198 }
+large = { name = "default", value = 6198 }
+
+[[seeds.ordinals]]
+ordinal = 1
+small = { name = "small aux 2", value = 14 }
+large = { name = "large aux 2", value = 4 }
+
+[[seeds.ordinals]]
+ordinal = 2
+small = { name = "small aux 3", value = 15 }
+large = { name = "large aux 3", value = 5 }
+
+# Final-step evidence sources.
+[final_step]
+# Authors' list of final default-seed checkpoints. model_name is
+# "{training data name}-{size}-6198"; training data names map to recipe keys
+# through scaling_law.toml source_group_map.
+final_paths_url = "https://raw.githubusercontent.com/allenai/DataDecide/68abc496587935b7211e9894206e78f15d535832/checkpoints/final_defualt_seed_paths.jsonl"
+final_paths_commit = "68abc496587935b7211e9894206e78f15d535832"
+
+# Model table of the DataDecide paper (arXiv 2504.11393v2, Appendix A,
+# Table "suite_stats"): sequences per batch and training steps per size.
+[final_step.paper]
+source = "arXiv 2504.11393v2, Appendix A, model configuration table"
+
+[final_step.paper.sizes]
+4M = { batch_size = 32, training_steps = 5725 }
+6M = { batch_size = 32, training_steps = 9182 }
+8M = { batch_size = 32, training_steps = 13039 }
+10M = { batch_size = 32, training_steps = 15117 }
+14M = { batch_size = 32, training_steps = 21953 }
+16M = { batch_size = 32, training_steps = 24432 }
+20M = { batch_size = 64, training_steps = 14584 }
+60M = { batch_size = 96, training_steps = 29042 }
+90M = { batch_size = 160, training_steps = 29901 }
+150M = { batch_size = 192, training_steps = 38157 }
+300M = { batch_size = 320, training_steps = 45787 }
+530M = { batch_size = 448, training_steps = 57786 }
+750M = { batch_size = 576, training_steps = 63589 }
+1B = { batch_size = 704, training_steps = 69369 }
