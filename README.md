@@ -285,45 +285,16 @@ Full-recipe detail preprocessing and verification can take a long time and requi
 
 ## Paper reproduction
 
-From the repository root, print the 64 distinct claim IDs and statements,
-followed by all 74 section-labelled source quotes:
+The reproduction tools link paper claims to their source passages. Claim
+inventories live in [`configs/repro_claims/`](configs/repro_claims/), with
+reusable loading and quote lookup helpers in [`src/repro/`](src/repro/).
+Paper source text and attribution are bundled under [`docs/papers/`](docs/papers/).
+
+From the repository root, list the DataDecide claims and their quotes:
 
 ```bash
 uv run python scripts/repro/claims.py
 ```
-
-The required arXiv v2 paper text is committed in
-[`docs/papers/2504.11393v2/`](docs/papers/2504.11393v2/README.md), so no paper or
-evaluation-data download is needed. Use Python 3.12 or newer and `uv`;
-`uv run` installs the project and its dependencies on first use. Output preserves
-the paper's LaTeX macros. This command lists claims and quotes; it does not run
-reproduction experiments.
-
-The inventory lives in
-[`configs/repro_claims/magnusson2025-datadecide.toml`](configs/repro_claims/magnusson2025-datadecide.toml).
-Each claim has a statement, its original registry entry IDs, and one or more
-paper locations. Repeated assertions share one claim; `original_entry_ids`
-preserves their provenance. Locations specify a source file, paper section,
-1-based line, and 0-based character range with an exclusive end.
-
-`repro.claims` provides `load_claims`, the frozen `Claim` and `QuoteLocation`
-dataclasses, and `read_quotes`. The loader validates the TOML structure and
-coordinate ranges, rejects unknown fields, and preserves claim and location
-order. [`scripts/repro/claims.py`](scripts/repro/claims.py) loads the inventory
-and prints the quotes. The helpers can also be called directly:
-
-```python
-from pathlib import Path
-
-from repro.claims import load_claims, read_quotes
-
-claims = load_claims(Path("configs/repro_claims/magnusson2025-datadecide.toml"))
-quotes = read_quotes(claims, Path("docs/papers/2504.11393v2"))
-```
-
-Source provenance, licensing, and hashes are recorded beside the bundled paper
-text. Five figure-only targets without textual quotes are documented as omitted
-in the inventory's header comments.
 
 ## Development
 
