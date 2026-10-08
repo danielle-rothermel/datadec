@@ -283,6 +283,19 @@ instance rows and 74,384,622 choice rows in addition to its task rows.
 
 Full-recipe detail preprocessing and verification can take a long time and require multi-GB local data; they are intentionally excluded from the default test suite.
 
+## Paper reproduction
+
+The reproduction tools link paper claims to their source passages. Claim
+inventories live in [`configs/repro_claims/`](configs/repro_claims/), with
+reusable loading and quote lookup helpers in [`src/repro/`](src/repro/).
+Paper source text and attribution are bundled under [`docs/papers/`](docs/papers/).
+
+From the repository root, list the DataDecide claims and their quotes:
+
+```bash
+uv run python scripts/repro/claims.py
+```
+
 ## Development
 
 ```bash

@@ -1,0 +1,582 @@
+%%%%%%%% ICML 2025 EXAMPLE LATEX SUBMISSION FILE %%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{booktabs} % for professional tables
+
+% hyperref makes hyperlinks in the resulting PDF.
+% If your build breaks (sometimes temporarily if a hyperlink spans a page)
+% please comment out the following usepackage line and replace
+% \usepackage{icml2025} with \usepackage[nohyperref]{icml2025} above.
+\usepackage{hyperref}
+
+
+% Attempt to make hyperref and algorithmic work together better:
+\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+% Use the following line for the initial blind version submitted for review:
+% \usepackage{icml2025}
+
+% If accepted, instead use the following line for the camera-ready submission:
+\usepackage[accepted]{icml2025}
+
+% For theorems and such
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+% if you use cleveref..
+\usepackage[capitalize,noabbrev]{cleveref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THEOREMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Todonotes is useful during development; simply uncomment the next line
+%    and comment out the line below the next line to turn off comments
+%\usepackage[disable,textsize=tiny]{todonotes}
+\usepackage[textsize=tiny]{todonotes}
+
+
+% added by Ian
+\usepackage{nicefrac}
+\usepackage[inline]{enumitem} %for inline enumeration
+\usepackage{graphicx}
+\usepackage[most]{tcolorbox} % for highlight recomendation boxes
+\usepackage{makecell} % for linebreaks in cells
+\usepackage{tablefootnote}
+
+
+
+\newcommand{\numEvals}{10}
+\newcommand{\numRecipes}{25}
+\newcommand{\numScales}{14}
+\newcommand{\numSuiteModels}{1,050} %25 * 14 * 3 
+
+\newcommand{\numTargetSeeds}{3}
+\newcommand{\numPredictionSeeds}{3}
+\newcommand{\predictionSeedComputePercent}{$25\%$}
+
+\newcommand{\numProxyMetrics}{16}
+
+\newcommand{\suite}{suite}
+\newcommand{\projSuiteLong}{\textsc{DataDecide}}
+\newcommand{\projSuite}{\textsc{DataDecide}}
+
+
+% Data recipes
+\newcommand{\noCode}{Dolma1.7 (no code)}
+\newcommand{\noMathNoCode}{Dolma1.7 (no math, code)}
+\newcommand{\noReddit}{Dolma1.7 (no Reddit)}
+\newcommand{\noFlan}{Dolma1.7 (no Flan)}
+\newcommand{\dolmaSeventeen}{Dolma1.7}
+\newcommand{\falcon}{Falcon}
+\newcommand{\falconAndCc}{Falcon+CC}
+\newcommand{\cFour}{C4}
+\newcommand{\proxFinewebPro}{FineWeb-Pro}
+\newcommand{\finewebEduDedup}{FineWeb-Edu}
+\newcommand{\falconAndCcEliFiveOhTopTenP}{Falcon+CC (QC 10\%)}
+\newcommand{\falconAndCcEliFiveOhTopTwentyP}{Falcon+CC (QC 20\%)}
+\newcommand{\falconAndCcOgEliFiveOhTopTenP}{Falcon+CC (QC Orig 10\%)}
+\newcommand{\falconAndCcTuluQcTopTen}{Falcon+CC (QC Tulu 10\%)}
+\newcommand{\dolmaVSixteenAndSourcesBaseline}{Dolma1.6++}
+\newcommand{\DCLMBaseline}{DCLM-Baseline}
+\newcommand{\dolmaSeventeenSeventyFivePDCLMBaselineTwentyFiveP}{DCLM-Baseline 25\% / Dolma 75\%}
+\newcommand{\dolmaSeventeenFiftyPDCLMBaselineFiftyP}{DCLM-Baseline 50\% / Dolma 50\%}
+\newcommand{\dolmaSeventeenTwentyFivePDCLMBaselineSeventyFiveP}{DCLM-Baseline 75\% / Dolma 25\%}
+\newcommand{\dclmFtSevenPercentileFwTwo}{DCLM-Baseline (QC 7\%, FW2)}
+\newcommand{\dclmFtSevenPercentileFwThree}{DCLM-Baseline (QC 7\%, FW3)}
+\newcommand{\dclmFwTopTen}{DCLM-Baseline (QC FW 10\%)}
+\newcommand{\dclmFwTopThree}{DCLM-Baseline (QC FW 3\%)}
+\newcommand{\posEliFiveOhNegDclmRefinedwebStepsTwoThousandLrThreeEFourTopTenP}{DCLM-Baseline (QC 10\%)}
+\newcommand{\posEliFiveOhNegDclmRefinedwebStepsTwoThousandLrThreeEFourTopTwentyP}{DCLM-Baseline (QC 20\%)}
+
+% evals
+\newcommand{\olmes}{OLMES}
+\newcommand{\arc}{ARC}
+\newcommand{\arcChallenge}{ARC Challenge}
+\newcommand{\arcEasy}{ARC Easy}
+\newcommand{\boolq}{BoolQ}
+\newcommand{\csqa}{CommonsenseQA}
+\newcommand{\hellaswag}{HellaSwag}
+\newcommand{\mmlu}{MMLU}
+\newcommand{\openbookqa}{OpenBookQA}
+\newcommand{\piqa}{PIQA}
+\newcommand{\socialiqa}{SocialIQA}
+\newcommand{\winogrande}{WinoGrande}
+\newcommand{\mbpp}{MBPP}
+\newcommand{\humaneval}{HumanEval}
+
+
+% metrics
+\newcommand{\correctProb}{\textsc{Correct Prob}}
+% \newcommand{\correctProbPerChar}{\textsc{correct\_prob\_per\_char}}
+% \newcommand{\correctProbPerToken}{\textsc{correct\_prob\_per\_token}}
+\newcommand{\margin}{\textsc{Margin}}
+% \newcommand{\marginPerChar}{\textsc{margin\_per\_char}}
+% \newcommand{\marginPerToken}{\textsc{margin\_per\_token}}
+\newcommand{\normCorrectProb}{\textsc{Norm Correct Prob}}
+% \newcommand{\normCorrectProbPerChar}{\textsc{norm\_correct\_prob\_per\_char}}
+% \newcommand{\normCorrectProbPerToken}{\textsc{norm\_correct\_prob\_per\_token}}
+\newcommand{\primaryMetric}{\textsc{Accuracy}}
+\newcommand{\totalProb}{\textsc{Total Prob}}
+% \newcommand{\totalProbPerChar}{\textsc{total\_prob\_per\_char}}
+% \newcommand{\totalProbPerToken}{\textsc{total\_prob\_per\_token}}
+% \newcommand{\uncondCorrectProb}{\textsc{uncond\_correct\_prob}}
+% \newcommand{\uncondCorrectProbPerChar}{\textsc{uncond\_correct\_prob\_per\_char}}
+% \newcommand{\uncondCorrectProbPerToken}{\textsc{uncond\_correct\_prob\_per\_token}}
+\newcommand{\accRaw}{\textsc{Accuracy}}
+% \newcommand{\accPerChar}{\textsc{acc\_per\_char}}
+% \newcommand{\accPerToken}{\textsc{acc\_per\_token}}
+
+
+% prediction metrics
+\newcommand{\percentTargetCompute}{$\%C$}
+\newcommand{\twoClass}{decision accuracy}
+\newcommand{\twoClassFiltered}{2-class-filtered}
+\newcommand{\threeClass}{3-class}
+\newcommand{\predictionError}{prediction error}
+
+% prediction mehtods
+\newcommand{\rankingMethod}{ranking single scale experiments}
+\newcommand{\scalingLawsMethod}{extrapolating scaling laws}
+\newcommand{\numScalingLaws}{8}
+
+
+% The \icmltitle you define below is probably too long as a header.
+% Therefore, a short form for the running title is supplied here:
+\icmltitlerunning{DataDecide: How to Predict Best Pretraining Data with Small Experiments}
+
+% \newcommand{\dataDecideLogoWithAltText}{\raisebox{-.5em}{\rlap{\raisebox{.5em}{\hspace{1.4em}\scriptsize DataDecide:}}\includegraphics[height=2em]{figures/datadecide-logo.png}}\xspace}
+
+\newcommand{\dataDecideLogoWithAltText}{%
+  \raisebox{-.5em}{%
+    % 1️⃣ typeset the alt text in zero‑width mode
+    \rlap{\raisebox{.5em}{\hspace{1.4em}\scriptsize DataDecide}}%
+    % 2️⃣ cover it with a white rectangle + the logo
+    \colorbox{white}{%
+      \includegraphics[height=2em]{figures/datadecide-logo.pdf}%
+    }%
+  }%
+}
+
+\begin{document}
+
+% \newcommand{\palomaLogoWithAltText}{\raisebox{-.25em}{\rlap{\raisebox{.25em}{\hspace{1.4em}\scriptsize Paloma}}\includegraphics[height=1.5em]{figures/paloma-white-bg.pdf}}\xspace}
+% \title{\centering \palomaLogoWithAltText~:~A Benchmark for Evaluating Language Model Fit}
+
+\twocolumn[
+% \icmltitle{\includegraphics[height=2em]{figures/datadecide-logo.pdf} \\ How to Predict Best Pretraining Data with Small Experiments}
+\icmltitle{\dataDecideLogoWithAltText \\ How to Predict Best Pretraining Data with Small Experiments}
+
+\icmlsetsymbol{equal}{*}
+
+{
+\small
+\begin{icmlauthorlist}
+\icmlauthor{Ian Magnusson}{equal,ai2,uw}
+\icmlauthor{Nguyen Tai}{equal,upenn}
+\icmlauthor{Ben Bogin}{equal,ai2}
+\icmlauthor{David Heineman}{ai2}
+\icmlauthor{Jena Hwang}{ai2}
+\icmlauthor{Luca Soldaini}{ai2}
+\icmlauthor{Akshita Bhagia}{ai2}
+\icmlauthor{Jiacheng Liu}{ai2,uw}
+\icmlauthor{Dirk Groeneveld}{ai2}
+\icmlauthor{Oyvind Tafjord}{ai2}
+\icmlauthor{Noah A. Smith}{ai2,uw}
+\icmlauthor{Pang Wei Koh}{ai2,uw}
+\icmlauthor{Jesse Dodge}{ai2}
+\end{icmlauthorlist}
+}
+
+\icmlaffiliation{ai2}{Allen Institute for AI}
+\icmlaffiliation{uw}{Paul G. Allen School of Computer Science \& Engineering, University of Washington}
+\icmlaffiliation{upenn}{University of Pennsylvania}
+
+% Optional: You can specify corresponding author(s) if needed
+\icmlcorrespondingauthor{Ian Magnusson}{ianmag@cs.washington.edu}
+
+
+% You may provide any keywords that you
+% find helpful for describing your paper; these are used to populate
+% the "keywords" metadata in the PDF but will not be shown in the document
+\icmlkeywords{Machine Learning, ICML}
+
+\vskip 0.3in
+]
+
+% this must go after the closing bracket ] following \twocolumn[ ...
+
+% This command actually creates the footnote in the first column
+% listing the affiliations and the copyright notice.
+% The command takes one argument, which is text to display at the start of the footnote.
+% The \icmlEqualContribution command is standard text for equal contribution.
+% Remove it (just {}) if you do not need this facility.
+
+%\printAffiliationsAndNotice{}  % leave blank if no need to mention equal contribution
+\printAffiliationsAndNotice{\icmlEqualContribution} % otherwise use the standard text.
+
+
+\begin{abstract}
+Because large language models are expensive to pretrain on different datasets, using smaller-scale experiments to decide on data is crucial for reducing costs.  Which benchmarks and methods of making decisions from observed performance at small scale most accurately predict the datasets that yield the best large models? To empower open exploration of this question, we release models, data, and evaluations in \projSuite{}---the most extensive open suite of models over differences in data and scale.
+We conduct controlled pretraining experiments across \numRecipes{} corpora with differing sources, deduplication, and filtering up to 100B tokens, model sizes up to 1B parameters, and \numTargetSeeds{} random seeds. 
+We find that the ranking of models at a single, small size (e.g., 150M parameters) is a strong baseline for predicting best models at our larger target scale (1B) ($\sim80$\% of comparisons correct).
+No scaling law methods among \numScalingLaws{} baselines exceed the compute-decision frontier of single-scale predictions, but \projSuite{} can measure improvement in future scaling laws. We also identify that using continuous likelihood metrics as proxies in small experiments makes benchmarks including \mmlu{}, \arc{}, \hellaswag{}, \mbpp{}, and \humaneval{} $>80$\% predictable at the target 1B scale with just 0.01\% of the compute.
+\end{abstract}
+
+
+\begin{figure*}[t!]
+    \centering
+    \includegraphics[width=\linewidth]{figures/DataDecide_Infographic.pdf}
+    \vspace{-1.5em}
+    \caption{Which pretraining data to use?  Ideally, compare performance of large models with fixed configurations averaged over random seeds (left).  In practice, cheaper, smaller-scale experiments are used (center).
+    Here \projSuite{} measures accuracy of pairwise decisions between \numRecipes{} pretraining corpora to find efficient prediction methods (right).
+    }
+    \label{fig:accuracy_vs_compute}
+\end{figure*}
+
+
+
+
+
+
+\section{Introduction}
+The cost of training large language models (LMs) necessitates methods of trying out options at small scale, but it also makes it expensive to validate the accuracy of development decisions made with such methods. We focus on the question of choosing between pretraining datasets to use---one of the most impactful development decisions.
+Common practice (e.g., \citealp{li2024datacomplmsearchgenerationtraining}) uses a single, small scale of experiments to cheaply test pretraining data intended for larger-scale models, where scale is determined by number of model parameters and training tokens. The other predominant approach is to fit scaling laws \citep{kaplan2020scalinglawsneurallanguage, hoffmann2022trainingcomputeoptimallargelanguage, choshen2024hitchhikersguidescalinglaw} to the trend in performance observed over multiple small scales, with recent work extending this to the prediction of downstream performance instead of language modeling loss \citep{gadre2024languagemodelsscalereliably, Dubey2024TheL3, bhagia2024establishingtaskscalinglaws}. 
+
+So far decision-making approaches have only been validated without observing the counterfactual outcome, either by producing a single large model on the chosen decision with impressive performance or by low error in predicting the magnitude of observed performance of a small number of large models. Knowing what amount of error in predicting performance over scale is a low enough to actually make a correct decision among datasets, requires a suite of comparable models trained on many datasets. Although a wide variety of open-source pretraining corpora are available, the scaling behavior of data is difficult to assess from off-the-shelf models that vary simultaneously in data, optimizer, and modeling decisions. 
+
+To make it possible to empirically study what methods make the best decisions over data, we build \projSuiteLong{}\footnote{\href{https://huggingface.co/collections/allenai/datadecide-67edb1d2bacba40b5d3ed633}{DataDecide collection on HuggingFace}}---a suite of models we pretrain on 25 corpora up to 100B tokens, over 14 different model sizes ranging from 4M parameters up to 1B parameters (more than 30K model checkpoints in total). We evaluate all models across a suite of \numEvals{} downstream tasks and calculate how accurately small models predict which pretraining corpora lead to better performance at our largest scale. Our conclusions provide practical recommendations for the best benchmarks, prediction methods, and metrics to use to make decisions.
+
+We call the \numRecipes{} corpora we train on \textit{data recipes} as they range across popular corpora including Dolma \citep{dolma}, DCLM \citep{li2024datacomplmsearchgenerationtraining}, RefinedWeb \citep{Penedo2023TheRD}, C4 \citep{2019t5}, and FineWeb \citep{penedo2024finewebdatasetsdecantingweb} as well as combinations of interventions on these datasets such as source mixing, deduplication, and filtering. Previous work has considered only 2 \citep{biderman2023pythiasuiteanalyzinglarge} or 6 recipes \citep{magnusson2024palomabenchmarkevaluatinglanguage, brandfonbrener2024losstolosspredictionscalinglaws}.
+We also offer a novel affordance by including 3 random seed reruns for even our largest runs, to help quantify whether variation occurs due to random initialization and data order or differences in the distribution of data.
+
+Concretely, \projSuite{} allows analyses such as Figure~\ref{fig:accuracy_vs_compute} (right), which shows the relationship between compute used to predict a ranking of datasets and how accurately that ranking reflects mean performance over \numTargetSeeds{} seed runs (quantified here by \olmes{}; \citealp{gu2024olmesstandardlanguagemodel}) for models fully trained on those datasets at the target (1B) scale. We measure the accuracy of decisions as the percent of compared pairs of datasets where the prediction identifies the correct winner. Each point represents the average \twoClass{} of a given method over 3 prediction attempts using small models with different random seeds, and shading shows standard deviation.
+
+\begin{table*}[h!]
+    \centering
+    \footnotesize
+    % \footnotesize
+    % \setlength{\tabcolsep}{3pt}
+    \renewcommand{\arraystretch}{1.5}
+    \input{tables/data_recipes}
+    \caption{\projSuite{} enables the study of data differences over scales through controlled pretraining experiments on \numRecipes{} data recipes. These take different source datasets and apply interventions from ablating domains, deduplication, mixing, to quality filtering with different classifiers and thresholds.  We release all pretraining corpora, as well as models trained on each recipe and each of the \numScales{} model configurations in Table~\Ref{tab:suite_stats} with \numTargetSeeds{} random seeds.}
+    \label{tab:data_recipes}
+\end{table*}
+
+Measuring the tradeoff of compute cost to better decisions lets us make the following recommendations about small experiments for making data decisions:
+\begin{itemize}
+    \item \S\ref{sec:compute_story} -- The amount of compute you need to allocate for a given \twoClass{} depends heavily on task. \mmlu{} and \arc{} are much cheaper to predict than \hellaswag{} and some tasks such as \socialiqa{} are difficult to predict at all scales. 
+    \item \S\ref{sec:scaling_v_ranking} -- \numScalingLaws{} baseline scaling law methods do not exceed the compute to decision accuracy frontier set by \rankingMethod{}. 
+    \item \S\ref{sec:proxy_metrics_results} -- At small scales, continuous metrics using answer likelihood are better or equivalent predictors of decisions than using the same discrete accuracy target metric.
+    \item \S\ref{sec:characterizing_evals} -- Better decisions can be explained in part by low run-to-run variance and a wide spread of benchmark performance values for different data, traits which can be improved by proxy metrics.
+\end{itemize}
+
+Future research can extend \projSuite{} with little extra compute by running new evaluations on our checkpoints, pretraining additional small models to compare against the large target models we provide, or trying new prediction methods with lightweight manipulations such as smoothing and curve fitting on top of our released evaluation results.
+
+
+\section{Methods}
+Our aim is to empirically test the predictability of downstream performance at a larger, target scale using small experiments. We describe \projSuite{} \S\ref{sec:suite}, the prediction methods we examine \S\ref{sec:prediction_methods}, the metrics we use to assess predictions \S\ref{sec:pred_metrics}, how we measure downstream performance \S\ref{sec:perf_eval}, and proxy metrics for our performance evaluations \S\ref{sec:proxy_metrics}.
+We will release all models, checkpoints, pretraining corpora, and evaluations.
+
+\subsection{The \projSuite{} Suite}
+\label{sec:suite}
+We pretrain a suite of \numSuiteModels{} models using \numRecipes{} data recipes $\times$ \numScales{} model scales  $\times$ \numTargetSeeds{} random seeds for initialization and data order. Table~\ref{tab:data_recipes} describes the \numRecipes{} data recipes included in \projSuite{} that aim to provide coverage of common data preparation choices such as deduplication, ablating domains, mixes of existing datasets, as well as quality filters with different implementations, training data, and thresholds for quality classifiers.
+
+We select a token to parameter ratio of 100, which at 5$\times$ ``Chinchilla''  (5~$\times~C$) optimal ratio \citep{hoffmann2022trainingcomputeoptimallargelanguage} captures the typical overtraining favored for inference savings. 
+
+All 1B (target size) models have \numTargetSeeds{} full reruns with different seeds, while other model sizes have second and third seed runs that are terminated early after \predictionSeedComputePercent{} of the target compute budget. We train the 1B reruns all the way to completion to allow our target ``gold'' predictions to account for run-to-run variance in evaluations due to weight initialization and data order. For instance, we find that the standard deviation between runs at the 1B 5$\times C$ scale can be as high as $2\%$ points of accuracy for some recipes on most tasks. Meanwhile, at the non-target scales we wish to make predictions with a small fraction of the target compute, so we avoid reruns that would use an impractically large prediction budget.
+
+Whether for \scalingLawsMethod{} or \rankingMethod{}, it is important to select reasonable hyperparameters for each scale to avoid confounding in performance differences that are simply due to suboptimal hyperparameters. We use OLMo's \textit{model ladder} \citep{groeneveld2024olmoacceleratingsciencelanguage, olmo20252olmo2furious, bhagia2024establishingtaskscalinglaws} to programmatically create LM pretraining configurations for a specified parameter size and token-parameter ratio to enable running a grid of model scaling experiments. 
+The model ladder uses heuristics from the literature \citep{Porian2024ResolvingDI} to set global batch size and learning rate based on scaling factors. The hyperparameters that determine parameter count (layers, hidden dimension, number of heads, MLP dimension) were handpicked by OLMo developers for each scale to achieve the desired number of parameters. Appendix Table~\ref{tab:suite_stats} details the configurations of all our models.
+
+
+\subsection{Prediction Methods}
+\label{sec:prediction_methods}
+Broadly, there are two approaches in the literature to predicting large-scale performance based on small-scale experiments. We use straightforward implementations of each to assess where they succeed and fail at making decisions about which data recipes to use.
+
+\paragraph{Ranking Single Scale Experiments (Single Scale)} This simple approach is employed by work such as \citet{li2024datacomplmsearchgenerationtraining} and consists of running a set of ablations or experiments over data recipe options while holding constant all other modeling variables including scale. The winning data recipe by downstream accuracy (or proxies) at the small experimental scale is assumed to extrapolate to the target scale. 
+
+\paragraph{Extrapolating Scaling Laws (Multi Scale)} Another approach to making decisions with predictions across scales used in works such as \citet{Dubey2024TheL3} is to fit scaling laws to \textit{multiple} small experiments across a range of scales for each of the data recipes. The winning recipe is decided as the one whose scaling law shows the highest \textit{extrapolated} performance at the target scale. Although scaling laws were first observed for language modeling loss \citep{kaplan2020scalinglawsneurallanguage,hoffmann2022trainingcomputeoptimallargelanguage}, they have been extended to predict downstream performance through a two-step approach that also fits a function from loss to downstream performance \citep{gadre2024languagemodelsscalereliably, bhagia2024establishingtaskscalinglaws}. We follow a method from \citet{bhagia2024establishingtaskscalinglaws}. Their proposed approach incorporates separate parameters for number of model parameters and number of tokens trained to account for over or undertrained models. But as our \suite{} only includes one token-parameter ratio, we use the simplified 3 parameter baseline, $L(C)$, as a first step which we chain with second step, $Acc(L)$, defined as follows where $A$, $\alpha$, $E$, $a$, $b$, $k$, $L_0$ are optimized parameters:
+\begin{align}
+\label{eq:step_one}
+L(C) & = \frac{A}{C^\alpha} + E \\
+\label{eq:step_two}
+Acc(L) & = \frac{a}{1 + e^{-k(L - L_0)}} + b
+\end{align}
+Following \citet{bhagia2024establishingtaskscalinglaws} we fit Equation~\ref{eq:step_one} only on observations of final, fully trained checkpoints as accounting for the learning rate schedule's impact on intermediate checkpoints would require further parameters in the equation increasing the required number of observations and cost. To account for step-to-step noise in evaluation we average the last $10\%$ of checkpoints as the final observed loss. Equation~\ref{eq:step_two}, however, is fit on all observations including intermediate checkpoints. 
+We explore variations for a total of \numScalingLaws{} multi scale approaches defined in Appendix~\ref{app:alternative-scaling-law-fits}; none of these make for substantially better decisions than the method defined in this section.
+
+\subsection{Prediction Metrics}
+\label{sec:pred_metrics}
+Our predictive task is to forecast which of a pair of data recipes will perform better at some target scale based on small-scale experiments. We use the following metrics to measure the quality of these predictions.
+
+\paragraph{Prediction Error} Scaling laws literature \citep{bhagia2024establishingtaskscalinglaws, gadre2024languagemodelsscalereliably} typically evaluates success from predicted and actual downstream performance, using relative error ($\frac{\lvert \text{predicted} - \text{actual} \rvert}{\text{actual}} \times 100\%$) or absolute error ($\lvert \text{predicted} - \text{actual} \rvert\times 100\%$). We call these absolute or relative ``\predictionError{}'' to distinguish from the following metric.
+
+\label{sec:2-class}
+\paragraph{Decision Accuracy} 
+Unlike previous work, we also measure the impact of predictions on \textit{decisions} about which data recipe is better than another. The metric we use to capture this is \twoClass{}, an accuracy over all pairs of data recipes $A$ and $B$ where either $A$ or $B$ is defined as the correct winner based on which achieves higher performance at the target scale. This is nearly equivalent to Kendall's $\tau$, but ranges from 0 to 1. We define the target-scale winner based on mean downstream performance over \numTargetSeeds{} random seeds.
+Thus \twoClass{}  can be formalized as follows.  Let   \(\mathcal{P}\) be the set of all data recipe pairs \((A, B)\) with observed mean performance \(y_A, y_B\) and predicted performance \(\hat{y}_A, \hat{y}_B\), respectively, then \twoClass{} is:
+\begin{equation}
+\textstyle \frac{1}{\lvert \mathcal{P}\rvert} \sum_{(A, B) \in \mathcal{P}} \mathbb{I}\big(\text{sign}(\hat{y}_A - \hat{y}_B) = \text{sign}(y_A - y_B)\big)
+\end{equation} 
+
+\paragraph{Percent of Target Compute Budget (\percentTargetCompute{})} We measure compute in terms of theoretical FLOPs following the simplifying assumption made in most scaling literature that the costs associated with training a model are captured well enough by $\text{FLOPs}=6ND$, based solely on the number of parameters ($N$) and tokens trained ($D$) \citep{kaplan2020scalinglawsneurallanguage}. We consider the efficiency of a prediction based on the ratio of the experimental budget and the target budget in FLOPs, $\text{\percentTargetCompute{}}=\frac{c}{C} \times 100\%$. 
+
+\subsection{Performance Evaluation with OLMES}
+\label{sec:perf_eval}
+
+We use the OLMES suite of 10 multiple choice question answering benchmarks \citep{gu2024olmesstandardlanguagemodel}: \mmlu{} \citep{hendryckstest2021}, \hellaswag{} \citep{zellers-etal-2019-hellaswag}, \arcChallenge{} \citep{Clark2018Think}, \arcEasy{} \citep{Clark2018Think}, \piqa{} \citep{Bisk_Zellers_Le_bras_Gao_Choi_2020}, \csqa{} \citep{talmor-etal-2019-commonsenseqa},\socialiqa{} \citep{sap-etal-2019-social}, \openbookqa{} \citep{mihaylov-etal-2018-suit}, \boolq{} \citep{clark-etal-2019-boolq}, and \winogrande{} \citep{Sakaguchi_Le_Bras_Bhagavatula_Choi_2020}. These tasks are well suited for the model scales we examine with all but \boolq{} receiving non-trivial performance. Unless otherwise noted, we consider the  macro average of these ten tasks. The underlying metric for each task is accuracy, for which OLMES specifies a different length normalization scheme per task. Our target ``gold'' rankings which we aim to predict are always based on the ``cloze'' formulation (CF) accuracy with curated normalization per task, which we refer to as \primaryMetric{}. We diverge from OLMES only in that we make use of all available items in the specified split of each benchmark rather than subsampling them, to reduce variance over the task distribution.
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\linewidth]{figures/primary_metric_compute_vs_accuracy_per_task.pdf}
+    \caption{Accuracy in pairwise decisions on best data when evaluating on the 10 \olmes{} tasks with \primaryMetric{} (shown aggregated in Figure~\ref{fig:accuracy_vs_compute}). Specific tasks have very distinct ranges of sensitivity, with some like \arcEasy{} being predictable at small scales and others like \hellaswag{} requiring substantially more compute to predict. }
+    \label{fig:primary_metric_compute_vs_accuracy_per_task}
+\end{figure*}
+
+Note that while we focus just on OLMES multiple choice evaluations in this work, our method of validating decisions made through predictions can be applied to other benchmarks. We chose these tasks based on their appropriateness to our range of model scales, and one would have to select different tasks when targeting a larger scale. Moreover, \projSuite{} could be used to identify new evaluations that are sensitive within our range of scales.
+
+
+\subsection{Proxy Metrics for Performance Evaluation}
+\label{sec:proxy_metrics}
+Previous work has noted how discrete metrics such as accuracy can cause jumps in performance across scale that otherwise see more predictable improvements with scale for continuous metrics \citep{schaeffer2023emergentabilitieslargelanguage}.
+We experiment with using continuous metrics at small scale as proxies of the accuracies selected by \olmes{} for each task (\primaryMetric{}) at the target scale to improve \twoClass{}. We use the following metrics: \correctProb{} is the average probabilities of the correct continuations. \margin{} is the average  difference between the probability of the correct continuation and the most likely incorrect continuation. \normCorrectProb{} is the average probability of the correct continuation conditioned on the response being in the set of correct or incorrect continuations. \totalProb{} is the average of the sum of probabilities of all correct and incorrect continuations. \accRaw{} is the fraction of instances where the correct continuation has the highest probability. Each of these can be computed with likelihoods normalized by number of tokens or characters; unless otherwise specified we use character length normalization. Appendix Table~\ref{tab:proxy_metrics} shows formal definitions.
+
+\section{Results}
+
+\subsection{What is the best way to spend compute for data decisions?}
+\label{sec:compute_story}
+\begin{tcolorbox}[colback=yellow!10!white, colframe=yellow!50!white, boxrule=0pt, sharp corners, width=\linewidth]
+\textit{More compute makes better decisions. Decisions from intermediate checkpoints are as good as compute equivalent final checkpoints. The amount of compute needed to make good predictions varies between tasks. \arc{} and \mmlu{} are predictable with much less compute than \hellaswag{}. The rest of \olmes{} tasks give markedly less reliable predictions across the scales we examine.}
+\end{tcolorbox}
+
+First looking at the aggregation of all 10 \olmes{} tasks (Figure~\ref{fig:accuracy_vs_compute} right), we see that there is a positive and roughly log-linear relationship between experimental compute and \twoClass{}. Specifically, this figure illustrates the relationship between the compute used for predicting best data recipes and the \twoClass{} those predictions achieve against targets ranked by \olmes{} performance at the 1B scale. Each point represents the average \twoClass{} over three runs with different random seeds, with shading indicating standard deviation. Points with the same color show all intermediate checkpoints from a given parameter size. The color shows each model size for predicting using \rankingMethod{}. The stars show predictions from \scalingLawsMethod{} using our default 3-parameter approach, the details of which are discussed further in \S\ref{sec:scaling_v_ranking}.
+
+The ease of prediction is greatly influenced by which evaluation benchmark we use. In Figure~\ref{fig:primary_metric_compute_vs_accuracy_per_task}, we show the relationship of compute and \twoClass{} for each of the tasks in \olmes{} individually. The predictive sensitivity of tasks at a given compute varies significantly, with \arcEasy{} being consistently predictable with 5 orders of magnitude less compute and \boolq{} only reaching beyond trivial \twoClass{} for intermediate checkpoints of the target runs. \hellaswag{}, \socialiqa{}, \winogrande{} show distinct periods of insensitivity followed by roughly log-linear increase after hitting some compute threshold.
+
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=0.75\linewidth]{figures/accuracy_vs_compute_with_legend_fixed.pdf}
+    \caption{Decision accuracy over \numScalingLaws{} baseline scaling law variants. At best, these approaches reach only the same compute to \twoClass{} frontier as \rankingMethod{}. \projSuite{} can be used to iterate on future scaling law prediction methods.}
+    \label{fig:all_scaling_laws_accuracy_vs_compute_shaded}
+\end{figure*}
+\subsection{How does \scalingLawsMethod{} compare to \rankingMethod{}?}
+\label{sec:scaling_v_ranking}
+\begin{tcolorbox}[colback=yellow!10!white, colframe=yellow!50!white, boxrule=0pt, sharp corners, width=\linewidth]
+\textit{A selection of \numScalingLaws{} baseline scaling law methods are no more efficient than \rankingMethod{}. Future scaling law methods can be assessed on \projSuite{}.}
+\end{tcolorbox}
+
+Figure~\ref{fig:all_scaling_laws_accuracy_vs_compute_shaded} contrasts different approaches to fitting scaling laws over multiple scales of small experiments. Each of the \numScalingLaws{} approaches is shown in a different color. Multi-scale predictions have a compute budget equal to the training cost of the model sizes used to make the prediction. We try the following combinations of models sizes: We use $\left\{ \{s_1, \dots, s_k\} \mid 3 \leq k \leq \numScales{} \right\}$, where $\mathbf{s}$ is the ordered set of sizes, to explore the improvements of progressively adding larger model sizes beyond the minimum 3 required for fitting. We also use $\left\{ \{s_k, \dots, s_{\numScales}\} \mid 2 \leq k \leq 11 \right\}$ to try removing potentially noisy information from small models. Unlike single scale results, we make only one prediction attempt with the default fully trained random seed, as final checkpoints are required for fitting the first step of these scaling law variants but are not available for all seeds.
+
+Our scaling law approaches vary in the number of parameters fit, using hard coded points to define the minimum and maximum performance, using only the second half of intermediate checkpoints for fitting the second step, or fitting a function directly from compute to accuracy in a single step. Each of the scaling law variants are defined formally in Appendix \ref{app:alternative-scaling-law-fits}. The 2 and 3 parameter variants all achieve among the top \twoClass{}.
+
+A priori we know that \rankingMethod{} cannot correctly predict when the scaling trend of one data recipe overtakes another at scales between our small experiments and target scale. Such crossovers bound the \twoClass{} of this constant approximation of performance. Nevertheless \rankingMethod{} sets a high baseline \twoClass{}, implying relatively little crossover occurs. It is difficult to distinguish evaluation variance from true crossovers, but the scaling trends we empirically observe cross over frequently. Improved future scaling laws may be able to advance the Pareto frontier on \projSuite{} as they are not bound by crossovers.
+
+
+
+
+
+\subsection{What proxy metrics give better signal for predictions at small scale?}
+\label{sec:proxy_metrics_results}
+\begin{tcolorbox}[colback=yellow!10!white, colframe=yellow!50!white, boxrule=0pt, sharp corners, width=\linewidth]
+\textit{At small scales, continuous metrics using the character normalized likelihood of correct or all answer options serve as better or equivalent predictors of decisions than using the same \primaryMetric{} as used at the target scale.}
+\end{tcolorbox}
+
+
+Figure~\ref{fig:all_metrics_compute_vs_accuracy_per_task} shows the \twoClass{} over different proxy metrics. Here we chose a single length normalization, \textsc{*\_per\_char}. Metrics follow similar trends regardless of length normalization and this one is empirically optimal for most of the tasks that we observe.
+
+Using \correctProb{} or \totalProb{} leads to \twoClass{} at least as good as any other metric for most small scales. These continuous metrics are simple likelihoods over answer strings. In particular, \totalProb{} may be interpretable as signal of a model having exposure to the domain of a given task in the form of higher likelihoods on incorrect but presumably relevant additional answers.
+
+We notice two very distinct types of trends over the different tasks. Either the different proxy metrics are nearly indistinguishable and increase in \twoClass{} with compute or \correctProb{} and \totalProb{} are flat with respect to scale and the other metrics only rise up to that level of \twoClass{} towards the full target compute budget. In the last order of magnitude below the target compute \primaryMetric{} and the other metrics tend to overtake \correctProb{} and \totalProb{}, while these two metrics sometimes even decrease in \twoClass{}. Notably these other metrics that trend with \primaryMetric{} include continuous metrics that penalize probability assigned to incorrect answers, \normCorrectProb{} and \margin{}. 
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\linewidth]{figures/all_metrics_compute_vs_accuracy_per_task.pdf}
+    \caption{
+    Per-task \twoClass{} using character normalized proxy metrics for {\color{blue}\primaryMetric{}} targets. 5 tasks benefit at smaller scales from using raw likelihood of answers ({\color{orange}\correctProb{}} and {\color{red}\totalProb{}}), as opposed to discrete \primaryMetric{} or continuous metrics that penalize probability on incorrect answers ({\color{purple}\normCorrectProb{}}, {\color{green}\margin{}}). 
+    }
+    \label{fig:all_metrics_compute_vs_accuracy_per_task}
+\end{figure*}
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\linewidth]{figures/noise_to_spread_150M.pdf}
+    \caption{Why do some tasks or metrics get better or worse decision accuracy? At 150M with \correctProb{} tasks like \hellaswag{} succeed with low run-to-run variance and tasks like \socialiqa{} widely spread the performance assigned to different pretraining data.}
+    \label{fig:scatter_std_vs_diff}
+\end{figure*}
+
+\subsection{How can we make evaluation benchmarks more predictable?}
+\label{sec:characterizing_evals}
+\begin{tcolorbox}[colback=yellow!10!white, colframe=yellow!50!white, boxrule=0pt, sharp corners, width=\linewidth]
+\textit{The \twoClass{} on a task is driven in part by low run-to-run variance and a wide spread of performance values for different data recipes. Using \correctProb{} sees wider spreads or reduced noise for many tasks. Using this metric enables predicting rankings for code tasks that are too hard for accuracy metrics at small scales.}
+\end{tcolorbox}
+
+What underlies differences in \twoClass{} when benchmarks and metrics change? The evaluation must separate pairs of data recipes by an amount greater than combined noise from run-to-run variance of each of the pair's runs. In Figure~\ref{fig:scatter_std_vs_diff}, we plot tasks with a given metric using fully trained 150M models over these two characteristics: 1) noise---the standard deviation over \numTargetSeeds{} random seed runs averaged over all recipes, and 2) spread---the standard deviation among the mean performance of the different data recipes. Each point also shows the \twoClass{}. We see that some highly predictable tasks (e.g., \mmlu{}) are characterized by having low run-to-run noise, while others (e.g., \arcEasy{}) widely spread the different data recipes. We also see that improvements from using \correctProb{} often align with improvements in one of these two characteristics.
+
+
+\begin{figure*}
+    \centering
+    \includegraphics[width=\linewidth]{figures/math_code_decision_accuracy.pdf}
+    \caption{Code tasks such as humaneval and MBPP go from trivial \twoClass{} to largely predictable when using using continuous \correctProb{} instead of discrete \primaryMetric{}. Meanwhile common math tasks remain near trivial decision accuracy regardless of metric.}
+    \label{fig:math_and_code}
+\end{figure*}
+
+As a practical application of these insights, we demonstrate that a change of proxy metric makes predictable two code tasks \citep{austin2021program,chen2021evaluatinglargelanguagemodels} that are otherwise too challenging for our small models. Figure~\ref{fig:math_and_code} shows how \twoClass{} goes from trivial to ~80\% when using \correctProb{}. The switch of metric allows small models to get above the noise floor for these tasks, while still predicting large-scale accuracy metrics. Notably, two math benchmarks \citep{lewkowycz2022solvingquantitativereasoningproblems, cobbe2021gsm8k} do not see such a benefit. They do however give \twoClass{} above 80\% if we switch the \textit{target metric} to \correctProb{}, raising a question for future work to explore whether changing the target metric can be justified.
+
+\section{Related Work}
+\paragraph{Prediction} 
+
+Much work studies scaling behavior in language models. Initially this focused on predicting LM loss from scale as determined by parameter count and tokens trained \citep{kaplan2020scalinglawsneurallanguage,hoffmann2022trainingcomputeoptimallargelanguage}. Special consideration is also given to the case of data constrained scaling \citep{muennighoff2023scaling,goyal2024scaling}.
+Unlike predicting loss, predicting downstream performance from scale is generally harder \citep{schaeffer2024why}. However, recent work has demonstrated it can be done based on a two step prediction that chains together predictions from scale to loss and loss to downstream performance
+\citep{gadre2024languagemodelsscalereliably,bhagia2024establishingtaskscalinglaws,Dubey2024TheL3}, sometimes using training loss \citep{du2024understanding} or transferring losses from different data recipes \citep{brandfonbrener2024losstolosspredictionscalinglaws,ruan2024observational}. The one line of work targeting pretraining data considers the special case of deciding mixing proportions of several data sources optimized through scaling laws \citep{Kang2024AutoScaleAP,Ye2024DataML}. Most relevant to our work, \citet{choshen2024hitchhikersguidescalinglaw} consider practical methods for better scaling \predictionError{} such as how much compute to use or whether to include intermediate checkpoints. Orthogonally to these findings, we propose a way to assess the accuracy of decisions made with such predictions.
+
+
+\paragraph{Suites over Data Differences} \projSuite{} follows in the footsteps of the Pythia Suite \citep{biderman2023pythiasuiteanalyzinglarge} which was the first to offer a controlled comparison of 2 data recipes, using compute scales up to $2 \times 10^{22}$ FLOPs. 
+Subsequent suites have offered 6 data recipes at $9 \times 10^{20}$ scale \citep{magnusson2024palomabenchmarkevaluatinglanguage} and 6 data recipes over a range of scales up to $10^{21}$ \citep{brandfonbrener2024losstolosspredictionscalinglaws}. Our \projSuite{} offers a range of \numScales{} scales up to $7\times 10^{20}$ FLOPs, while including an order of magnitude more fine-grained data differences. 
+Meanwhile, DCLM also makes extensive use of \rankingMethod{} to drive improvement in data recipes \citep{li2024datacomplmsearchgenerationtraining}. They release their best data and a model trained on it, but do not release models from their decision making experiments and do not search over multiple recipes at their largest scale. Where their goal is creating a proposed best recipe, our \projSuite{} enables the assessment of whether a method for decision making really does find the best among proposed recipes.
+
+\section{Limitations}
+The scope of our work is limited to just one ratio of tokens to parameters, 100 or 5$\times$ ``Chinchilla'' optimal ratio \citep{hoffmann2022trainingcomputeoptimallargelanguage}. We believe this captures the typical case, as most models now favor overtraining for inference savings. 
+Due to compute limitations and the need for a standardized set of model configurations over a long period of time in which compute became available for pretraining, we opt for \numScales{} specific configurations from 4M--1B parameter scale. While observations across more configurations would always be better, this must be traded off with exploring the other dimensions of data recipes and random seed reruns. Likewise, while our \numRecipes{} data recipes is an order of magnitude more than previous suites, there is always the possibility that findings across these will not be representative of future data recipes.
+In our evaluations we focus on multiple choice tasks with a ``cloze'' formulation as we find these to be a good fit for our range of scales. Using \projSuite{}, new evaluations can be assessed easily by others without any additional pretraining.
+
+% % Acknowledgements should only appear in the accepted version.
+\section*{Acknowledgments}
+We would like to thank Dave Wadden, Kyle Lo, Valentin Hofmann, and Hannaneh Hajishirzi for fruitful conversations. This material is based upon work supported by the U.S. National Science Foundation under Grant No. 2313998. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the U.S. National Science Foundation. IM is supported by the NSF CSGrad4US Fellowship. PWK is supported by the Singapore National Research Foundation and the National AI Group in the Singapore Ministry of Digital Development and Information under the AI Visiting Professorship Programme (award number AIVP-2024-001) and by the AI2050 program at Schmidt Sciences.
+
+\section*{Impact Statement}
+Training large language models is computationally expensive, especially when investigating thoroughly over dimensions of pretraining data composition, model scale, random initialization, and data order. The pretraining experiments in our \projSuite{} required approximately 820K H100 GPU hours. We share the benefit of this cost through releasing all of our models, data, and evaluations so that others will not have to repeat this expenditure. Moreover, our findings can guide efficient and cost-effective model development through the application of decision making with small-scale experiments. While \projSuite{} does not present direct ethical concerns beyond opportunity cost, we acknowledge that decisions about pretraining data heavily impact downstream model behavior. We encourage future research to explore potential biases in data selection methods and their implications for models deployed in the real world.
+
+
+
+\bibliography{example_paper}
+\bibliographystyle{icml2025}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% APPENDIX
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+\appendix
+
+\section{Hyperparameters}
+
+
+
+\begin{table*}[]
+    \centering
+    \input{tables/suite_stats}
+    \caption{\projSuite{} uses OLMo's \textit{model ladder} \citep{groeneveld2024olmoacceleratingsciencelanguage, olmo20252olmo2furious, bhagia2024establishingtaskscalinglaws} to programmatically create configurations for \numScales{} model sizes with hyperparameters determined by heuristics in \citet{Porian2024ResolvingDI}. All models have sequence length of 2024 and MLP ratio of 8. Each configuration is pretrained over \numRecipes{} data recipes (Table~\ref{tab:data_recipes}). 
+    Each recipe and configuration is also trained for \numTargetSeeds{} random seeds where model sizes $<1$B are stopped early at 25\% of the compute used to train the 1B model for all but the default seed. Model size is number of non-embedding parameters. Batch size is the number of sequences per batch.
+    }
+    \label{tab:suite_stats}
+\end{table*}
+
+Table~\ref{tab:suite_stats} provides OLMo model ladder configurations for all models in \projSuite{}.
+
+\section{Proxy Metric Definitions}
+\begin{table*}[]
+    \centering
+    \input{tables/proxy_metrics}
+    \caption{Proxy metrics used as alternative inputs to our prediction methods, $C^{(i)}$ is the set of possible continuations for item $i$ and $N$ is the number of items in a benchmark. Each each of the first 5 metrics have \text{\textasteriskcentered\_per\_token} and \text{\textasteriskcentered\_per\_char} variants in which likelihoods are normalized as defined in the bottom two rows.
+    }
+    \label{tab:proxy_metrics}
+\end{table*}
+
+Table~\ref{tab:proxy_metrics} provides formal definitions for our proxy metrics (\S\ref{sec:proxy_metrics}).
+
+\begin{table*}
+\small
+\centering
+\input{tables/pred_error}
+\caption{Average prediction error for 1B targets for the different scaling law setups across tasks and recipes on \primaryMetric{} fit to all models but 1B. We see that other than the single step and 5-parameter variants errors are comparable, and these variants also roughly follow the compute-decision frontier in Figure~\ref{fig:all_scaling_laws_accuracy_vs_compute_shaded}. }
+\label{tab:setup-errors}
+\end{table*}
+\section{Scaling Law Variants}
+\label{app:alternative-scaling-law-fits}
+
+\textbf{Baseline 3-parameter fit.}  
+Our default setup (described in \S\ref{sec:prediction_methods}) follows the two-step fit from \citep{bhagia2024establishingtaskscalinglaws} and uses Equation~\ref{eq:step_one} to map compute $C$ to task loss $L$, and Equation~\ref{eq:step_two} to map task loss to metric score. This variant fits three parameters ($A$, $\alpha$, $E$) in the first step.
+
+\textbf{2-parameter fit.}  
+This is a restricted version of the baseline where the irreducible loss term $E$ is removed from Equation~\ref{eq:step_one}, leaving only two parameters:
+\begin{equation}
+\label{eq:step_one_no_E_repeat}
+L(C)=\frac{A}{C^\alpha}
+\end{equation}
+
+\textbf{5-parameter $(N,D)$ fit.}  
+Instead of modeling loss as a function of compute $C$, this variant uses both number of tokens $N$ and number of parameters $D$ directly in the loss function:
+\begin{equation}
+\label{eq:step_one_n_d_repeat}
+L(N,D)=\frac{A}{N^\alpha}+\frac{B}{D^\beta}+E
+\end{equation}
+This introduces five parameters: $A$, $\alpha$, $B$, $\beta$, and $E$.
+
+\textbf{Single-step prediction.}  
+In this variant, the two-stage fitting procedure is replaced with a single step that directly maps compute $C$ to accuracy:
+\begin{equation}
+\label{eq:combined_repeat}
+Acc(C) = \frac{a}{1 + \exp\left(-k \left(\frac{A}{C^\alpha} + E - L_0\right)\right)} + b
+\end{equation}
+This combines the loss and accuracy mapping into one function.
+
+\textbf{5-parameter, single step.}  
+We also test a single-step variant that directly maps from $(N, D)$ to accuracy using a logistic function over the predicted loss. This merges Equations~\ref{eq:step_one_n_d_repeat} and \ref{eq:step_two} into:
+
+\begin{equation}
+\label{eq:combined_5param}
+Acc(N,D) = \frac{a}{1 + \exp\left( -\left( \frac{A}{N^\alpha} + \frac{B}{D^\beta} + E \right) \right)} + b
+\end{equation}
+
+This formulation retains the same five parameters from the two-step $(N, D)$ loss function. Following \citet{bhagia2024establishingtaskscalinglaws}, we merge the parameters $k$ and $L_0$ from the second-stage sigmoid into the loss-side parameters ($A$, $B$, $E$), yielding a simplified single-stage fit with 7 total free parameters: $\{A, \alpha, B, \beta, E, a, b\}$.
+
+\textbf{Use of helper points.}  
+Following \citet{bhagia2024establishingtaskscalinglaws}, we optionally include an extra point $(L = 0.0, Acc = 1.0)$ in the second-stage fit. This “helper” point anchors the upper asymptote of the accuracy prediction.
+
+\textbf{Filtering early checkpoints.}  
+We experiment with excluding the first 50\% of intermediate checkpoints when fitting the second-stage sigmoid. This reduces noise from high-loss early training points and often improves the fit for extrapolation.
+
+\textbf{Helpers and $>50$\% checkpoints.}
+Lastly we experiment with combining the previous two techniques on the baseline 3-parameter fit.
+
+
+\textbf{Prediction Error.} We report prediction errors in Table \ref{tab:setup-errors} for each setup. As the best scaling laws variants are all roughly comparable to the simple 3-parameter set up, we use this one as our baseline.
+
+
+\end{document}
+
+
+% This document was modified from the file originally made available by
+% Pat Langley and Andrea Danyluk for ICML-2K. This version was created
+% by Iain Murray in 2018, and modified by Alexandre Bouchard in
+% 2019 and 2021 and by Csaba Szepesvari, Gang Niu and Sivan Sabato in 2022.
+% Modified again in 2023 and 2024 by Sivan Sabato and Jonathan Scarlett.
+% Previous contributors include Dan Roy, Lise Getoor and Tobias
+% Scheffer, which was slightly modified from the 2010 version by
+% Thorsten Joachims & Johannes Fuernkranz, slightly modified from the
+% 2009 version by Kiri Wagstaff and Sam Roweis's 2008 version, which is
+% slightly modified from Prasad Tadepalli's 2007 version which is a
+% lightly changed version of the previous year's version by Andrew
+% Moore, which was in turn edited from those of Kristian Kersting and
+% Codrina Lauth. Alex Smola contributed to the algorithmic style files.

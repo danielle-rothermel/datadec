@@ -34,7 +34,7 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/datadec"]
+packages = ["src/datadec", "src/repro"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "configs/catalog.toml" = "datadec/configs/catalog.toml"
