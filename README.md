@@ -392,4 +392,7 @@ During development datadec resolves `dr-hf` and `dr-providers` from local
 worktrees through `[tool.uv.sources]` path entries, and `[tool.uv]` holds
 `huggingface-hub` on 1.x because transformers 5.19 requires tokenizers 0.23,
 which caps `huggingface-hub` below 2.0 while dr-hf 0.1.2 declares 2.2 or
-newer.
+newer. This combination runs dr-hf on a `huggingface-hub` major its own suite
+does not cover. The override cannot ship: dr-hf must lower its
+`huggingface-hub` floor to the 1.x range before release, and the override is
+removed together with the path sources.
