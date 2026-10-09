@@ -49,9 +49,10 @@ class RecipeRanking:
         return float(np.mean(predictor_signs == target_signs))
 
 
-@dataclass(frozen=True, slots=True, kw_only=True)
-class SingleSeedRanking(RecipeRanking):
+@dataclass(frozen=True, slots=True)
+class SingleSeedRanking:
     seed: str
+    ranking: RecipeRanking
 
 
 @dataclass(frozen=True, slots=True)
@@ -84,15 +85,16 @@ class RankingResult:
         recipes = self.recipes
         scores = np.array(
             [
-                [seed.predictor_per_recipe_scores[recipe] for recipe in recipes]
+                [seed.ranking.predictor_per_recipe_scores[recipe] for recipe in recipes]
                 for seed in self.seed_rankings
             ]
         )
+        direction = self.seed_rankings[0].ranking.predictor_higher_is_better
         return RecipeRanking(
             predictor_per_recipe_scores=MultiRecipeScores(
                 dict(zip(recipes, map(float, scores.mean(axis=0)), strict=True))
             ),
-            predictor_higher_is_better=self.seed_rankings[0].predictor_higher_is_better,
+            predictor_higher_is_better=direction,
         )
 
     def aggregate_decision_accuracy(self) -> float:
@@ -104,11 +106,11 @@ class RankingResult:
 
     def seed_accuracies(self) -> tuple[float, ...]:
         return tuple(
-            ranking.decision_accuracy(
+            seed.ranking.decision_accuracy(
                 self.target_per_recipe_scores,
                 target_higher_is_better=self.predicted_higher_is_better,
             )
-            for ranking in self.seed_rankings
+            for seed in self.seed_rankings
         )
 
     def decision_accuracy(self) -> float:

@@ -147,11 +147,11 @@ result = predict_recipe_ranking(
     predicted_seeds=config.target.seeds,
 )
 print(result.decision_accuracy(), result.decision_accuracy_std(), result.compute_ratio)
-print(result.seed_rankings[0].predictor_per_recipe_scores[DataRecipeName.DOLMA17])
+print(result.seed_rankings[0].ranking.predictor_per_recipe_scores[DataRecipeName.DOLMA17])
 print(result.target_per_recipe_scores[DataRecipeName.DOLMA17])
 seed = result.seed_rankings[0]
-print(seed.decision(DataRecipeName.DOLMA17, DataRecipeName.C4))
-print(seed.decision_accuracy(
+print(seed.ranking.decision(DataRecipeName.DOLMA17, DataRecipeName.C4))
+print(seed.ranking.decision_accuracy(
     result.target_per_recipe_scores,
     target_higher_is_better=result.predicted_higher_is_better,
 ))
@@ -164,8 +164,9 @@ print(result.aggregate_decision_accuracy())
 `DataRecipeName` defines one official name per DataDecide recipe. The default
 `RecipeNameResolver` also recognizes source names from `[recipe_map]` in
 `configs/olmes.toml`; matching is exact, and official names resolve to themselves.
-Unknown names fail. Each `SingleSeedRanking` holds an immutable
-`MultiRecipeScores` mapping in `predictor_per_recipe_scores`; the target seed
+Unknown names fail. Each `SingleSeedRanking` contains `seed` and `ranking`,
+a `RecipeRanking` holding the immutable `MultiRecipeScores` mapping in
+`predictor_per_recipe_scores` and the predictor metric direction. The target seed
 mean uses the same type in `target_per_recipe_scores`. Score keys and the
 arguments to `decision()` are enum members, so lookup does not depend on recipe
 order. Each seed retains its predictor metric direction; the result retains
@@ -175,7 +176,8 @@ unordered pairs without storing a decision tuple. `recipes`, `recipe_count`,
 and `pair_count` are derived from the target score mapping. `seed_accuracies()`,
 `decision_accuracy()`, and `decision_accuracy_std()` calculate the corresponding
 statistics across predictor seeds. `RecipeRanking` owns the shared decision
-calculations; `SingleSeedRanking` adds a seed identity. `aggregate_ranking`
+calculations; `SingleSeedRanking` contains a seed identity and a `RecipeRanking`.
+`aggregate_ranking`
 derives another `RecipeRanking` by averaging predictor scores per recipe, and
 `aggregate_decision_accuracy()` compares its decisions with the same target
 seed mean. An aggregate prediction is not assigned a synthetic seed label.

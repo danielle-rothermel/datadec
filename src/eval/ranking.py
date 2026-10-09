@@ -9,7 +9,7 @@ from datadec.recipes import (
     load_recipe_name_resolver,
 )
 from eval.recipe_scores import MultiRecipeScores
-from eval.results import Checkpoint, RankingResult, SingleSeedRanking
+from eval.results import Checkpoint, RankingResult, RecipeRanking, SingleSeedRanking
 
 
 def predict_recipe_ranking(
@@ -83,10 +83,18 @@ def predict_recipe_ranking(
     rankings = tuple(
         SingleSeedRanking(
             seed=seed,
-            predictor_per_recipe_scores=MultiRecipeScores(
-                dict(zip(canonical_recipes, map(float, pred_scores[seed]), strict=True))
+            ranking=RecipeRanking(
+                predictor_per_recipe_scores=MultiRecipeScores(
+                    dict(
+                        zip(
+                            canonical_recipes,
+                            map(float, pred_scores[seed]),
+                            strict=True,
+                        )
+                    )
+                ),
+                predictor_higher_is_better=predictor_higher_is_better,
             ),
-            predictor_higher_is_better=predictor_higher_is_better,
         )
         for seed in predictor_seeds
     )
