@@ -2,7 +2,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from eval import UnavailableRankingError, predict_recipe_ranking
+from datadec.recipes import DataRecipeName, RecipeNameResolver
+from eval import (
+    MultiRecipeScores,
+    SingleSeedRanking,
+    UnavailableRankingError,
+    predict_recipe_ranking,
+)
 
 
 @pytest.fixture
@@ -13,7 +19,7 @@ def evaluations():
         ("large", 20, 10.0, {"t1": [3, 2, 1], "t2": [9, 4, 0]}),
     ):
         for seed, scores in seeds.items():
-            for recipe, score in zip(("a", "b", "c"), scores, strict=True):
+            for recipe, score in zip(("C4", "Falcon", "Dolma1.7"), scores, strict=True):
                 rows.append(
                     dict(
                         params=size,
@@ -35,7 +41,7 @@ def rank(evaluations, **kwargs):
         predicted_step=20,
         predictor_seeds=("p1", "p2"),
         predicted_seeds=("t1", "t2"),
-        recipes=("a", "b", "c"),
+        recipes=("C4", "Falcon", "Dolma1.7"),
     )
     options.update(kwargs)
     return predict_recipe_ranking(
@@ -45,27 +51,41 @@ def rank(evaluations, **kwargs):
 
 def test_seed_decisions_are_averaged_after_target_seed_mean(evaluations):
     result = rank(evaluations)
-    assert result.target_scores == (6.0, 3.0, 0.5)
+    assert result.target_per_recipe_scores == MultiRecipeScores(
+        {
+            DataRecipeName.C4: 6.0,
+            DataRecipeName.FALCON: 3.0,
+            DataRecipeName.DOLMA17: 0.5,
+        }
+    )
+    assert isinstance(result.seed_rankings[0], SingleSeedRanking)
+    assert all(isinstance(recipe, DataRecipeName) for recipe in result.recipes)
     assert [r.decision_accuracy for r in result.seed_rankings] == [1.0, 1 / 3]
     assert result.decision_accuracy == pytest.approx(2 / 3)
     # Averaging predictor scores first would incorrectly produce accuracy 1/3.
-    assert result.seed_rankings[1].predictor_scores == (1.0, 20.0, 3.0)
+    assert result.seed_rankings[1].predictor_per_recipe_scores == MultiRecipeScores(
+        {
+            DataRecipeName.C4: 1.0,
+            DataRecipeName.FALCON: 20.0,
+            DataRecipeName.DOLMA17: 3.0,
+        }
+    )
     assert result.compute_ratio == 0.2
     assert result.decision_accuracy_std == pytest.approx(1 / 3)
     assert [(p.recipe_a, p.recipe_b) for p in result.seed_rankings[0].decisions] == [
-        ("a", "b"),
-        ("a", "c"),
-        ("b", "c"),
+        ("C4", "Falcon"),
+        ("C4", "Dolma1.7"),
+        ("Falcon", "Dolma1.7"),
     ]
 
 
 def test_exact_ties_match_only_ties(evaluations):
-    evaluations.loc[evaluations["data"] == "a", "score"] = 2.0
-    evaluations.loc[evaluations["data"] == "b", "score"] = 2.0
+    evaluations.loc[evaluations["data"] == "C4", "score"] = 2.0
+    evaluations.loc[evaluations["data"] == "Falcon", "score"] = 2.0
     result = rank(evaluations)
     assert all(r.decisions[0].correct for r in result.seed_rankings)
     evaluations.loc[
-        (evaluations["data"] == "a") & (evaluations["seed"] == "p1"), "score"
+        (evaluations["data"] == "C4") & (evaluations["seed"] == "p1"), "score"
     ] = 3.0
     assert not rank(evaluations).seed_rankings[0].decisions[0].correct
 
@@ -100,7 +120,7 @@ def test_exact_steps_do_not_fall_back(evaluations):
 def test_incomplete_coverage_fails(evaluations, missing):
     if missing == "recipe":
         evaluations = evaluations.loc[
-            ~((evaluations["params"] == "large") & (evaluations["data"] == "a"))
+            ~((evaluations["params"] == "large") & (evaluations["data"] == "C4"))
         ]
     elif missing == "seed":
         evaluations = evaluations.loc[evaluations["seed"] != "t2"]
@@ -130,12 +150,12 @@ def test_inconsistent_compute_fails(evaluations):
 
 def test_indexed_single_recipe_reports_invalid_comparison(evaluations):
     single = (
-        evaluations.loc[evaluations["data"] == "a"]
+        evaluations.loc[evaluations["data"] == "C4"]
         .set_index(["params", "step", "task"], drop=False)
         .sort_index()
     )
     with pytest.raises(ValueError, match="at least two"):
-        rank(single, recipes=("a",))
+        rank(single, recipes=("C4",))
 
 
 def test_nullable_missing_score_is_unavailable(evaluations):
@@ -143,3 +163,50 @@ def test_nullable_missing_score_is_unavailable(evaluations):
     evaluations.loc[0, "score"] = pd.NA
     with pytest.raises(UnavailableRankingError, match="non-finite"):
         rank(evaluations)
+
+
+def test_source_aliases_produce_identical_rankings_without_mutating_input(evaluations):
+    aliased = evaluations.copy()
+    aliases = {"C4": "c4", "Falcon": "falcon", "Dolma1.7": "dolma1.7"}
+    aliased.loc[aliased["params"] == "small", "data"] = aliased.loc[
+        aliased["params"] == "small", "data"
+    ].map(aliases)
+    original = aliased.copy(deep=True)
+    result = rank(aliased, recipes=("c4", "falcon", "dolma1.7"))
+    assert result == rank(evaluations)
+    assert all(
+        isinstance(pair.recipe_a, DataRecipeName)
+        and isinstance(pair.recipe_b, DataRecipeName)
+        for pair in result.seed_rankings[0].decisions
+    )
+    pd.testing.assert_frame_equal(aliased, original)
+
+
+def test_custom_alias_resolver_is_used(evaluations):
+    aliased = evaluations.replace({"data": {"C4": "custom-c4"}})
+    resolver = RecipeNameResolver.from_mapping({"custom-c4": "C4"})
+    assert rank(aliased, recipe_name_resolver=resolver) == rank(evaluations)
+
+
+def test_unknown_recipe_fails(evaluations):
+    evaluations.loc[0, "data"] = "not-a-recipe"
+    with pytest.raises(ValueError, match="unknown recipe name"):
+        rank(evaluations)
+
+
+def test_aliases_cannot_duplicate_requested_recipes(evaluations):
+    with pytest.raises(ValueError, match="unique recipes"):
+        rank(evaluations, recipes=("C4", "c4"))
+
+
+def test_aliases_cannot_duplicate_checkpoint_scores(evaluations):
+    duplicate = evaluations.iloc[[0]].assign(data="c4")
+    with pytest.raises(ValueError, match="duplicate recipe/seed"):
+        rank(pd.concat([evaluations, duplicate]))
+
+
+def test_score_lookup_is_independent_of_recipe_order(evaluations):
+    result = rank(evaluations, recipes=("Dolma1.7", "Falcon", "C4"))
+    assert result.seed_rankings[1].predictor_per_recipe_scores[DataRecipeName.C4] == 1.0
+    assert result.target_per_recipe_scores[DataRecipeName.DOLMA17] == 0.5
+    assert result.decision_accuracy == rank(evaluations).decision_accuracy

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from enum import StrEnum
+from enum import UNIQUE, StrEnum, verify
 
 
 class ModelSizeName(StrEnum):
@@ -20,6 +20,7 @@ class ModelSizeName(StrEnum):
     B1 = "1B"
 
 
+@verify(UNIQUE)
 class DataRecipeName(StrEnum):
     DOLMA17 = "Dolma1.7"
     DOLMA17_NO_CODE = "Dolma1.7 (no code)"

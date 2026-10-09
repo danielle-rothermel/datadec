@@ -4,6 +4,9 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from datadec.recipes import DataRecipeName
+from eval.recipe_scores import MultiRecipeScores
+
 
 @dataclass(frozen=True, slots=True)
 class Checkpoint:
@@ -14,8 +17,8 @@ class Checkpoint:
 
 @dataclass(frozen=True, slots=True)
 class PairwiseDecision:
-    recipe_a: str
-    recipe_b: str
+    recipe_a: DataRecipeName
+    recipe_b: DataRecipeName
     predictor_sign: int
     target_sign: int
 
@@ -25,9 +28,9 @@ class PairwiseDecision:
 
 
 @dataclass(frozen=True, slots=True)
-class SeedRanking:
+class SingleSeedRanking:
     seed: str
-    predictor_scores: tuple[float, ...]
+    predictor_per_recipe_scores: MultiRecipeScores
     decisions: tuple[PairwiseDecision, ...]
 
     @property
@@ -42,10 +45,10 @@ class RankingResult:
     task: str
     predictor_task_metric: str
     predicted_task_metric: str
-    recipes: tuple[str, ...]
+    recipes: tuple[DataRecipeName, ...]
     target_seeds: tuple[str, ...]
-    target_scores: tuple[float, ...]
-    seed_rankings: tuple[SeedRanking, ...]
+    target_per_recipe_scores: MultiRecipeScores
+    seed_rankings: tuple[SingleSeedRanking, ...]
 
     @property
     def decision_accuracy(self) -> float:

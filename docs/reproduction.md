@@ -81,10 +81,13 @@ configs/
   repro_claims/magnusson2025-datadecide.toml       # Claims and paper locations
   repro_evaluations/magnusson2025-datadecide.toml  # Experiment and analysis policy
 src/
+  datadec/
+    recipes.py            # Canonical recipe names and configured alias resolution
   eval/
     checkpoint_scores.py  # Exact selection and recipe/seed coverage
     ranking.py            # Generic predict_recipe_ranking algorithm
-    results.py            # Scores, checkpoints, and pairwise result types
+    recipe_scores.py      # Immutable scores keyed by DataRecipeName
+    results.py            # Checkpoints and single-seed/pairwise result types
   repro/
     claims.py             # Inventory parsing and quote lookup
     config.py             # Validated experiment config and group resolution
@@ -110,13 +113,14 @@ scripts/repro/claims.py           # View paper quotes and latest/specified evide
 `eval.ranking.predict_recipe_ranking` in `src/eval/` accepts an evaluation
 DataFrame with `params`, `step`, `task`, `data` (recipe), `seed`, `compute`, and
 metric columns. Pass a sorted `(params, step, task)` MultiIndex for repeated
-calls. Its result contains checkpoint compute, ordered recipe scores, gold
-scores, and every seed's pairwise decisions, mean accuracy, and population
-standard deviation.
+calls. Its result contains checkpoint compute, canonical recipe identities,
+recipe-keyed predictor and target scores, and every seed's pairwise decisions,
+mean accuracy, and population standard deviation.
 
 ```python
 from pathlib import Path
 
+from datadec.recipes import DataRecipeName
 from eval import predict_recipe_ranking
 from repro.aggregation import load_evaluations
 from repro.config import load_evaluation_config
@@ -136,7 +140,42 @@ result = predict_recipe_ranking(
     predicted_seeds=config.target.seeds,
 )
 print(result.decision_accuracy, result.compute_ratio)
+print(result.seed_rankings[0].predictor_per_recipe_scores[DataRecipeName.DOLMA17])
+print(result.target_per_recipe_scores[DataRecipeName.DOLMA17])
 ```
+
+`DataRecipeName` defines one official name per DataDecide recipe. The default
+`RecipeNameResolver` also recognizes source names from `[recipe_map]` in
+`configs/olmes.toml`; matching is exact, and official names resolve to themselves.
+Unknown names fail. Each `SingleSeedRanking` holds an immutable
+`MultiRecipeScores` mapping in `predictor_per_recipe_scores`; the target seed
+mean uses the same type in `target_per_recipe_scores`. Keys and pairwise recipe
+identities are enum members, so score lookup does not depend on recipe order.
+
+For other source spellings, construct a resolver from an alias dictionary or
+load a TOML file containing a `[recipe_map]` table:
+
+```python
+from datadec.recipes import RecipeNameResolver
+from eval import MultiRecipeScores
+
+resolver = RecipeNameResolver.from_mapping({
+    "dolma-source-a": "Dolma1.7",
+    "dolma-source-b": "Dolma1.7",
+})
+# Alternatively: RecipeNameResolver.from_toml(Path("recipe_aliases.toml"))
+scores = MultiRecipeScores.from_named_scores(
+    {"dolma-source-a": 0.75, "C4": 0.62}, resolver=resolver
+)
+print(scores[DataRecipeName.DOLMA17])
+```
+
+Pass `recipe_name_resolver=resolver` to the ranking helper to resolve both
+checkpoint rows and an explicit `recipes` selection. Multiple aliases may
+identify one official recipe, but two scores for that recipe at the same
+checkpoint/seed fail rather than overwrite or average. Official names cannot
+be remapped to a different recipe. Custom alias dictionaries are independent of
+the OLMES source contract, whose recipe map remains one-to-one.
 
 Steps are exact and separate on each side. Metric direction defaults to higher
 is better; callers using losses must set the appropriate

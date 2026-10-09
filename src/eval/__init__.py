@@ -2,6 +2,13 @@
 
 from eval.checkpoint_scores import UnavailableRankingError
 from eval.ranking import predict_recipe_ranking
-from eval.results import RankingResult
+from eval.recipe_scores import MultiRecipeScores
+from eval.results import RankingResult, SingleSeedRanking
 
-__all__ = ["RankingResult", "UnavailableRankingError", "predict_recipe_ranking"]
+__all__ = [
+    "MultiRecipeScores",
+    "RankingResult",
+    "SingleSeedRanking",
+    "UnavailableRankingError",
+    "predict_recipe_ranking",
+]

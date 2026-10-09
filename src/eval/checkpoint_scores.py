@@ -3,6 +3,8 @@
 import numpy as np
 import pandas as pd
 
+from datadec.recipes import DataRecipeName
+
 
 class UnavailableRankingError(ValueError):
     """The requested checkpoint, recipes, seeds, or finite scores are missing."""
@@ -37,7 +39,7 @@ def checkpoint_rows(
 def checkpoint_scores(
     rows: pd.DataFrame,
     metric: str,
-    recipes: tuple[str, ...],
+    recipes: tuple[DataRecipeName, ...],
     seeds: tuple[str, ...],
 ) -> tuple[pd.DataFrame, float]:
     if not seeds or len(set(seeds)) != len(seeds):
