@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from datadec.eval.verify_converted import ACCEPTANCE
+from datadec.config.eval import load_eval_contract
 
 if TYPE_CHECKING:
     from dr_hf import DatasetPin, ModelPin, NamedSubset
@@ -35,6 +35,7 @@ class VerificationRun:
 
 def render_verification_report(run: VerificationRun) -> str:
     comparison = run.comparison
+    thresholds = load_eval_contract().verification.acceptance
     rule_rows = "\n".join(
         f"| {item.rule.value} | {item.agreement:.4f} | "
         f"{item.accuracy_ours:.4f} | {item.accuracy_published:.4f} |"
@@ -113,8 +114,8 @@ warnings: {comparison.warnings}.
 ## Acceptance
 
 Thresholds: predicted-index agreement above \
-{ACCEPTANCE["min_agreement_pmi"]} under PMI and per-char, mean absolute
-`sum_logits` difference below {ACCEPTANCE["max_mean_abs_sum_logits_diff"]} \
+{thresholds.min_predicted_index_agreement_pmi} under PMI and per-char, mean absolute
+`sum_logits` difference below {thresholds.max_mean_abs_sum_logits_diff_nats} \
 nats.
 
 | Criterion | Result |

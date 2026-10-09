@@ -5,13 +5,12 @@ import json
 
 import pytest
 
+from datadec.config.eval import load_eval_contract
 from datadec.eval.olmes_rc import (
-    UNCONDITIONAL_CONTEXT,
     arc_challenge_doc,
     arc_challenge_fewshot_prefix,
     requests_for_doc,
 )
-from datadec.eval.olmes_shots import ARC_CHALLENGE_SHOTS
 
 # OLMES paper (arXiv 2406.08446), Appendix H, Figure 5: the full 5-shot
 # ARC-Challenge cloze prompt and its completion. Transcribed from the figure;
@@ -67,7 +66,7 @@ def test_figure_5_prompt_is_reproduced_byte_for_byte() -> None:
 
 
 def test_fewshot_prefix_uses_the_first_five_curated_shots() -> None:
-    assert [shot["id"] for shot in ARC_CHALLENGE_SHOTS] == [
+    assert [shot.id for shot in load_eval_contract().olmes_rc.arc_challenge_shots] == [
         "Mercury_SC_415702",
         "MCAS_2009_5_6516",
         "Mercury_7233695",
@@ -140,7 +139,11 @@ def test_every_request_string_equals_the_published_requests() -> None:
         requests = ours[entry["native_id"]]
         request = entry["request"]
         unconditional = entry["doc_id"] >= UNCONDITIONAL_DOC_ID_OFFSET
-        expected_context = UNCONDITIONAL_CONTEXT if unconditional else requests.context
+        expected_context = (
+            load_eval_contract().olmes_rc.unconditional_context
+            if unconditional
+            else requests.context
+        )
         assert request["context"] == expected_context, entry["native_id"]
         assert request["continuation"] == requests.continuations[entry["idx"]]
         assert entry["label"] == requests.gold_index

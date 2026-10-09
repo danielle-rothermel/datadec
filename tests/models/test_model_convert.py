@@ -8,13 +8,12 @@ import pytest
 import torch
 from safetensors.torch import save_file
 
+from datadec.config.checkpoints import load_checkpoint_contract
 from datadec.models.convert import (
-    CONVERSION_RECORD_FILENAME,
     ConversionRecord,
     UnsupportedCheckpointError,
     convert_hf_olmo_to_native,
     map_tensors,
-    split_ff_proj_into_up_and_gate,
     native_config,
     sha256_file,
 )
@@ -167,7 +166,7 @@ def test_conversion_writes_verbatim_tokenizer_and_record(tmp_path: Path) -> None
 
     assert sorted(p.name for p in out.iterdir()) == sorted(
         [
-            CONVERSION_RECORD_FILENAME,
+            load_checkpoint_contract().conversion.conversion_record_filename,
             "config.json",
             "generation_config.json",
             "model.safetensors",
@@ -178,7 +177,9 @@ def test_conversion_writes_verbatim_tokenizer_and_record(tmp_path: Path) -> None
         assert (out / name).read_bytes() == content
         assert record.tokenizer_sha256[name] == sha256_file(source / name)
     stored = ConversionRecord.model_validate_json(
-        (out / CONVERSION_RECORD_FILENAME).read_text()
+        (
+            out / load_checkpoint_contract().conversion.conversion_record_filename
+        ).read_text()
     )
     assert stored == record
     assert record.weights_sha256 == sha256_file(out / "model.safetensors")
@@ -237,7 +238,13 @@ def test_ff_proj_first_half_is_up_and_second_half_is_gate() -> None:
         prefix = f"model.layers.{layer}.mlp."
         torch.testing.assert_close(target[prefix + "up_proj.weight"], ff[:hidden])
         torch.testing.assert_close(target[prefix + "gate_proj.weight"], ff[hidden:])
-    assert split_ff_proj_into_up_and_gate("b.", "o.") == (
-        "b.ff_proj.weight",
-        ("o.mlp.up_proj.weight", "o.mlp.gate_proj.weight"),
+    rule = next(
+        r
+        for r in load_checkpoint_contract().conversion.tensor_map
+        if r.source == "blocks.{layer}.ff_proj.weight"
+    )
+    assert rule.transform == "split_rows_equal"
+    assert rule.targets == (
+        "model.layers.{layer}.mlp.up_proj.weight",
+        "model.layers.{layer}.mlp.gate_proj.weight",
     )

@@ -2,34 +2,24 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Final, cast
+from typing import TYPE_CHECKING, cast
 
-from datadec.eval.olmes_shots import ARC_CHALLENGE_SHOTS
+from datadec.config.eval import FewShotContract, load_eval_contract
 
 if TYPE_CHECKING:
     from dr_hf import SourceRow
 
 __all__ = [
-    "ANSWER_PREFIX",
-    "QUESTION_PREFIX",
-    "SHOT_SEPARATOR",
-    "UNCONDITIONAL_CONTEXT",
     "ArcChallengeDoc",
     "RcRequests",
     "arc_challenge_doc",
     "arc_challenge_fewshot_prefix",
     "arc_challenge_query",
     "build_arc_challenge_rc_requests",
+    "gold_index_for",
     "requests_for_doc",
+    "shot_doc",
 ]
-
-QUESTION_PREFIX: Final = "Question: "
-ANSWER_PREFIX: Final = "Answer:"
-CONTINUATION_PREFIX: Final = " "
-SHOT_SEPARATOR: Final = "\n\n"
-UNCONDITIONAL_CONTEXT: Final = ANSWER_PREFIX
-ANSWER_LETTERS: Final = "ABCDE"
-NUMERIC_ANSWER_KEYS: Final = {"1": "A", "2": "B", "3": "C", "4": "D", "5": "E"}
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,42 +55,59 @@ def arc_challenge_doc(native_id: str, fields: Mapping[str, object]) -> ArcChalle
         if not isinstance(text, str):
             raise TypeError(f"{native_id}: choices.text must be a list of str")
         texts.append(text)
-    letter = NUMERIC_ANSWER_KEYS.get(answer_key, answer_key)
-    if letter not in ANSWER_LETTERS:
-        raise ValueError(f"{native_id}: unknown answerKey {answer_key!r}")
-    gold_index = ANSWER_LETTERS.index(letter)
-    if gold_index >= len(texts):
-        raise ValueError(f"{native_id}: answerKey beyond the choices")
     return ArcChallengeDoc(
         native_id=native_id,
         question=question,
         choices=tuple(texts),
-        gold_index=gold_index,
+        gold_index=gold_index_for(native_id, answer_key, len(texts)),
+    )
+
+
+def gold_index_for(native_id: str, answer_key: str, choice_count: int) -> int:
+    fmt = load_eval_contract().olmes_rc
+    letter = fmt.numeric_answer_keys.get(answer_key, answer_key)
+    if letter not in fmt.answer_letters:
+        raise ValueError(f"{native_id}: unknown answerKey {answer_key!r}")
+    gold_index = fmt.answer_letters.index(letter)
+    if gold_index >= choice_count:
+        raise ValueError(f"{native_id}: answerKey beyond the choices")
+    return gold_index
+
+
+def shot_doc(shot: FewShotContract) -> ArcChallengeDoc:
+    return ArcChallengeDoc(
+        native_id=shot.id,
+        question=shot.question,
+        choices=shot.choices,
+        gold_index=gold_index_for(shot.id, shot.answer_key, len(shot.choices)),
     )
 
 
 def arc_challenge_query(question: str) -> str:
-    return f"{QUESTION_PREFIX}{question}\n{ANSWER_PREFIX}"
+    fmt = load_eval_contract().olmes_rc
+    return f"{fmt.question_prefix}{question}\n{fmt.answer_prefix}"
 
 
 def arc_challenge_fewshot_prefix() -> str:
+    fmt = load_eval_contract().olmes_rc
     shots = []
-    for shot in ARC_CHALLENGE_SHOTS:
-        doc = arc_challenge_doc(str(shot["id"]), shot)
+    for shot in fmt.arc_challenge_shots:
+        doc = shot_doc(shot)
         shots.append(
             arc_challenge_query(doc.question)
-            + CONTINUATION_PREFIX
+            + fmt.continuation_prefix
             + doc.choices[doc.gold_index]
         )
-    return SHOT_SEPARATOR.join(shots) + SHOT_SEPARATOR
+    return fmt.shot_separator.join(shots) + fmt.shot_separator
 
 
 def requests_for_doc(doc: ArcChallengeDoc) -> RcRequests:
+    fmt = load_eval_contract().olmes_rc
     return RcRequests(
         native_id=doc.native_id,
         context=arc_challenge_fewshot_prefix() + arc_challenge_query(doc.question),
-        continuations=tuple(CONTINUATION_PREFIX + text for text in doc.choices),
-        unconditional_context=UNCONDITIONAL_CONTEXT,
+        continuations=tuple(fmt.continuation_prefix + text for text in doc.choices),
+        unconditional_context=fmt.unconditional_context,
         gold_index=doc.gold_index,
     )
 

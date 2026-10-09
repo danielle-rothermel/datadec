@@ -231,7 +231,9 @@ nothing else changes; any source config outside that layout is refused.
 Tokenizer files are copied byte for byte, and `conversion.json` records the
 tensor and config mapping.
 
-Naming, seed literals, and final-step sources are declared in
+The supported source layout, the tensor map (including the `ff_proj` split
+into `up_proj` then `gate_proj`), the strict-check reference environment and
+prompts, naming, seed literals, and final-step sources are declared in
 [`configs/checkpoints.toml`](configs/checkpoints.toml):
 
 - repo `drotherm/DataDecide-<recipe>-<size>`, branch `step<N>-seed<k>`, where
@@ -262,9 +264,11 @@ Published so far: `drotherm/DataDecide-dclm-baseline-150M`, branch
 ## Converted-model verification
 
 `datadec.eval.olmes_rc` builds OLMES cloze requests for ARC-Challenge from
-dr-hf `SourceRow`s: five fixed shots copied from the OLMES repository,
-`Question: ...\nAnswer:` queries, space-prefixed continuations, and `Answer:`
-as the unconditional context. Two golden tests pin it: the OLMES paper's
+dr-hf `SourceRow`s. The prompt format, the five fixed shots copied from the
+OLMES repository with their provenance, the ARC-Challenge source, and the
+verification acceptance thresholds are declared in
+[`configs/eval.toml`](configs/eval.toml): `Question: ...\nAnswer:` queries,
+space-prefixed continuations, and `Answer:` as the unconditional context. Two golden tests pin it: the OLMES paper's
 Figure 5 prompt byte for byte, and (opt-in, `-m hub`) every ARC-Challenge
 request string published in `allenai/DataDecide-eval-instances`.
 

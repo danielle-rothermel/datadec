@@ -6,7 +6,7 @@ import shutil
 import subprocess
 from importlib.metadata import version
 from pathlib import Path
-from typing import TYPE_CHECKING, Final
+from typing import TYPE_CHECKING
 
 from dr_hf import CommitSha
 from pydantic import BaseModel, ConfigDict
@@ -17,7 +17,6 @@ if TYPE_CHECKING:
     import torch
 
 __all__ = [
-    "CONVERSION_RECORD_FILENAME",
     "ConversionRecord",
     "TensorMapping",
     "UnsupportedCheckpointError",
@@ -25,34 +24,6 @@ __all__ = [
     "download_source_checkpoint",
     "sha256_file",
 ]
-
-CONVERSION_RECORD_FILENAME: Final = "conversion.json"
-SOURCE_MODEL_TYPE: Final = "hf_olmo"
-TARGET_MODEL_TYPE: Final = "llama"
-TARGET_ARCHITECTURE: Final = "LlamaForCausalLM"
-_WEIGHTS_FILENAME: Final = "model.safetensors"
-_SOURCE_PREFIX: Final = "model.transformer."
-
-SUPPORTED_LAYOUT: Final[dict[str, object]] = {
-    "activation_type": "swiglu",
-    "alibi": False,
-    "attention_layer_norm": False,
-    "bias_for_layer_norm": False,
-    "block_group_size": 1,
-    "block_type": "sequential",
-    "clip_qkv": None,
-    "embedding_layer_norm": False,
-    "include_bias": False,
-    "layer_norm_type": "rms",
-    "layer_norm_with_affine": True,
-    "mlp_hidden_size": None,
-    "multi_query_attention": None,
-    "n_kv_heads": None,
-    "norm_after": False,
-    "rope": True,
-    "scale_logits": False,
-    "weight_tying": False,
-}
 
 
 class UnsupportedCheckpointError(ValueError): ...
@@ -139,7 +110,9 @@ def convert_hf_olmo_to_native(
 ) -> ConversionRecord:
     from safetensors.torch import load_file, save_file  # noqa: PLC0415
 
-    contract = load_checkpoint_contract().source
+    checkpoint_contract = load_checkpoint_contract()
+    contract = checkpoint_contract.source
+    conversion = checkpoint_contract.conversion
     out_dir = Path(out_dir)
     if out_dir.exists() and any(out_dir.iterdir()):
         raise FileExistsError(f"out_dir must be empty: {out_dir}")
@@ -147,12 +120,12 @@ def convert_hf_olmo_to_native(
         source_dir = download_source_checkpoint(source_repo_id, source_revision)
     source_config = json.loads((source_dir / "config.json").read_text())
     target_config = native_config(source_config)
-    source_tensors = load_file(source_dir / _WEIGHTS_FILENAME)
+    source_tensors = load_file(source_dir / conversion.weights_filename)
     target_tensors, mappings = map_tensors(source_tensors, source_config)
     check_target_shapes(target_config, target_tensors)
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    weights_path = out_dir / _WEIGHTS_FILENAME
+    weights_path = out_dir / conversion.weights_filename
     save_file(
         {name: tensor.contiguous() for name, tensor in target_tensors.items()},
         weights_path,
@@ -168,9 +141,9 @@ def convert_hf_olmo_to_native(
     record = ConversionRecord(
         source_repo_id=source_repo_id,
         source_revision=source_revision,
-        source_model_type=SOURCE_MODEL_TYPE,
-        target_model_type=TARGET_MODEL_TYPE,
-        target_architecture=TARGET_ARCHITECTURE,
+        source_model_type=conversion.source_model_type,
+        target_model_type=conversion.target_model_type,
+        target_architecture=conversion.target_architecture,
         conversion_tool=conversion_tool_name(),
         transformers_version=version("transformers"),
         source_config=source_config,
@@ -179,26 +152,33 @@ def convert_hf_olmo_to_native(
         tokenizer_sha256=tokenizer_sha256,
         weights_sha256=sha256_file(weights_path),
     )
-    (out_dir / CONVERSION_RECORD_FILENAME).write_text(
+    (out_dir / conversion.conversion_record_filename).write_text(
         json.dumps(record.model_dump(mode="json"), indent=2, sort_keys=True) + "\n"
     )
     return record
 
 
 def native_config(source: dict[str, object]) -> dict[str, object]:
-    if source.get("model_type") != SOURCE_MODEL_TYPE:
+    conversion = load_checkpoint_contract().conversion
+    if source.get("model_type") != conversion.source_model_type:
         raise UnsupportedCheckpointError(
-            f"expected model_type {SOURCE_MODEL_TYPE!r}, "
+            f"expected model_type {conversion.source_model_type!r}, "
             f"got {source.get('model_type')!r}"
         )
-    mismatches = {
+    layout = conversion.supported_source_layout
+    mismatches: dict[str, object] = {
         field: source.get(field)
-        for field, expected in SUPPORTED_LAYOUT.items()
+        for field, expected in layout.required_values.items()
         if source.get(field) != expected
+    }
+    mismatches |= {
+        field: source.get(field)
+        for field in layout.required_absent
+        if source.get(field) is not None
     }
     if mismatches:
         raise UnsupportedCheckpointError(
-            f"unsupported hf_olmo layout fields: {mismatches!r}"
+            f"unsupported {conversion.source_model_type} layout fields: {mismatches!r}"
         )
     d_model = _int(source, "d_model")
     n_heads = _int(source, "n_heads")
@@ -236,70 +216,56 @@ def _int(source: dict[str, object], field: str) -> int:
     return value
 
 
-def split_ff_proj_into_up_and_gate(block: str, out: str) -> tuple[str, tuple[str, str]]:
-    return (
-        block + "ff_proj.weight",
-        (out + "mlp.up_proj.weight", out + "mlp.gate_proj.weight"),
-    )
-
-
 def map_tensors(
     source: dict[str, torch.Tensor], config: dict[str, object]
 ) -> tuple[dict[str, torch.Tensor], list[TensorMapping]]:
-    d_model = _int(config, "d_model")
+    conversion = load_checkpoint_contract().conversion
+    prefix = conversion.source_tensor_prefix
     n_layers = _int(config, "n_layers")
-    hidden = _int(config, "mlp_ratio") * d_model // 2
     target: dict[str, torch.Tensor] = {}
     mappings: list[TensorMapping] = []
     remaining = dict(source)
 
     def take(name: str) -> torch.Tensor:
-        key = _SOURCE_PREFIX + name
-        if key not in remaining:
-            raise UnsupportedCheckpointError(f"missing source tensor {key!r}")
-        return remaining.pop(key)
+        if name not in remaining:
+            raise UnsupportedCheckpointError(f"missing source tensor {name!r}")
+        return remaining.pop(name)
 
-    def rename(name: str, new: str) -> None:
-        target[new] = take(name)
-        mappings.append(
-            TensorMapping(
-                source=_SOURCE_PREFIX + name, targets=(new,), transform="copy"
+    def apply(source_name: str, targets: tuple[str, ...], transform: str) -> None:
+        tensor = take(source_name)
+        if transform == "copy":
+            target[targets[0]] = tensor
+            mappings.append(
+                TensorMapping(source=source_name, targets=targets, transform="copy")
             )
-        )
-
-    def split(name: str, news: tuple[str, ...], size: int) -> None:
-        tensor = take(name)
-        if tensor.shape[0] != size * len(news):
+            return
+        rows = tensor.shape[0]
+        if rows % len(targets):
             raise UnsupportedCheckpointError(
-                f"{name} has {tensor.shape[0]} rows, expected {size * len(news)}"
+                f"{source_name}: {rows} rows do not split into {len(targets)} blocks"
             )
-        for index, new in enumerate(news):
-            target[new] = tensor[index * size : (index + 1) * size].clone()
+        size = rows // len(targets)
+        for index, name in enumerate(targets):
+            target[name] = tensor[index * size : (index + 1) * size].clone()
         mappings.append(
             TensorMapping(
-                source=_SOURCE_PREFIX + name,
-                targets=news,
-                transform=f"split rows into {len(news)} blocks of {size}",
+                source=source_name,
+                targets=targets,
+                transform=f"split rows into {len(targets)} blocks of {size}",
             )
         )
 
-    rename("wte.weight", "model.embed_tokens.weight")
-    for layer in range(n_layers):
-        block = f"blocks.{layer}."
-        out = f"model.layers.{layer}."
-        split(
-            block + "att_proj.weight",
-            tuple(out + f"self_attn.{p}_proj.weight" for p in ("q", "k", "v")),
-            d_model,
+    for rule in conversion.tensor_map:
+        layers: tuple[int | None, ...] = (
+            tuple(range(n_layers)) if "{layer}" in rule.source else (None,)
         )
-        rename(block + "attn_out.weight", out + "self_attn.o_proj.weight")
-        ff_source, ff_targets = split_ff_proj_into_up_and_gate(block, out)
-        split(ff_source, ff_targets, hidden)
-        rename(block + "ff_out.weight", out + "mlp.down_proj.weight")
-        rename(block + "attn_norm.weight", out + "input_layernorm.weight")
-        rename(block + "ff_norm.weight", out + "post_attention_layernorm.weight")
-    rename("ln_f.weight", "model.norm.weight")
-    rename("ff_out.weight", "lm_head.weight")
+        for layer in layers:
+            fill = {"layer": layer} if layer is not None else {}
+            apply(
+                prefix + rule.source.format(**fill),
+                tuple(t.format(**fill) for t in rule.targets),
+                rule.transform,
+            )
     if remaining:
         raise UnsupportedCheckpointError(
             f"unmapped source tensors: {sorted(remaining)!r}"
@@ -326,7 +292,8 @@ def check_target_shapes(
             if expected[name] != actual[name]
         )
         raise UnsupportedCheckpointError(
-            f"target tensors differ from {TARGET_ARCHITECTURE}: "
+            "target tensors differ from "
+            f"{load_checkpoint_contract().conversion.target_architecture}: "
             f"missing={missing} extra={extra} wrong_shape={wrong}"
         )
 
@@ -337,7 +304,7 @@ def write_native_configs(
     from transformers import GenerationConfig, LlamaConfig  # noqa: PLC0415
 
     config = LlamaConfig(**target_config)
-    config.architectures = [TARGET_ARCHITECTURE]
+    config.architectures = [load_checkpoint_contract().conversion.target_architecture]
     config.dtype = "float32"
     config.save_pretrained(out_dir)
     source_generation = json.loads((source_dir / "generation_config.json").read_text())

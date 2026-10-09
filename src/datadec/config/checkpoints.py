@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import cache
-from typing import Self
+from typing import Literal, Self
 
 from pydantic import Field, model_validator
 
@@ -67,6 +67,54 @@ class FinalStepContract(ConfigModel):
     paper: PaperTable
 
 
+class SupportedSourceLayout(ConfigModel):
+    required_absent: tuple[str, ...]
+    required_values: dict[str, str | int | bool]
+
+    @model_validator(mode="after")
+    def validate_disjoint(self) -> Self:
+        overlap = set(self.required_absent) & set(self.required_values)
+        if overlap:
+            raise ValueError(f"layout fields both absent and valued: {sorted(overlap)}")
+        return self
+
+
+class TensorMapRule(ConfigModel):
+    source: str = Field(min_length=1)
+    targets: tuple[str, ...] = Field(min_length=1)
+    transform: Literal["copy", "split_rows_equal"]
+
+    @model_validator(mode="after")
+    def validate_targets(self) -> Self:
+        if self.transform == "copy" and len(self.targets) != 1:
+            raise ValueError("copy rules map to exactly one target")
+        if self.transform == "split_rows_equal" and len(self.targets) < 2:
+            raise ValueError("split_rows_equal rules need at least two targets")
+        per_layer = "{layer}" in self.source
+        if any(("{layer}" in target) != per_layer for target in self.targets):
+            raise ValueError("source and targets must agree on the {layer} placeholder")
+        return self
+
+
+class ConversionContract(ConfigModel):
+    source_model_type: str = Field(min_length=1)
+    source_tensor_prefix: str
+    target_model_type: str = Field(min_length=1)
+    target_architecture: str = Field(min_length=1)
+    weights_filename: str = Field(min_length=1)
+    conversion_record_filename: str = Field(min_length=1)
+    supported_source_layout: SupportedSourceLayout
+    tensor_map: tuple[TensorMapRule, ...] = Field(min_length=1)
+
+    @model_validator(mode="after")
+    def validate_unique_names(self) -> Self:
+        sources = [rule.source for rule in self.tensor_map]
+        targets = [target for rule in self.tensor_map for target in rule.targets]
+        if len(sources) != len(set(sources)) or len(targets) != len(set(targets)):
+            raise ValueError("tensor map sources and targets must be unique")
+        return self
+
+
 class ReferenceRequirement(ConfigModel):
     requirement: str = Field(min_length=1)
     reason: str = Field(min_length=1)
@@ -74,6 +122,7 @@ class ReferenceRequirement(ConfigModel):
 
 class StrictCheckContract(ConfigModel):
     python: str = Field(min_length=1)
+    prompts: tuple[str, ...] = Field(min_length=1)
     reference_environment: tuple[ReferenceRequirement, ...] = Field(min_length=1)
 
 
@@ -83,6 +132,7 @@ class CheckpointContract(ConfigModel):
     seeds: SeedContract
     final_step: FinalStepContract
     strict_check: StrictCheckContract
+    conversion: ConversionContract
 
 
 @cache

@@ -4,6 +4,8 @@ import statistics
 from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Final
 
+from datadec.config.eval import load_eval_contract
+
 import pyarrow.dataset as ds
 from dr_hf import (
     DatasetPin,
@@ -33,7 +35,6 @@ if TYPE_CHECKING:
     from datadec.data.artifacts import DataArtifacts
 
 __all__ = [
-    "ACCEPTANCE",
     "ArcChallengeSource",
     "Comparison",
     "PublishedChoice",
@@ -48,25 +49,12 @@ __all__ = [
     "score_items",
 ]
 
-ARC_CHALLENGE_REPO: Final = "allenai/ai2_arc"
-ARC_CHALLENGE_CONFIG: Final = "ARC-Challenge"
-ARC_CHALLENGE_NATIVE_ID: Final = "id"
-ARC_CHALLENGE_SPLIT: Final = "test"
-ARC_CHALLENGE_TASK: Final = "arc_challenge"
-
-ACCEPTANCE: Final = {
-    "min_agreement_pmi": 0.98,
-    "min_agreement_per_char": 0.98,
-    "max_mean_abs_sum_logits_diff": 0.05,
-}
-
-_PUBLISHED_PREDICTION_COLUMNS: Final = {
-    DecisionRule.RAW: "predicted_index_raw",
-    DecisionRule.PER_TOKEN: "predicted_index_per_token",
-    DecisionRule.PER_CHAR: "predicted_index_per_char",
-    DecisionRule.PMI: "predicted_index_uncond",
-}
 _MISMATCH_EXAMPLES: Final = 5
+
+
+def _published_prediction_columns() -> dict[DecisionRule, str]:
+    columns = load_eval_contract().verification.published_prediction_columns
+    return {DecisionRule(rule): column for rule, column in columns.items()}
 
 
 @dataclass(frozen=True, slots=True)
@@ -77,17 +65,20 @@ class ArcChallengeSource:
 
 
 def load_arc_challenge_test(ref: str = "main") -> ArcChallengeSource:
+    source = load_eval_contract().arc_challenge
     pin = resolve_dataset_pin(
-        ARC_CHALLENGE_REPO,
-        config=ARC_CHALLENGE_CONFIG,
+        source.repo_id,
+        config=source.config,
         ref=ref,
-        native_id_field=ARC_CHALLENGE_NATIVE_ID,
+        native_id_field=source.native_id_field,
     )
     rows = list(read_rows(pin))
     subsets = {subset.key.name: subset for subset in origin_subsets(pin, rows)}
-    subset = subsets[ARC_CHALLENGE_SPLIT]
+    subset = subsets[source.evaluation_split]
     by_id = {
-        row.native_id: row for row in rows if row.origin_split == ARC_CHALLENGE_SPLIT
+        row.native_id: row
+        for row in rows
+        if row.origin_split == source.evaluation_split
     }
     requests = tuple(
         build_arc_challenge_rc_requests(by_id[native_id])
@@ -182,7 +173,7 @@ class PublishedKey:
     params: str
     seed: str
     step: int
-    task: str = ARC_CHALLENGE_TASK
+    task: str = field(default_factory=lambda: load_eval_contract().arc_challenge.task)
 
 
 @dataclass(frozen=True, slots=True)
@@ -221,7 +212,7 @@ def load_published(
             "doc_id",
             "native_id",
             "label",
-            *_PUBLISHED_PREDICTION_COLUMNS.values(),
+            *_published_prediction_columns().values(),
         ],
     ).to_pylist()
     choices = read_processed_table(
@@ -261,7 +252,7 @@ def load_published(
         )
         predictions = {
             rule: int(row[column])  # type: ignore[arg-type]
-            for rule, column in _PUBLISHED_PREDICTION_COLUMNS.items()
+            for rule, column in _published_prediction_columns().items()
         }
         bits_per_byte = [choice.logits_per_byte for choice in doc_choices]
         if all(value is not None for value in bits_per_byte):
@@ -395,12 +386,13 @@ def compare(
         context_token_agreement=context_agree / len(ours),
         warnings=sum(item.warnings for item in ours),
     )
+    thresholds = load_eval_contract().verification.acceptance
     acceptance = {
         "pmi_agreement": comparison.rule(DecisionRule.PMI).agreement
-        > ACCEPTANCE["min_agreement_pmi"],
+        > thresholds.min_predicted_index_agreement_pmi,
         "per_char_agreement": comparison.rule(DecisionRule.PER_CHAR).agreement
-        > ACCEPTANCE["min_agreement_per_char"],
+        > thresholds.min_predicted_index_agreement_per_char,
         "mean_abs_sum_logits_diff": comparison.sum_logits_mean_abs_diff
-        < ACCEPTANCE["max_mean_abs_sum_logits_diff"],
+        < thresholds.max_mean_abs_sum_logits_diff_nats,
     }
     return replace(comparison, acceptance=acceptance)

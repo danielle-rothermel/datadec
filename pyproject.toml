@@ -42,6 +42,7 @@ packages = ["src/datadec", "src/eval", "src/repro"]
 "configs/repro_evaluations/magnusson2025-datadecide.toml" = "repro/configs/repro_evaluations/magnusson2025-datadecide.toml"
 "configs/catalog.toml" = "datadec/configs/catalog.toml"
 "configs/checkpoints.toml" = "datadec/configs/checkpoints.toml"
+"configs/eval.toml" = "datadec/configs/eval.toml"
 "configs/olmes.toml" = "datadec/configs/olmes.toml"
 "configs/publishing.toml" = "datadec/configs/publishing.toml"
 "configs/published_results.toml" = "datadec/configs/published_results.toml"

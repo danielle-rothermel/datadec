@@ -11,22 +11,11 @@ from datadec.config.checkpoints import load_checkpoint_contract
 
 __all__ = [
     "REFERENCE_SCRIPT",
-    "STRICT_CHECK_PROMPTS",
     "StrictCheckResult",
     "compare_with_reference",
     "reference_logits",
     "run_strict_check",
 ]
-
-STRICT_CHECK_PROMPTS: Final[tuple[str, ...]] = (
-    "Question: George wants to warm his hands quickly by rubbing them. "
-    "Which skin surface will produce the most heat?\nAnswer: dry palms",
-    "The capital of France is Paris. The capital of Germany is",
-    "def fibonacci(n):\n    if n < 2:\n        return n\n    return",
-    "In 1905, Albert Einstein published four papers that changed physics: "
-    "the photoelectric effect, Brownian motion, special relativity, and",
-    "Answer: impact of an asteroid created dust that blocked the sunlight",
-)
 
 REFERENCE_SCRIPT: Final = (
     Path(__file__).parents[3] / "scripts" / "models" / "hf_olmo_reference.py"
@@ -136,8 +125,10 @@ def compare_with_reference(
 def run_strict_check(
     source_dir: Path,
     native_dir: Path,
-    prompts: tuple[str, ...] = STRICT_CHECK_PROMPTS,
+    prompts: tuple[str, ...] | None = None,
 ) -> StrictCheckResult:
+    if prompts is None:
+        prompts = load_checkpoint_contract().strict_check.prompts
     with tempfile.TemporaryDirectory() as tmp:
         reference_path = Path(tmp) / "reference.safetensors"
         reference_logits(source_dir, prompts, reference_path)
