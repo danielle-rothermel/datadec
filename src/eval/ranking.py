@@ -29,7 +29,7 @@ def predict_recipe_ranking(
     predictor_higher_is_better: bool = True,
     predicted_higher_is_better: bool = True,
 ) -> RankingResult:
-    """Compare each predictor seed with target scores averaged across seeds.
+    """Rank from each predictor seed or their mean, against target seed-mean scores.
 
     Input columns: params, step, task, data (recipe), seed, compute, and the
     requested metrics. An optional sorted (params, step, task) MultiIndex speeds

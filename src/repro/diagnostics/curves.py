@@ -3,13 +3,16 @@
 import numpy as np
 import pandas as pd
 
+from repro.approaches import approach_rankings
+
 
 def curve_summary(sweep: pd.DataFrame) -> pd.DataFrame:
     """Descriptive fits and reversals per task/metric/size; no significance claims."""
+    sweep = approach_rankings(sweep)
     records = []
     available = sweep.loc[sweep["available"]]
-    for (task, metric, size), group in available.groupby(
-        ["task", "metric", "predictor_size"]
+    for (approach, task, metric, size), group in available.groupby(
+        ["approach", "task", "metric", "predictor_size"]
     ):
         group = group.sort_values("compute")
         x = np.log10(group["compute_ratio"].to_numpy(dtype=float))
@@ -24,6 +27,7 @@ def curve_summary(sweep: pd.DataFrame) -> pd.DataFrame:
                 )
         records.append(
             {
+                "approach": approach,
                 "task": task,
                 "metric": metric,
                 "predictor_size": size,

@@ -2,11 +2,14 @@
 
 import pandas as pd
 
+from repro.approaches import approach_rankings
+
 
 def proxy_comparisons(sweep: pd.DataFrame, *, baseline_metric: str) -> pd.DataFrame:
     """Align proxies with curated target Accuracy at exactly the same checkpoint."""
+    sweep = approach_rankings(sweep)
     available = sweep.loc[sweep["available"]]
-    key = ["predictor_size", "predictor_step", "task"]
+    key = ["approach", "predictor_size", "predictor_step", "task"]
     baseline = available.loc[
         available["metric"] == baseline_metric, [*key, "decision_accuracy"]
     ].rename(columns={"decision_accuracy": "primary_accuracy"})

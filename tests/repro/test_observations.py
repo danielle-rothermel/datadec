@@ -19,7 +19,7 @@ def test_observation_boundary_pins_sweep_schema_and_unavailable_nulls(tmp_path):
         task="mmlu",
         metric="primary_metric",
         schedule_complete=False,
-        statistics=RankingStatistics((0.5, 1.0), 2),
+        statistics=RankingStatistics((0.5, 1.0), 2, 1.0),
         reason="",
     )
     missing = RankingObservation.unavailable(
@@ -47,6 +47,7 @@ def test_observation_boundary_pins_sweep_schema_and_unavailable_nulls(tmp_path):
         "reason": "",
         "decision_accuracy": 0.75,
         "decision_accuracy_std": 0.25,
+        "aggregate_decision_accuracy": 1.0,
         "seed_accuracies": [0.5, 1.0],
         "recipe_count": 2.0,
         "pair_count": 1.0,
@@ -59,6 +60,7 @@ def test_observation_boundary_pins_sweep_schema_and_unavailable_nulls(tmp_path):
             [
                 "decision_accuracy",
                 "decision_accuracy_std",
+                "aggregate_decision_accuracy",
                 "seed_accuracies",
                 "recipe_count",
                 "pair_count",
@@ -77,10 +79,11 @@ def test_observation_boundary_pins_sweep_schema_and_unavailable_nulls(tmp_path):
 def test_statistics_derive_summaries_and_pair_count():
     from dataclasses import fields
 
-    statistics = RankingStatistics((0.5, 1.0), 3)
+    statistics = RankingStatistics((0.5, 1.0), 3, 1.0)
     assert {field.name for field in fields(statistics)} == {
         "seed_accuracies",
         "recipe_count",
+        "aggregate_decision_accuracy",
     }
     assert statistics.decision_accuracy == 0.75
     assert statistics.decision_accuracy_std == 0.25
@@ -94,7 +97,7 @@ def test_observation_reader_uses_canonical_values_not_materialized_summaries():
         "mmlu",
         "primary_metric",
         False,
-        RankingStatistics((0.5, 1.0), 3),
+        RankingStatistics((0.5, 1.0), 3, 1.0),
         "",
     )
     frame = observations_frame((observed,))

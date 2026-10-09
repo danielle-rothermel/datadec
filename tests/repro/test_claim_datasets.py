@@ -13,7 +13,7 @@ def measured_result():
     return ClaimEvidence(
         claim_id="DD-0014",
         related_tables=("curves.csv",),
-        tasks=(TaskEvidence("mmlu", (7,), (), 7),),
+        tasks=(TaskEvidence("mmlu", (7,), (), 7, 7),),
     )
 
 
@@ -23,7 +23,7 @@ def test_claim_evidence_round_trip_with_and_without_measurements(
     unavailable = replace(
         measured_result,
         claim_id="DD-0016",
-        tasks=(TaskEvidence("hellaswag", (), (8,), None),),
+        tasks=(TaskEvidence("hellaswag", (), (8,), None, None),),
     )
     path = tmp_path / "results.parquet"
     write_claim_evidence((measured_result, unavailable), path)
@@ -48,7 +48,8 @@ def test_claim_dataset_pins_persisted_links_without_copied_measurements(
                     "task": "mmlu",
                     "evidence_ids": [7],
                     "unavailable_ids": [],
-                    "best_evidence_id": 7,
+                    "best_per_seed_evidence_id": 7,
+                    "best_aggregate_evidence_id": 7,
                 }
             ],
         }
@@ -72,6 +73,10 @@ def test_claim_dataset_schema_drift_is_rejected(tmp_path):
 
 
 @pytest.mark.parametrize("available,best", [((7,), 8), ((7,), None), ((), 7)])
-def test_best_row_must_be_an_available_link(available, best):
+@pytest.mark.parametrize("approach", ["per_seed", "aggregate"])
+def test_best_row_must_be_an_available_link(available, best, approach):
+    valid_best = available[0] if available else None
+    per_seed = best if approach == "per_seed" else valid_best
+    aggregate = best if approach == "aggregate" else valid_best
     with pytest.raises(ValueError, match="best evidence ID"):
-        TaskEvidence("mmlu", available, (), best)
+        TaskEvidence("mmlu", available, (), per_seed, aggregate)

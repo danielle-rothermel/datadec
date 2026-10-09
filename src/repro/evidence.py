@@ -2,6 +2,8 @@
 
 import pandas as pd
 
+from eval.approaches import PredictionApproach
+from repro.approaches import accuracy_column
 from repro.config import EvidenceSelection, EvaluationConfig
 from repro.results import ClaimEvidence, TaskEvidence
 
@@ -29,7 +31,14 @@ def _link_task(selected: pd.DataFrame, task: str) -> TaskEvidence:
         task=task,
         evidence_ids=tuple(int(index) for index in available.index),
         unavailable_ids=tuple(int(index) for index in unavailable.index),
-        best_evidence_id=int(available["decision_accuracy"].idxmax())
+        best_per_seed_evidence_id=int(
+            available[accuracy_column(PredictionApproach.PER_SEED)].idxmax()
+        )
+        if not available.empty
+        else None,
+        best_aggregate_evidence_id=int(
+            available[accuracy_column(PredictionApproach.AGGREGATE)].idxmax()
+        )
         if not available.empty
         else None,
     )

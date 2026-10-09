@@ -9,6 +9,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
+from eval.approaches import PredictionApproach
 from repro.claims import QuoteLocation, load_claims, read_quotes
 from repro.datasets import (
     RunMetadata,
@@ -113,7 +114,8 @@ def evidence_table(
     table = Table(box=box.SIMPLE_HEAD, padding=(0, 1))
     for column in (
         "Task",
-        "Max accuracy (std)",
+        "Approach",
+        "Max accuracy (seed std)",
         "Predictor @ step",
         "Metric",
         "Compute / target",
@@ -121,27 +123,38 @@ def evidence_table(
     ):
         table.add_column(column, overflow="fold")
     for measurement in result.tasks:
-        best = (
-            rankings[measurement.best_evidence_id]
-            if measurement.best_evidence_id is not None
-            else None
-        )
-        coverage = f"{measurement.available_comparisons} / {measurement.unavailable_comparisons}"
-        if best is None:
-            cells = [measurement.task, "—", "—", "—", "—", coverage]
-        else:
-            statistics = best.statistics
-            if statistics is None:
-                raise ValueError("best evidence must reference an available ranking")
-            cells = [
-                measurement.task,
-                f"{statistics.decision_accuracy:.6f} ({statistics.decision_accuracy_std:.6f})",
-                f"{best.predictor.size} @ {best.predictor.step}",
-                best.metric,
-                f"{best.compute_ratio:.8g}",
-                coverage,
-            ]
-        table.add_row(*(Text(cell, overflow="fold") for cell in cells))
+        for approach in PredictionApproach:
+            index = measurement.best_evidence_id(approach)
+            best = rankings[index] if index is not None else None
+            coverage = f"{measurement.available_comparisons} / {measurement.unavailable_comparisons}"
+            label = (
+                "Per-seed mean"
+                if approach is PredictionApproach.PER_SEED
+                else "Mean scores"
+            )
+            if best is None:
+                cells = [measurement.task, label, "—", "—", "—", "—", coverage]
+            else:
+                statistics = best.statistics
+                if statistics is None:
+                    raise ValueError(
+                        "best evidence must reference an available ranking"
+                    )
+                std = (
+                    f"{statistics.decision_accuracy_std:.6f}"
+                    if approach is PredictionApproach.PER_SEED
+                    else "—"
+                )
+                cells = [
+                    measurement.task,
+                    label,
+                    f"{statistics.accuracy(approach):.6f} ({std})",
+                    f"{best.predictor.size} @ {best.predictor.step}",
+                    best.metric,
+                    f"{best.compute_ratio:.8g}",
+                    coverage,
+                ]
+            table.add_row(*(Text(cell, overflow="fold") for cell in cells))
     return table
 
 

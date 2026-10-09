@@ -28,8 +28,11 @@ uv run python scripts/repro/claims.py --width 120
 The viewer is read-only: it loads saved measurements and extracts
 paper passages. It does not rerun analysis or require the original OLMES input
 or evaluation TOML. Terminal output uses Rich formatting and plain text when
-redirected. The evidence tables show per-task observed maxima, seed
-standard deviations, predictor checkpoints/metrics, compute ratios, and coverage.
+redirected. The evidence tables show independent per-task maxima for the per-seed mean
+and mean-score prediction approaches, predictor checkpoints/metrics, compute
+ratios, and coverage. Seed standard deviation applies only to the per-seed
+approach; the aggregate prediction has one accuracy, shown without a standard
+deviation.
 Seed accuracies, FLOPs, and evidence IDs remain in the saved ranking dataset.
 Viewing a saved run requires both the claim links and ranking dataset.
 
@@ -85,6 +88,7 @@ src/
   datadec/
     recipes.py            # Canonical recipe names and configured alias resolution
   eval/
+    approaches.py         # Named predictor aggregation approaches
     checkpoint_scores.py  # Exact selection and recipe/seed coverage
     ranking.py            # Generic predict_recipe_ranking algorithm
     recipe_scores.py      # Immutable scores keyed by DataRecipeName
@@ -93,6 +97,7 @@ src/
     claims.py             # Inventory parsing and quote lookup
     config.py             # Validated experiment config and group resolution
     aggregation.py        # Local OLMES reads and macro averages
+    approaches.py         # Labelled comparisons for diagnostic tables
     checkpoints.py        # Observed schedules and compute-budget selection
     sweep.py              # Paper ranking policy and experiment execution
     observations.py       # Typed observations and sweep DataFrame conversion
@@ -116,7 +121,8 @@ DataFrame with `params`, `step`, `task`, `data` (recipe), `seed`, `compute`, and
 metric columns. Pass a sorted `(params, step, task)` MultiIndex for repeated
 calls. Its result contains checkpoint compute, canonical recipe identities,
 recipe-keyed predictor and target scores, and metric directions. Decisions,
-mean accuracy, and population standard deviation are calculated on demand.
+both prediction approaches' accuracies and per-seed population standard
+deviation are calculated on demand.
 
 ```python
 from pathlib import Path
@@ -149,6 +155,10 @@ print(seed.decision_accuracy(
     result.target_per_recipe_scores,
     target_higher_is_better=result.predicted_higher_is_better,
 ))
+aggregate = result.aggregate_ranking
+print(aggregate.predictor_per_recipe_scores[DataRecipeName.DOLMA17])
+print(aggregate.decision(DataRecipeName.DOLMA17, DataRecipeName.C4))
+print(result.aggregate_decision_accuracy())
 ```
 
 `DataRecipeName` defines one official name per DataDecide recipe. The default
@@ -164,7 +174,11 @@ ranks higher, -1 when lower, and 0 for a tie. `decision_accuracy()` compares all
 unordered pairs without storing a decision tuple. `recipes`, `recipe_count`,
 and `pair_count` are derived from the target score mapping. `seed_accuracies()`,
 `decision_accuracy()`, and `decision_accuracy_std()` calculate the corresponding
-statistics across predictor seeds.
+statistics across predictor seeds. `RecipeRanking` owns the shared decision
+calculations; `SingleSeedRanking` adds a seed identity. `aggregate_ranking`
+derives another `RecipeRanking` by averaging predictor scores per recipe, and
+`aggregate_decision_accuracy()` compares its decisions with the same target
+seed mean. An aggregate prediction is not assigned a synthetic seed label.
 
 For other source spellings, construct a resolver from an alias dictionary or
 load a TOML file containing a `[recipe_map]` table:
@@ -198,10 +212,19 @@ The generic helper infers omitted recipe/seed sets from observed rows. Pass
 explicit sets to enforce expected coverage; `repro.sweep.paper_ranking` does
 this using the catalog recipes and paper seed labels.
 
-Each target recipe's score is the mean over target seeds. Every predictor seed
-makes its own decisions against that gold mean, then decision accuracy is
-averaged across predictor seeds. Predictor scores are not averaged before
-comparison. Every unordered recipe pair contributes equally. Exact ties have
+Each target recipe's score is the mean over target seeds. Both predictor
+approaches use this same target:
+
+- **Per-seed mean:** each predictor seed makes its own decisions, then
+  `decision_accuracy()` averages those seeds' accuracies. `seed_accuracies()`
+  retains each individual accuracy and `decision_accuracy_std()` measures
+  their population standard deviation.
+- **Mean scores:** average predictor scores across seeds for each recipe,
+  then make decisions and calculate `aggregate_decision_accuracy()`. This
+  accuracy cannot be reconstructed from the per-seed accuracies alone.
+
+The two approaches can produce different decisions and accuracies. Every
+unordered recipe pair contributes equally. Exact ties have
 sign zero and count as correct only against another tie. Duplicate identities
 and inconsistent compute are errors. Missing checkpoints, recipe/seed cells,
 or finite metric values raise `UnavailableRankingError`.
@@ -239,23 +262,27 @@ Outputs under `outputs/repro/ranking/`:
 
 | File | Contents |
 | --- | --- |
-| `claim_evidence.parquet` | Per-selection task links to available/unavailable ranking row IDs, the selected maximum row ID, and related data tables |
+| `claim_evidence.parquet` | Per-selection task links to available/unavailable ranking row IDs, separate maximum row IDs for both approaches, and related data tables |
 | `run.json` | Input SHA-256 and effective configuration, including claim-inventory and paper-source paths |
-| `rankings.parquet` | One row per checkpoint/task/metric, seed accuracies, compute, recipe/pair counts, coverage failures; index `evidence_id` |
+| `rankings.parquet` | One row per checkpoint/task/metric, per-seed accuracies and their mean/std, aggregate prediction accuracy, compute, recipe/pair counts, coverage failures; index `evidence_id` |
 | `checkpoints.csv` | Observed compute and schedule-completion coverage |
-| `curves.csv` | Per-size descriptive log-compute slopes, R², adjacent decreases, and endpoints |
-| `proxy_comparisons.parquet` | Proxy advantage over curated Accuracy at the identical checkpoint |
-| `matched_compute.csv` | Completed/intermediate evidence IDs, actual compute gaps, accuracy differences |
+| `curves.csv` | Per-approach/size descriptive log-compute slopes, R², adjacent decreases, and endpoints |
+| `proxy_comparisons.parquet` | Per-approach proxy advantage over curated Accuracy at the identical checkpoint |
+| `matched_compute.csv` | Per-approach completed/intermediate evidence IDs, actual compute gaps, accuracy differences |
 | `recipe_crossovers.csv` | Strict recipe-order reversals between adjacent observed completed scales, using seed means |
 
 The evaluator writes numerical datasets. `rankings.parquet` owns the ranking
 measurements. `claim_evidence.parquet` stores only task-specific available and
-unavailable row IDs, the selected maximum's row ID, and related table names.
+unavailable row IDs, `best_per_seed_evidence_id`, `best_aggregate_evidence_id`,
+and related table names. The two maxima are selected independently, so they
+may reference different checkpoints or metrics.
 The viewer joins these references to ranking observations and derives counts
 from the linked IDs. Missing rows or mismatched task/availability links fail
-explicitly. The maximum's ID is selected during analysis; viewing does not
-rerun the experiment or select a new maximum. Separate diagnostic tables retain
-curve, proxy, compute-match, and crossover measurements.
+explicitly. Maximum IDs are selected during analysis; viewing does not rerun
+the experiment or select new maxima. Curve, proxy, and compute-match diagnostic
+tables label `approach` as `per_seed` or `aggregate` and keep their comparisons
+separate. Recipe crossovers continue to compare seed-mean recipe scores across
+completed scales; checkpoint coverage is common to both approaches.
 
 The claims viewer extracts each selected passage directly from its source
 coordinates and presents saved measurements as Rich tables. Scientific text
@@ -271,8 +298,9 @@ collects OLMES ranking measurements; selections without configured measurements
 remain visible with zero linked rows.
 
 Sweep observations have a frozen typed owner in `repro.observations`.
-`RankingStatistics` retains seed accuracies and recipe count; mean accuracy,
-population standard deviation, and pair count are derived. The DataFrame writer
+`RankingStatistics` retains seed accuracies, recipe count, and aggregate
+prediction accuracy. Per-seed mean accuracy, population standard deviation,
+and pair count are derived. The DataFrame writer
 materializes these summaries as columns for analysis. The reader reconstructs
 observations from canonical values and computes their summaries. The conversion
 owns tabular column names and null representation.

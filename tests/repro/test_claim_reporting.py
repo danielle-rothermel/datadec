@@ -66,9 +66,11 @@ def test_report_uses_saved_numbers_and_extracts_only_source_text(saved_run):
         for r in read_claim_evidence(run_dir / "claim_evidence.parquet")
         if r.claim_id == "DD-0014"
     )
-    index = result.tasks[0].best_evidence_id
+    index = result.tasks[0].best_per_seed_evidence_id
     rankings = pd.read_parquet(run_dir / "rankings.parquet")
     rankings.at[index, "seed_accuracies"] = [0.72, 0.73, 0.74]
+    aggregate_index = result.tasks[0].best_aggregate_evidence_id
+    rankings.at[aggregate_index, "aggregate_decision_accuracy"] = 0.91
     rankings.to_parquet(run_dir / "rankings.parquet")
     inventory = run_dir / "claims.toml"
     quote = "Original paper claim."
@@ -102,6 +104,9 @@ end = {7 + len(quote)}
     assert "judgment" not in output
     assert "supported" not in output
     assert "0.730000" in output
+    assert "0.910000" in output
+    assert "Per-seed mean" in output
+    assert "Mean scores" in output
     assert "\x1b[" in render(report, color=True)
     assert "\x1b[" not in output
     assert "…" not in render(report, width=80)
@@ -123,7 +128,14 @@ def test_report_keeps_all_selections_and_missing_measurements_visible(saved_run)
     )
     result = replace(
         result,
-        tasks=(replace(result.tasks[0], evidence_ids=(), best_evidence_id=None),),
+        tasks=(
+            replace(
+                result.tasks[0],
+                evidence_ids=(),
+                best_per_seed_evidence_id=None,
+                best_aggregate_evidence_id=None,
+            ),
+        ),
     )
     write_claim_evidence((result,), run_dir / "claim_evidence.parquet")
     report = load_claim_report(
@@ -208,7 +220,7 @@ def test_report_requires_ranking_dataset(saved_run):
 def test_report_rejects_missing_ranking_reference(saved_run):
     run_dir, config = saved_run
     links = read_claim_evidence(run_dir / "claim_evidence.parquet")
-    index = links[0].tasks[0].best_evidence_id
+    index = links[0].tasks[0].best_per_seed_evidence_id
     rankings = pd.read_parquet(run_dir / "rankings.parquet")
     rankings.drop(index=index).to_parquet(run_dir / "rankings.parquet")
     with pytest.raises(ValueError, match="missing ranking evidence ID"):
@@ -219,7 +231,7 @@ def test_report_rejects_missing_ranking_reference(saved_run):
 def test_report_rejects_mismatched_ranking_reference(saved_run, field, value):
     run_dir, config = saved_run
     links = read_claim_evidence(run_dir / "claim_evidence.parquet")
-    index = links[0].tasks[0].best_evidence_id
+    index = links[0].tasks[0].best_per_seed_evidence_id
     rankings = pd.read_parquet(run_dir / "rankings.parquet")
     rankings.at[index, field] = value
     rankings.to_parquet(run_dir / "rankings.parquet")

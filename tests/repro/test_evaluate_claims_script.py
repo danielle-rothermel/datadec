@@ -185,7 +185,7 @@ metric_groups = ["primary"]
     claim = read_claim_evidence(output / "claim_evidence.parquet")[0]
     assert (
         read_rankings(output / "rankings.parquet")[
-            claim.tasks[0].best_evidence_id
+            claim.tasks[0].best_per_seed_evidence_id
         ].statistics.decision_accuracy
         == 1.0
     )

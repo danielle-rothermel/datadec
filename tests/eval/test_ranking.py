@@ -265,7 +265,11 @@ def test_single_seed_accuracy_handles_reordered_targets_and_ties():
             DataRecipeName.DOLMA17: 2.0,
         }
     )
-    seed = SingleSeedRanking("seed", predictor, True)
+    seed = SingleSeedRanking(
+        seed="seed",
+        predictor_per_recipe_scores=predictor,
+        predictor_higher_is_better=True,
+    )
     target = MultiRecipeScores(
         {
             DataRecipeName.DOLMA17: 20.0,
@@ -283,3 +287,50 @@ def test_single_seed_accuracy_handles_reordered_targets_and_ties():
         }
     )
     assert seed.decision_accuracy(untied, target_higher_is_better=True) == 2 / 3
+
+
+def test_aggregate_prediction_averages_scores_before_decisions(evaluations):
+    result = rank(evaluations)
+    aggregate = result.aggregate_ranking
+    assert aggregate.predictor_per_recipe_scores == MultiRecipeScores(
+        {
+            DataRecipeName.C4: 2.0,
+            DataRecipeName.FALCON: 11.0,
+            DataRecipeName.DOLMA17: 2.0,
+        }
+    )
+    assert result.seed_accuracies() == (1.0, 1 / 3)
+    assert result.decision_accuracy() == 2 / 3
+    assert aggregate.decision(DataRecipeName.C4, DataRecipeName.FALCON) == -1
+    assert aggregate.decision(DataRecipeName.C4, DataRecipeName.DOLMA17) == 0
+    assert result.aggregate_decision_accuracy() == 1 / 3
+
+
+def test_aggregate_prediction_respects_both_metric_directions(evaluations):
+    normal = rank(evaluations)
+    loss = predict_recipe_ranking(
+        evaluations,
+        "small",
+        "large",
+        "task",
+        "loss",
+        "loss",
+        predictor_step=10,
+        predicted_step=20,
+        predictor_higher_is_better=False,
+        predicted_higher_is_better=False,
+    )
+    assert loss.aggregate_ranking.predictor_higher_is_better is False
+    assert loss.aggregate_decision_accuracy() == normal.aggregate_decision_accuracy()
+    assert (
+        loss.aggregate_ranking.decision(DataRecipeName.C4, DataRecipeName.FALCON) == -1
+    )
+
+
+def test_single_seed_and_aggregate_predictions_coincide_for_one_seed(evaluations):
+    result = rank(evaluations, predictor_seeds=("p1",))
+    assert (
+        result.aggregate_ranking.predictor_per_recipe_scores
+        == result.seed_rankings[0].predictor_per_recipe_scores
+    )
+    assert result.aggregate_decision_accuracy() == result.decision_accuracy() == 1.0

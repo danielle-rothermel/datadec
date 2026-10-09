@@ -59,6 +59,9 @@ def sweep(config):
                         compute_ratio=ratio,
                         compute=ratio * 100,
                         schedule_complete=False,
+                        aggregate_decision_accuracy=0.9
+                        if metric == "correct_prob_per_char"
+                        else 0.65,
                         decision_accuracy_std=0.0,
                         seed_accuracies=[
                             0.81 if metric == "correct_prob_per_char" else 0.6

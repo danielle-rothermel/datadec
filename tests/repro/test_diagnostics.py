@@ -11,11 +11,14 @@ from repro.diagnostics.compute_matches import matched_compute_comparisons
 def test_proxy_comparisons_align_exact_checkpoint(sweep, config):
     comparison = proxy_comparisons(sweep, baseline_metric=config.target.metric)
     proxy = comparison.loc[comparison["metric"] == "correct_prob_per_char"]
-    assert proxy["advantage_over_primary"].tolist() == pytest.approx(
-        [0.21] * len(proxy)
-    )
+    assert proxy.loc[
+        proxy["approach"] == "per_seed", "advantage_over_primary"
+    ].tolist() == pytest.approx([0.21] * (len(proxy) // 2))
+    assert proxy.loc[
+        proxy["approach"] == "aggregate", "advantage_over_primary"
+    ].tolist() == pytest.approx([0.25] * (len(proxy) // 2))
     curves = curve_summary(sweep)
-    assert len(curves) == len(config.benchmarks + ("olmes",)) * len(config.metrics)
+    assert len(curves) == 2 * len(config.benchmarks + ("olmes",)) * len(config.metrics)
     assert curves["adjacent_decreases"].eq(0).all()
 
 
@@ -25,14 +28,16 @@ def test_matched_compute_requires_completed_endpoint_and_tolerance(sweep, config
     endpoint["schedule_complete"] = True
     endpoint["compute"] = 0.00101
     endpoint["decision_accuracy"] = 0.7
+    endpoint["aggregate_decision_accuracy"] = 0.8
     sweep = pd.concat([sweep, endpoint], ignore_index=True)
     pairs = matched_compute_comparisons(
         sweep,
         baseline_metric="primary_metric",
         relative_tolerance=0.02,
     )
-    assert len(pairs) == 1
-    assert pairs.iloc[0]["accuracy_difference"] == pytest.approx(-0.1)
+    assert len(pairs) == 2
+    differences = pairs.set_index("approach")["accuracy_difference"].to_dict()
+    assert differences == pytest.approx({"per_seed": -0.1, "aggregate": -0.15})
     assert matched_compute_comparisons(
         sweep,
         baseline_metric="primary_metric",

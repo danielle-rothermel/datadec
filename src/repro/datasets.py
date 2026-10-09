@@ -20,7 +20,8 @@ _TASK_EVIDENCE = pa.struct(
         pa.field("task", pa.string(), nullable=False),
         pa.field("evidence_ids", pa.list_(pa.int64()), nullable=False),
         pa.field("unavailable_ids", pa.list_(pa.int64()), nullable=False),
-        pa.field("best_evidence_id", pa.int64()),
+        pa.field("best_per_seed_evidence_id", pa.int64()),
+        pa.field("best_aggregate_evidence_id", pa.int64()),
     ]
 )
 CLAIM_EVIDENCE_SCHEMA = pa.schema(

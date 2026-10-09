@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 from pydantic import TypeAdapter
 
+from eval.approaches import PredictionApproach
 from eval.results import Checkpoint, RankingResult
 
 
@@ -15,6 +16,7 @@ from eval.results import Checkpoint, RankingResult
 class RankingStatistics:
     seed_accuracies: tuple[float, ...]
     recipe_count: int
+    aggregate_decision_accuracy: float
 
     @property
     def decision_accuracy(self) -> float:
@@ -23,6 +25,12 @@ class RankingStatistics:
     @property
     def decision_accuracy_std(self) -> float:
         return float(np.std(self.seed_accuracies))
+
+    def accuracy(self, approach: PredictionApproach) -> float:
+        return {
+            PredictionApproach.PER_SEED: self.decision_accuracy,
+            PredictionApproach.AGGREGATE: self.aggregate_decision_accuracy,
+        }[approach]
 
     @property
     def pair_count(self) -> int:
@@ -56,6 +64,7 @@ class RankingObservation:
             statistics=RankingStatistics(
                 seed_accuracies=result.seed_accuracies(),
                 recipe_count=result.recipe_count,
+                aggregate_decision_accuracy=result.aggregate_decision_accuracy(),
             ),
             reason="",
         )
@@ -99,6 +108,9 @@ def observations_frame(observations: Sequence[RankingObservation]) -> pd.DataFra
                 "decision_accuracy_std": statistics.decision_accuracy_std
                 if statistics
                 else None,
+                "aggregate_decision_accuracy": statistics.aggregate_decision_accuracy
+                if statistics
+                else None,
                 "seed_accuracies": list(statistics.seed_accuracies)
                 if statistics
                 else None,
@@ -138,6 +150,7 @@ def observations_from_frame(frame: pd.DataFrame) -> Mapping[int, RankingObservat
                 "statistics": {
                     "seed_accuracies": tuple(row["seed_accuracies"]),
                     "recipe_count": row["recipe_count"],
+                    "aggregate_decision_accuracy": row["aggregate_decision_accuracy"],
                 }
                 if row["available"]
                 else None,

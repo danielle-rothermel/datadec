@@ -16,8 +16,7 @@ class Checkpoint:
 
 
 @dataclass(frozen=True, slots=True)
-class SingleSeedRanking:
-    seed: str
+class RecipeRanking:
     predictor_per_recipe_scores: MultiRecipeScores
     predictor_higher_is_better: bool
 
@@ -50,6 +49,11 @@ class SingleSeedRanking:
         return float(np.mean(predictor_signs == target_signs))
 
 
+@dataclass(frozen=True, slots=True, kw_only=True)
+class SingleSeedRanking(RecipeRanking):
+    seed: str
+
+
 @dataclass(frozen=True, slots=True)
 class RankingResult:
     predictor: Checkpoint
@@ -74,6 +78,30 @@ class RankingResult:
     def pair_count(self) -> int:
         return self.recipe_count * (self.recipe_count - 1) // 2
 
+    @property
+    def aggregate_ranking(self) -> RecipeRanking:
+        """Rank recipes using scores averaged across predictor seeds."""
+        recipes = self.recipes
+        scores = np.array(
+            [
+                [seed.predictor_per_recipe_scores[recipe] for recipe in recipes]
+                for seed in self.seed_rankings
+            ]
+        )
+        return RecipeRanking(
+            predictor_per_recipe_scores=MultiRecipeScores(
+                dict(zip(recipes, map(float, scores.mean(axis=0)), strict=True))
+            ),
+            predictor_higher_is_better=self.seed_rankings[0].predictor_higher_is_better,
+        )
+
+    def aggregate_decision_accuracy(self) -> float:
+        """Accuracy of the predictor seed-mean scores against target seed-mean scores."""
+        return self.aggregate_ranking.decision_accuracy(
+            self.target_per_recipe_scores,
+            target_higher_is_better=self.predicted_higher_is_better,
+        )
+
     def seed_accuracies(self) -> tuple[float, ...]:
         return tuple(
             ranking.decision_accuracy(
@@ -84,6 +112,7 @@ class RankingResult:
         )
 
     def decision_accuracy(self) -> float:
+        """Mean of individual predictor seeds' decision accuracies."""
         return float(np.mean(self.seed_accuracies()))
 
     def decision_accuracy_std(self) -> float:
