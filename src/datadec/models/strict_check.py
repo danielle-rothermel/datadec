@@ -7,8 +7,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
+from datadec.config.checkpoints import load_checkpoint_contract
+
 __all__ = [
-    "REFERENCE_ENVIRONMENT",
+    "REFERENCE_SCRIPT",
     "STRICT_CHECK_PROMPTS",
     "StrictCheckResult",
     "compare_with_reference",
@@ -26,14 +28,9 @@ STRICT_CHECK_PROMPTS: Final[tuple[str, ...]] = (
     "Answer: impact of an asteroid created dust that blocked the sunlight",
 )
 
-REFERENCE_ENVIRONMENT: Final[tuple[str, ...]] = (
-    "ai2-olmo==0.6.0",
-    "transformers==4.50.3",
-    "huggingface-hub<1.0",
-    "datasets",
+REFERENCE_SCRIPT: Final = (
+    Path(__file__).parents[3] / "scripts" / "models" / "hf_olmo_reference.py"
 )
-REFERENCE_PYTHON: Final = "3.12"
-_REFERENCE_SCRIPT: Final = Path(__file__).with_name("_hf_olmo_reference.py")
 
 
 @dataclass(frozen=True, slots=True)
@@ -65,17 +62,24 @@ def reference_logits(
     with tempfile.TemporaryDirectory() as tmp:
         prompts_path = Path(tmp) / "prompts.json"
         prompts_path.write_text(json.dumps(list(prompts)))
+        strict = load_checkpoint_contract().strict_check
+        if not REFERENCE_SCRIPT.is_file():
+            raise FileNotFoundError(REFERENCE_SCRIPT)
         command = [
             "uv",
             "run",
             "--isolated",
             "--no-project",
             "--python",
-            REFERENCE_PYTHON,
-            *(arg for req in REFERENCE_ENVIRONMENT for arg in ("--with", req)),
+            strict.python,
+            *(
+                arg
+                for req in strict.reference_environment
+                for arg in ("--with", req.requirement)
+            ),
             "python",
             "-I",
-            str(_REFERENCE_SCRIPT),
+            str(REFERENCE_SCRIPT),
             str(source_dir),
             str(prompts_path),
             str(out_path),

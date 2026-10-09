@@ -266,7 +266,9 @@ def load_published(
         bits_per_byte = [choice.logits_per_byte for choice in doc_choices]
         if all(value is not None for value in bits_per_byte):
             values = [float(value) for value in bits_per_byte]  # type: ignore[arg-type]
-            predictions[DecisionRule.PER_BYTE] = values.index(min(values))
+            predictions[DecisionRule.PER_BYTE] = (
+                per_byte_prediction_from_published_bits(values)
+            )
         native_id = str(row["native_id"])
         published[native_id] = PublishedItem(
             native_id=native_id,
@@ -276,6 +278,14 @@ def load_published(
             choices=doc_choices,
         )
     return published
+
+
+def per_byte_prediction_from_published_bits(bits_per_byte: list[float]) -> int:
+    return bits_per_byte.index(min(bits_per_byte))
+
+
+def forward_input_tokens_from_num_tokens_all(num_tokens_all: int) -> int:
+    return num_tokens_all - 1
 
 
 def _optional_float(value: object) -> float | None:
@@ -370,7 +380,8 @@ def compare(
                 )
             token_agree += mine.token_count == theirs.num_tokens
         context_agree += item.conditional_input_tokens == sum(
-            choice.num_tokens_all - 1 for choice in reference.choices
+            forward_input_tokens_from_num_tokens_all(choice.num_tokens_all)
+            for choice in reference.choices
         )
     comparison = Comparison(
         items=len(ours),

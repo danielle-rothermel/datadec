@@ -13,6 +13,10 @@ from datadec.eval.olmes_rc import (
 )
 from datadec.eval.olmes_shots import ARC_CHALLENGE_SHOTS
 
+# OLMES paper (arXiv 2406.08446), Appendix H, Figure 5: the full 5-shot
+# ARC-Challenge cloze prompt and its completion. Transcribed from the figure;
+# its line layout is read as one newline between the question and answer
+# lines and a blank line between examples.
 FIGURE_5_PROMPT = (
     "Question: George wants to warm his hands quickly by rubbing them. "
     "Which skin surface will produce the most heat?\n"
@@ -37,6 +41,7 @@ FIGURE_5_PROMPT = (
     "Answer:"
 )
 FIGURE_5_COMPLETION = " east"
+# The Figure 5 example item, the sixth entry of OLMES:ARC-Challenge.
 FIGURE_5_ITEM = {
     "id": "Mercury_7041860",
     "question": (

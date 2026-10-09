@@ -13,6 +13,8 @@ from datadec.models.convert import (
     ConversionRecord,
     UnsupportedCheckpointError,
     convert_hf_olmo_to_native,
+    map_tensors,
+    split_ff_proj_into_up_and_gate,
     native_config,
     sha256_file,
 )
@@ -224,3 +226,18 @@ def test_non_empty_out_dir_is_refused(tmp_path: Path) -> None:
         convert_hf_olmo_to_native(
             "allenai/x", REVISION, out, source_dir=tmp_path / "missing"
         )
+
+
+def test_ff_proj_first_half_is_up_and_second_half_is_gate() -> None:
+    source = _source_tensors()
+    target, _ = map_tensors(source, SOURCE_CONFIG)
+    hidden = MLP_RATIO * D_MODEL // 2
+    for layer in range(N_LAYERS):
+        ff = source[f"model.transformer.blocks.{layer}.ff_proj.weight"]
+        prefix = f"model.layers.{layer}.mlp."
+        torch.testing.assert_close(target[prefix + "up_proj.weight"], ff[:hidden])
+        torch.testing.assert_close(target[prefix + "gate_proj.weight"], ff[hidden:])
+    assert split_ff_proj_into_up_and_gate("b.", "o.") == (
+        "b.ff_proj.weight",
+        ("o.mlp.up_proj.weight", "o.mlp.gate_proj.weight"),
+    )

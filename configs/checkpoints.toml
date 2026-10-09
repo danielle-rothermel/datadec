@@ -52,6 +52,25 @@ ordinal = 2
 small = { name = "small aux 3", value = 15 }
 large = { name = "large aux 3", value = 5 }
 
+[strict_check]
+python = "3.12"
+
+[[strict_check.reference_environment]]
+requirement = "ai2-olmo==0.6.0"
+reason = "provides the hf_olmo model class the source checkpoints declare"
+
+[[strict_check.reference_environment]]
+requirement = "transformers==4.50.3"
+reason = "the transformers version the source checkpoints were saved with"
+
+[[strict_check.reference_environment]]
+requirement = "huggingface-hub<1.0"
+reason = "ai2-olmo 0.6.0 requires huggingface-hub below 1.0"
+
+[[strict_check.reference_environment]]
+requirement = "datasets"
+reason = "imported by olmo.util when hf_olmo loads"
+
 # Final-step evidence sources.
 [final_step]
 # Authors' list of final default-seed checkpoints. model_name is

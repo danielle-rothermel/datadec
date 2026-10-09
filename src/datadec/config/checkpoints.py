@@ -67,11 +67,22 @@ class FinalStepContract(ConfigModel):
     paper: PaperTable
 
 
+class ReferenceRequirement(ConfigModel):
+    requirement: str = Field(min_length=1)
+    reason: str = Field(min_length=1)
+
+
+class StrictCheckContract(ConfigModel):
+    python: str = Field(min_length=1)
+    reference_environment: tuple[ReferenceRequirement, ...] = Field(min_length=1)
+
+
 class CheckpointContract(ConfigModel):
     source: CheckpointSourceContract
     target: CheckpointTargetContract
     seeds: SeedContract
     final_step: FinalStepContract
+    strict_check: StrictCheckContract
 
 
 @cache

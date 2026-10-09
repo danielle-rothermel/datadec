@@ -236,6 +236,13 @@ def _int(source: dict[str, object], field: str) -> int:
     return value
 
 
+def split_ff_proj_into_up_and_gate(block: str, out: str) -> tuple[str, tuple[str, str]]:
+    return (
+        block + "ff_proj.weight",
+        (out + "mlp.up_proj.weight", out + "mlp.gate_proj.weight"),
+    )
+
+
 def map_tensors(
     source: dict[str, torch.Tensor], config: dict[str, object]
 ) -> tuple[dict[str, torch.Tensor], list[TensorMapping]]:
@@ -286,11 +293,8 @@ def map_tensors(
             d_model,
         )
         rename(block + "attn_out.weight", out + "self_attn.o_proj.weight")
-        split(
-            block + "ff_proj.weight",
-            (out + "mlp.up_proj.weight", out + "mlp.gate_proj.weight"),
-            hidden,
-        )
+        ff_source, ff_targets = split_ff_proj_into_up_and_gate(block, out)
+        split(ff_source, ff_targets, hidden)
         rename(block + "ff_out.weight", out + "mlp.down_proj.weight")
         rename(block + "attn_norm.weight", out + "input_layernorm.weight")
         rename(block + "ff_norm.weight", out + "post_attention_layernorm.weight")
