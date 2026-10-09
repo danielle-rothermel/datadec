@@ -62,10 +62,6 @@ markers = [
 
 [tool.uv.sources]
 datadec = { workspace = true }
-# Development only: swap to released dr-hf 0.1.2 and dr-providers 0.3.5
-# before merge.
-dr-hf = { path = "../dr-hf-pins-subsets", editable = true }
-dr-providers = { path = "../dr-providers-0.3.5-refresh", editable = true }
 
 [dependency-groups]
 dev = [

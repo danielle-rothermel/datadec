@@ -388,6 +388,4 @@ uv run pytest
 uv run pytest -m hub   # opt-in tests that read the Hugging Face Hub
 ```
 
-During development datadec resolves `dr-hf` and `dr-providers` from local
-worktrees through `[tool.uv.sources]` path entries; they are swapped for the
-released versions before merge.
+

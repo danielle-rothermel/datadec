@@ -322,8 +322,8 @@ dev = [
 requires-dist = [
     { name = "datasets", specifier = ">=5.0.1" },
     { name = "dr-ds", specifier = ">=0.1.2" },
-    { name = "dr-hf", editable = "../dr-hf-pins-subsets" },
-    { name = "dr-providers", extras = ["local"], editable = "../dr-providers-0.3.5-refresh" },
+    { name = "dr-hf", specifier = ">=0.1.2" },
+    { name = "dr-providers", extras = ["local"], specifier = ">=0.3.5" },
     { name = "duckdb", specifier = ">=1.5.5" },
     { name = "fsspec", specifier = ">=2026.3.0" },
     { name = "huggingface-hub", specifier = ">=1.3.5" },
@@ -394,39 +394,30 @@ wheels = [
 [[package]]
 name = "dr-hf"
 version = "0.1.2"
-source = { editable = "../dr-hf-pins-subsets" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "datasets" },
     { name = "dr-serialize" },
     { name = "huggingface-hub" },
     { name = "pydantic" },
 ]
-
-[package.metadata]
-requires-dist = [
-    { name = "datasets", specifier = ">=5.1.0,<6" },
-    { name = "dr-serialize", specifier = ">=0.1.2,<0.2" },
-    { name = "huggingface-hub", specifier = ">=1.31.0,<3" },
-    { name = "pydantic", specifier = ">=2.14.0,<3" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pdoc", specifier = ">=16.0.0" },
-    { name = "pre-commit", specifier = ">=4.6.2" },
-    { name = "pytest", specifier = ">=9.1.1" },
-    { name = "ruff", specifier = ">=0.16.10" },
-    { name = "ty", specifier = ">=0.0.85" },
+sdist = { url = "https://files.pythonhosted.org/packages/75/ce/a537b7fe5ab750fe59577606a84808c9d951c0e2f67116422a67b97036e9/dr_hf-0.1.2.tar.gz", hash = "sha256:bc56996e7a7a4cd58282336ee9a94ffe08fd2fc3b6de0be9db2e7f430639ec73", size = 16003, upload-time = "2026-10-09T23:13:28.478Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/7e/23/a77300af7a5aae56b2672fe9cdf4af655a0a6031ec826a913be7a92e06d0/dr_hf-0.1.2-py3-none-any.whl", hash = "sha256:2cf68381bc0910d89c1a14f71853faa8b4fa39f1b6cc8dffcfe2069cf6edd752", size = 20147, upload-time = "2026-10-09T23:13:27.195Z" },
 ]
 
 [[package]]
 name = "dr-providers"
 version = "0.3.5"
-source = { editable = "../dr-providers-0.3.5-refresh" }
+source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dr-serialize" },
     { name = "dr-wire" },
     { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/75/56/85b1497368f85f877251f04b5b3f2d91197e7a670cb3db447847d0939314/dr_providers-0.3.5.tar.gz", hash = "sha256:9ccfe866fc23e9d99d9c0f4d1220c47cac9450b2fae3cb928b0e19f27b0b2293", size = 73263, upload-time = "2026-10-09T23:16:45.784Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/72/fb/c2a3ac1c55bb7316a52ae72405e8fa73a70c150cc0e746727ef73b326725/dr_providers-0.3.5-py3-none-any.whl", hash = "sha256:ffb708d080dcd8141ffa165290f7bfdb674397f286f05b9e0357d9fe109e0540", size = 88530, upload-time = "2026-10-09T23:16:44.201Z" },
 ]
 
 [package.optional-dependencies]
@@ -434,33 +425,6 @@ local = [
     { name = "huggingface-hub" },
     { name = "torch" },
     { name = "transformers" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "accelerate", marker = "sys_platform == 'linux' and extra == 'local-cuda'", specifier = ">=1.15.0,<2" },
-    { name = "bitsandbytes", marker = "sys_platform == 'linux' and extra == 'local-cuda'", specifier = ">=0.50.2" },
-    { name = "dr-serialize", specifier = ">=0.1.2,<0.2" },
-    { name = "dr-wire", specifier = ">=0.1.0,<0.2" },
-    { name = "huggingface-hub", marker = "extra == 'local'", specifier = ">=1.33.0,<3" },
-    { name = "huggingface-hub", marker = "extra == 'local-cuda'", specifier = ">=1.33.0,<3" },
-    { name = "pydantic", specifier = ">=2.14.0,<3" },
-    { name = "torch", marker = "extra == 'local'", specifier = ">=2.14.1,<3" },
-    { name = "torch", marker = "extra == 'local-cuda'", specifier = ">=2.14.1,<3" },
-    { name = "transformers", marker = "extra == 'local'", specifier = ">=5.19.0,<6" },
-    { name = "transformers", marker = "extra == 'local-cuda'", specifier = ">=5.19.0,<6" },
-    { name = "typer", marker = "extra == 'cli'", specifier = ">=0.27.3" },
-]
-provides-extras = ["cli", "local", "local-cuda"]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "httpx", specifier = ">=0.28.1" },
-    { name = "pre-commit", specifier = ">=4.6.2" },
-    { name = "pytest", specifier = ">=9.1.1" },
-    { name = "ruff", specifier = ">=0.16.10" },
-    { name = "ty", specifier = ">=0.0.85" },
-    { name = "typer", specifier = ">=0.27.3" },
 ]
 
 [[package]]
