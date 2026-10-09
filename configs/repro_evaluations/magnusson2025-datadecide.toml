@@ -1,0 +1,228 @@
+# Default single-scale experiment and claim-analysis policy for DataDecide.
+# Paper selections remain in the separate claim inventory.
+sweep_metric_group = "all"
+default_related_tables = ["curves.csv", "proxy_comparisons.parquet"]
+
+
+[run]
+data_dir = "data"
+output_dir = "outputs/repro/ranking"
+claim_inventory = "configs/repro_claims/magnusson2025-datadecide.toml"
+paper_dir = "docs/papers/2504.11393v2"
+matched_compute_tolerance = 0.05
+
+[target]
+size = "1B"
+step = 69369
+metric = "primary_metric"
+seeds = ["default", "large aux 2", "large aux 3"]
+
+[predictors]
+default_seeds = ["default", "small aux 2", "small aux 3"]
+
+[predictors.seeds_by_size]
+1B = ["default", "large aux 2", "large aux 3"]
+
+[aggregation]
+benchmark_group = "benchmarks"
+macro_task = "olmes"
+subject_task = "mmlu"
+subject_prefix = "mmlu_"
+subject_count = 57
+
+[task_groups]
+benchmarks = [
+  "arc_challenge",
+  "arc_easy",
+  "boolq",
+  "csqa",
+  "hellaswag",
+  "mmlu",
+  "openbookqa",
+  "piqa",
+  "socialiqa",
+  "winogrande",
+]
+other_tasks = ["boolq", "csqa", "openbookqa", "piqa", "socialiqa", "winogrande"]
+
+[metric_groups]
+all = [
+  "primary_metric",
+  "acc_raw",
+  "acc_per_token",
+  "acc_per_char",
+  "correct_prob",
+  "correct_prob_per_token",
+  "correct_prob_per_char",
+  "total_prob",
+  "total_prob_per_token",
+  "total_prob_per_char",
+  "norm_correct_prob",
+  "norm_correct_prob_per_token",
+  "norm_correct_prob_per_char",
+  "margin",
+  "margin_per_token",
+  "margin_per_char",
+]
+primary = ["primary_metric"]
+character_proxies = [
+  "correct_prob_per_char",
+  "total_prob_per_char",
+  "norm_correct_prob_per_char",
+  "margin_per_char",
+]
+likelihood_proxies = [
+  "correct_prob",
+  "correct_prob_per_token",
+  "correct_prob_per_char",
+  "total_prob",
+  "total_prob_per_token",
+  "total_prob_per_char",
+  "norm_correct_prob",
+  "norm_correct_prob_per_token",
+  "norm_correct_prob_per_char",
+  "margin",
+  "margin_per_token",
+  "margin_per_char",
+]
+
+[claims.DD-0010]
+tasks = ["olmes"]
+metric_groups = ["primary"]
+
+[claims.DD-0011]
+tasks = ["olmes"]
+metric_groups = ["primary"]
+predictor_size = "150M"
+
+[claims.DD-0014]
+tasks = ["mmlu"]
+metric_groups = ["likelihood_proxies"]
+max_compute_ratio = 0.0001
+
+[claims.DD-0015]
+tasks = ["arc_easy", "arc_challenge"]
+metric_groups = ["likelihood_proxies"]
+max_compute_ratio = 0.0001
+
+[claims.DD-0016]
+tasks = ["hellaswag"]
+metric_groups = ["likelihood_proxies"]
+max_compute_ratio = 0.0001
+
+[claims.DD-0051]
+task_groups = ["benchmarks"]
+metric_groups = ["primary"]
+
+[claims.DD-0052]
+tasks = ["arc_easy", "arc_challenge", "mmlu", "hellaswag"]
+metric_groups = ["primary"]
+
+[claims.DD-0053]
+tasks = ["socialiqa"]
+metric_groups = ["primary"]
+
+[claims.DD-0055]
+task_groups = ["benchmarks"]
+metric_groups = ["primary", "character_proxies"]
+
+[claims.DD-0148]
+task_groups = ["benchmarks"]
+metric_groups = ["primary"]
+
+[claims.DD-0149]
+tasks = ["arc_easy"]
+metric_groups = ["primary"]
+
+[claims.DD-0150]
+tasks = ["arc_easy", "hellaswag"]
+metric_groups = ["primary"]
+
+[claims.DD-0164]
+tasks = ["olmes"]
+metric_groups = ["primary"]
+
+[claims.DD-0165]
+tasks = ["olmes"]
+metric_groups = ["primary"]
+related_tables = ["matched_compute.csv"]
+
+[claims.DD-0168]
+task_groups = ["other_tasks"]
+metric_groups = ["primary"]
+
+[claims.DD-0169]
+tasks = ["olmes"]
+metric_groups = ["primary"]
+
+[claims.DD-0175]
+tasks = ["arc_easy"]
+metric_groups = ["primary"]
+max_compute_ratio = 1e-05
+
+[claims.DD-0176]
+tasks = ["boolq"]
+metric_groups = ["primary"]
+
+[claims.DD-0177]
+tasks = ["hellaswag"]
+metric_groups = ["primary"]
+
+[claims.DD-0178]
+tasks = ["socialiqa"]
+metric_groups = ["primary"]
+
+[claims.DD-0179]
+tasks = ["winogrande"]
+metric_groups = ["primary"]
+
+[claims.DD-0194]
+task_groups = ["benchmarks"]
+metric_groups = ["primary"]
+related_tables = ["recipe_crossovers.csv"]
+
+[claims.DD-0196]
+task_groups = ["benchmarks"]
+metrics = ["primary_metric", "correct_prob_per_char", "total_prob_per_char"]
+
+[claims.DD-0197]
+task_groups = ["benchmarks"]
+metric_groups = ["all"]
+
+[claims.DD-0198]
+task_groups = ["benchmarks"]
+metric_groups = ["all"]
+
+[claims.DD-0199]
+task_groups = ["benchmarks"]
+metric_groups = ["all"]
+
+[claims.DD-0202]
+task_groups = ["benchmarks"]
+metric_groups = ["primary", "character_proxies"]
+
+[claims.DD-0203]
+task_groups = ["benchmarks"]
+metric_groups = ["primary", "character_proxies"]
+
+[claims.DD-0204]
+task_groups = ["benchmarks"]
+metric_groups = ["primary", "character_proxies"]
+
+[claims.DD-0205]
+task_groups = ["benchmarks"]
+metric_groups = ["primary", "character_proxies"]
+min_compute_ratio = 0.1
+
+[claims.DD-0206]
+task_groups = ["benchmarks"]
+metrics = ["correct_prob_per_char", "total_prob_per_char"]
+min_compute_ratio = 0.1
+
+[claims.DD-0207]
+task_groups = ["benchmarks"]
+metrics = ["primary_metric", "norm_correct_prob_per_char", "margin_per_char"]
+
+[claims.DD-0208]
+task_groups = ["benchmarks"]
+metric_groups = ["primary", "character_proxies"]

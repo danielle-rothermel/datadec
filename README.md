@@ -285,16 +285,27 @@ Full-recipe detail preprocessing and verification can take a long time and requi
 
 ## Paper reproduction
 
-The reproduction tools link paper claims to their source passages. Claim
-inventories live in [`configs/repro_claims/`](configs/repro_claims/), with
-reusable loading and quote lookup helpers in [`src/repro/`](src/repro/).
-Paper source text and attribution are bundled under [`docs/papers/`](docs/papers/).
+The reproduction tools extract selected paper passages and display numerical
+measurements computed from local data. Selection coordinates live in
+[`configs/repro_claims/`](configs/repro_claims/), with reusable extraction and
+analysis helpers in [`src/repro/`](src/repro/). Paper source text and attribution
+are bundled under [`docs/papers/`](docs/papers/).
 
-From the repository root, list the DataDecide claims and their quotes:
+From the repository root, view extracted DataDecide passages and
+any locally saved analysis evidence with Rich formatting:
 
 ```bash
 uv run python scripts/repro/claims.py
 ```
+
+To generate evidence with local processed OLMES data:
+
+```bash
+uv run python scripts/repro/evaluate_claims.py
+```
+
+Experiment settings live in [`configs/repro_evaluations/`](configs/repro_evaluations/).
+See [reproduction](docs/reproduction.md) for run selection, setup, and dataset details.
 
 ## Development
 
