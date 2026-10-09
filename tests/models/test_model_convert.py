@@ -117,7 +117,6 @@ def _rope(x: torch.Tensor) -> torch.Tensor:
 def _olmo_reference_logits(
     tensors: dict[str, torch.Tensor], ids: list[int]
 ) -> torch.Tensor:
-    """OLMo sequential-block forward pass, written from the OLMo layout."""
     t = {k.removeprefix("model.transformer."): v for k, v in tensors.items()}
     head_size = D_MODEL // N_HEADS
     length = len(ids)

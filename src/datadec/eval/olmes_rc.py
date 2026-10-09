@@ -1,16 +1,3 @@
-"""Minimal OLMES ranked-classification (cloze) requests for ARC-Challenge.
-
-Format, matching OLMES ``arc_challenge:rc::olmes``:
-
-- query: ``"Question: {question}\\nAnswer:"``
-- continuations: ``" " + choice_text`` for every choice
-- context: five fixed shots, each ``query + " " + gold_text``, joined by
-  ``"\\n\\n"``, then ``"\\n\\n"``, then the item's query
-- unconditional context: ``"Answer:"`` with the same continuations
-- numeric answer keys ``"1".."5"`` map to ``"A".."E"``; the gold index is
-  the key's position in ``"ABCDE"``
-"""
-
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
@@ -55,8 +42,6 @@ class ArcChallengeDoc:
 
 @dataclass(frozen=True, slots=True)
 class RcRequests:
-    """Scoring requests for one item: conditional and unconditional."""
-
     native_id: str
     context: str
     continuations: tuple[str, ...]
@@ -65,7 +50,6 @@ class RcRequests:
 
 
 def arc_challenge_doc(native_id: str, fields: Mapping[str, object]) -> ArcChallengeDoc:
-    """Parse ``allenai/ai2_arc`` row fields (question, choices, answerKey)."""
     question = fields["question"]
     choices = fields["choices"]
     answer_key = fields["answerKey"]
@@ -100,7 +84,6 @@ def arc_challenge_query(question: str) -> str:
 
 
 def arc_challenge_fewshot_prefix() -> str:
-    """The five fixed shots, each with its gold answer, plus the separator."""
     shots = []
     for shot in ARC_CHALLENGE_SHOTS:
         doc = arc_challenge_doc(str(shot["id"]), shot)
@@ -123,5 +106,4 @@ def requests_for_doc(doc: ArcChallengeDoc) -> RcRequests:
 
 
 def build_arc_challenge_rc_requests(row: SourceRow) -> RcRequests:
-    """OLMES cloze requests for one ARC-Challenge row read through dr-hf."""
     return requests_for_doc(arc_challenge_doc(row.native_id, row.fields))

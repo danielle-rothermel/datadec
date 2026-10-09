@@ -1,12 +1,3 @@
-"""Strict logit equivalence: original hf_olmo versus the native conversion.
-
-The original runs in a throwaway ``uv`` environment that installs
-``ai2-olmo`` (excluded from datadec's dependencies) and writes reference
-logits for a fixed prompt batch. The converted checkpoint then runs with
-datadec's own transformers, and the two are compared on identical token ids.
-Both sides run on CPU in float32.
-"""
-
 from __future__ import annotations
 
 import json
@@ -35,9 +26,6 @@ STRICT_CHECK_PROMPTS: Final[tuple[str, ...]] = (
     "Answer: impact of an asteroid created dust that blocked the sunlight",
 )
 
-# Requirements of the throwaway environment that loads the original class.
-# transformers 4.50.3 is the version the checkpoints were saved with;
-# ai2-olmo 0.6.0 requires huggingface-hub below 1.0 through it.
 REFERENCE_ENVIRONMENT: Final[tuple[str, ...]] = (
     "ai2-olmo==0.6.0",
     "transformers==4.50.3",
@@ -50,8 +38,6 @@ _REFERENCE_SCRIPT: Final = Path(__file__).with_name("_hf_olmo_reference.py")
 
 @dataclass(frozen=True, slots=True)
 class StrictCheckResult:
-    """Max absolute logit difference and argmax agreement over all positions."""
-
     prompts: int
     positions: int
     max_abs_logit_diff: float
@@ -76,7 +62,6 @@ class StrictCheckResult:
 def reference_logits(
     source_dir: Path, prompts: tuple[str, ...], out_path: Path
 ) -> None:
-    """Run the original checkpoint in the throwaway environment."""
     with tempfile.TemporaryDirectory() as tmp:
         prompts_path = Path(tmp) / "prompts.json"
         prompts_path.write_text(json.dumps(list(prompts)))
@@ -101,7 +86,6 @@ def reference_logits(
 def compare_with_reference(
     native_dir: Path, prompts: tuple[str, ...], reference_path: Path
 ) -> StrictCheckResult:
-    """Score the converted checkpoint and compare to reference logits."""
     import torch  # noqa: PLC0415
     import transformers  # noqa: PLC0415
     from safetensors import safe_open  # noqa: PLC0415

@@ -1,5 +1,3 @@
-"""Identity and naming of one DataDecide checkpoint, source and republished."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -10,27 +8,17 @@ from datadec.config.checkpoints import SeedLiteral, load_checkpoint_contract
 
 @dataclass(frozen=True, slots=True)
 class SeedIdentity:
-    """One training seed: its ordinal, the authors' name, and its literal."""
-
     ordinal: int
     name: str
     value: int
 
     @property
     def branch_slug(self) -> str:
-        """The authors' Hub spelling of the seed name (``small-aux-2``)."""
         return self.name.replace(" ", "-")
 
 
 @dataclass(frozen=True, slots=True)
 class DataDecideCheckpoint:
-    """One checkpoint of one DataDecide run: recipe, size, seed, step.
-
-    ``recipe`` is a DataDecide recipe key (``dclm-baseline``), ``size`` a
-    catalog model name (``150M``), ``seed_ordinal`` 0 for the authors'
-    default seed and 1 or 2 for the auxiliary seeds.
-    """
-
     recipe: str
     size: str
     seed_ordinal: int

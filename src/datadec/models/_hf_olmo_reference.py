@@ -1,16 +1,3 @@
-"""Reference logits from an original hf_olmo checkpoint (throwaway env only).
-
-Run as a script in an isolated environment that has ``ai2-olmo``; it must
-not import datadec. ``strict_check.reference_logits`` builds the command::
-
-    python -I _hf_olmo_reference.py SOURCE_DIR PROMPTS_JSON OUT_SAFETENSORS
-
-It loads the checkpoint with ``hf_olmo`` on CPU in float32 (overriding
-``flash_attention`` and ``init_device`` from the training config, which
-name CUDA-only settings), runs each prompt without special tokens, and
-writes ``input_ids_<i>`` and ``logits_<i>`` tensors plus version metadata.
-"""
-
 from __future__ import annotations
 
 import json

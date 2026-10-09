@@ -1,16 +1,3 @@
-"""Score a converted DataDecide checkpoint on ARC-Challenge and compare it
-with the published instance-level results of the original checkpoint.
-
-Run from the repository root, for example:
-
-    uv run python scripts/verify_converted_model.py \
-        --recipe dclm-baseline --size 150M --seed 0 --step 38157
-
-Needs the processed OLMES detail tables for the recipe under --data-dir
-(``uv run datadec download --olmes-details dclm-baseline``). Writes the
-Markdown report to --report and, with --json, a machine-readable summary.
-"""
-
 from __future__ import annotations
 
 import argparse

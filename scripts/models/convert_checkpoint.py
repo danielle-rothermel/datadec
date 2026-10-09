@@ -1,16 +1,3 @@
-"""Convert one DataDecide checkpoint to a native class and publish it privately.
-
-Run from the repository root, for example:
-
-    uv run python scripts/models/convert_checkpoint.py \
-        --recipe dclm-baseline --size 150M --seed 0 --step 38157 \
-        --work-dir /tmp/datadec-convert
-
-Requires a Hugging Face token with write access to the target namespace and
-the processed aggregate OLMES table under --data-dir (``datadec download
---olmes``) for the final-step evidence.
-"""
-
 from __future__ import annotations
 
 import argparse

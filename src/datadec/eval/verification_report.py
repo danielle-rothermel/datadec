@@ -1,5 +1,3 @@
-"""Markdown report of one converted-checkpoint verification run."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass

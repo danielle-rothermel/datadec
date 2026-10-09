@@ -1,18 +1,3 @@
-"""Convert ``hf_olmo`` DataDecide checkpoints to a native transformers class.
-
-DataDecide checkpoints declare ``model_type: hf_olmo``, which only loads
-with the ``ai2-olmo`` package. Every DataDecide size uses the same OLMo
-layout: pre-norm sequential blocks, RMSNorm with a learned scale and no
-bias, SwiGLU, RoPE, no linear biases, no QKV clipping, no QK norm, and
-untied input and output embeddings. Transformers' native ``olmo`` class
-implements OLMo-1's non-parametric LayerNorm and cannot hold the learned
-RMSNorm scales, so the exact native equivalent is ``LlamaForCausalLM``.
-Fused projections are split; nothing is re-scaled or re-ordered.
-
-Any source config outside the supported layout is refused rather than
-approximated.
-"""
-
 from __future__ import annotations
 
 import hashlib
@@ -48,8 +33,6 @@ TARGET_ARCHITECTURE: Final = "LlamaForCausalLM"
 _WEIGHTS_FILENAME: Final = "model.safetensors"
 _SOURCE_PREFIX: Final = "model.transformer."
 
-# Source config fields whose values define the supported layout. Any other
-# value means the checkpoint is not the layout this converter maps exactly.
 SUPPORTED_LAYOUT: Final[dict[str, object]] = {
     "activation_type": "swiglu",
     "alibi": False,
@@ -72,13 +55,10 @@ SUPPORTED_LAYOUT: Final[dict[str, object]] = {
 }
 
 
-class UnsupportedCheckpointError(ValueError):
-    """The source checkpoint is not the supported hf_olmo layout."""
+class UnsupportedCheckpointError(ValueError): ...
 
 
 class TensorMapping(BaseModel):
-    """One source tensor and the target tensors it becomes."""
-
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     source: str
@@ -87,8 +67,6 @@ class TensorMapping(BaseModel):
 
 
 class ConversionRecord(BaseModel):
-    """What a conversion read, what it wrote, and how tensors map."""
-
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     source_repo_id: str
@@ -114,8 +92,6 @@ def sha256_file(path: Path) -> str:
 
 
 def conversion_tool_name() -> str:
-    """``datadec <version> (git <commit>)``; the commit is omitted outside a
-    git checkout and marked ``-dirty`` when tracked files are modified."""
     name = f"datadec {version('datadec')} datadec.models.convert"
     commit = _git_commit()
     return f"{name} (git {commit})" if commit else name
@@ -144,7 +120,6 @@ def _git_commit() -> str | None:
 
 
 def download_source_checkpoint(source_repo_id: str, source_revision: CommitSha) -> Path:
-    """Download the conversion inputs of one source commit; return the dir."""
     from huggingface_hub import snapshot_download  # noqa: PLC0415
 
     files = list(load_checkpoint_contract().source.files)
@@ -162,13 +137,6 @@ def convert_hf_olmo_to_native(
     *,
     source_dir: Path | None = None,
 ) -> ConversionRecord:
-    """Convert one hf_olmo checkpoint commit into ``out_dir``.
-
-    ``out_dir`` must be absent or empty. It receives ``config.json``,
-    ``generation_config.json``, ``model.safetensors``, the tokenizer files
-    copied byte for byte, and ``conversion.json`` (the returned record).
-    ``source_dir`` skips the download when the commit is already local.
-    """
     from safetensors.torch import load_file, save_file  # noqa: PLC0415
 
     contract = load_checkpoint_contract().source
@@ -218,7 +186,6 @@ def convert_hf_olmo_to_native(
 
 
 def native_config(source: dict[str, object]) -> dict[str, object]:
-    """Map a supported hf_olmo config to LlamaConfig keyword arguments."""
     if source.get("model_type") != SOURCE_MODEL_TYPE:
         raise UnsupportedCheckpointError(
             f"expected model_type {SOURCE_MODEL_TYPE!r}, "
@@ -272,7 +239,6 @@ def _int(source: dict[str, object], field: str) -> int:
 def map_tensors(
     source: dict[str, torch.Tensor], config: dict[str, object]
 ) -> tuple[dict[str, torch.Tensor], list[TensorMapping]]:
-    """Rename and split every source tensor; refuse leftovers or gaps."""
     d_model = _int(config, "d_model")
     n_layers = _int(config, "n_layers")
     hidden = _int(config, "mlp_ratio") * d_model // 2
@@ -320,8 +286,6 @@ def map_tensors(
             d_model,
         )
         rename(block + "attn_out.weight", out + "self_attn.o_proj.weight")
-        # OLMo SwiGLU: ``x, gate = ff_proj(h).chunk(2); silu(gate) * x``, so
-        # the first half is Llama's up projection and the second its gate.
         split(
             block + "ff_proj.weight",
             (out + "mlp.up_proj.weight", out + "mlp.gate_proj.weight"),
@@ -342,7 +306,6 @@ def map_tensors(
 def check_target_shapes(
     target_config: dict[str, object], tensors: dict[str, torch.Tensor]
 ) -> None:
-    """Compare names and shapes against a meta-device LlamaForCausalLM."""
     import torch  # noqa: PLC0415
     from transformers import LlamaConfig, LlamaForCausalLM  # noqa: PLC0415
 

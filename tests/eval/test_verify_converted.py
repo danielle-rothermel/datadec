@@ -73,7 +73,6 @@ def test_load_published_reads_one_checkpoint(tmp_path: Path) -> None:
     assert item.label == 1
     assert [choice.sum_logits for choice in item.choices] == [-1.0, -2.0]
     assert item.predictions[DecisionRule.PMI] == 1
-    # Per-byte comes from the lowest published bits per byte.
     assert item.predictions[DecisionRule.PER_BYTE] == 1
 
 

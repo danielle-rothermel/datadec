@@ -1,5 +1,3 @@
-"""Conversion and republication of DataDecide model checkpoints."""
-
 from datadec.models.card import CheckpointCardFacts, render_model_card
 from datadec.models.checkpoints import DataDecideCheckpoint, SeedIdentity
 from datadec.models.convert import (

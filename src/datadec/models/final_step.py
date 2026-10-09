@@ -1,19 +1,3 @@
-"""Which step the DataDecide authors treated as a run's final checkpoint.
-
-Three sources are read and all are recorded:
-
-- the last step of the run in ``allenai/DataDecide-eval-results``, read
-  through datadec's processed aggregate ``olmes`` table;
-- the authors' final default-seed checkpoint list
-  (``checkpoints/final_defualt_seed_paths.jsonl`` in allenai/DataDecide),
-  which covers the default seed only;
-- the per-size training steps of the paper's model table.
-
-Choice rule: the authors' final list when it names the run; otherwise the
-paper's training steps. The chosen step must exist as a branch of the
-source repo. Every source that disagrees with the choice is listed.
-"""
-
 from __future__ import annotations
 
 import json
@@ -67,7 +51,6 @@ class FinalStepDecision:
 
 
 def training_data_name(recipe: str) -> str:
-    """The authors' training data name for a recipe key (``DCLM-baseline``)."""
     names = [
         name
         for name, key in load_scaling_law_contract().source_group_map.items()
@@ -79,7 +62,6 @@ def training_data_name(recipe: str) -> str:
 
 
 def parse_final_paths(text: str, model_name: str) -> int | None:
-    """Final step for ``model_name`` in the authors' final-paths JSONL."""
     steps: list[int] = []
     for line in text.splitlines():
         if not line.strip():
@@ -130,7 +112,6 @@ def _source_branch_steps(checkpoint: DataDecideCheckpoint) -> tuple[int, ...]:
 def final_step_evidence(
     checkpoint: DataDecideCheckpoint, artifacts: DataArtifacts
 ) -> FinalStepEvidence:
-    """Read all three sources plus the source repo's branches for the run."""
     contract = load_checkpoint_contract().final_step
     paper = contract.paper.sizes[checkpoint.size]
     final_paths_step = None

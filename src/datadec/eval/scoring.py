@@ -1,13 +1,3 @@
-"""Likelihood decision rules over scored multiple-choice continuations.
-
-Rules follow OLMES: raw sums the continuation log-likelihood; per-token,
-per-char and per-byte divide it by the continuation's token, character and
-UTF-8 byte counts (characters and bytes include the leading space); PMI
-subtracts the log-likelihood of the same continuation after the
-unconditional context. Ties resolve to the lowest index, like
-``numpy.argmax``.
-"""
-
 from __future__ import annotations
 
 from collections.abc import Sequence

@@ -1,5 +1,3 @@
-"""Evaluation requests, decision rules, and converted-checkpoint verification."""
-
 from datadec.eval.olmes_rc import (
     ArcChallengeDoc,
     RcRequests,

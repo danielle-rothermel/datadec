@@ -1,5 +1,3 @@
-"""Convert, verify, and publish one DataDecide checkpoint."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -47,14 +45,6 @@ def convert_and_publish(
     artifacts: DataArtifacts,
     strict_check: bool = True,
 ) -> PublishedCheckpoint:
-    """Resolve, convert, verify, and publish one checkpoint privately.
-
-    The converted files are written to
-    ``work_dir/<recipe>-<size>-step<N>-seed<k>`` (which must not exist or
-    be empty). With ``strict_check=False`` the verification record states
-    that the strict logit check was skipped. The final tag is applied only
-    when the checkpoint step is the authors' final step.
-    """
     contract = load_checkpoint_contract()
     source = resolve_model_pin(checkpoint.source_repo_id, ref=checkpoint.source_branch)
     final = choose_final_step(final_step_evidence(checkpoint, artifacts))

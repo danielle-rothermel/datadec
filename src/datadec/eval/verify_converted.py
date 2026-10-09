@@ -1,12 +1,3 @@
-"""Verify a converted DataDecide checkpoint against published instance results.
-
-The flow, with OLMES nowhere in the loop: read ARC-Challenge at a pinned
-commit through dr-hf, build OLMES cloze requests with ``olmes_rc``, score
-them through a dr-providers ``LocalModelProvider``, apply the decision rules,
-and compare per item and per choice with the DataDecide instance and choice
-tables that datadec processes from ``allenai/DataDecide-eval-instances``.
-"""
-
 from __future__ import annotations
 
 import statistics
@@ -63,16 +54,12 @@ ARC_CHALLENGE_NATIVE_ID: Final = "id"
 ARC_CHALLENGE_SPLIT: Final = "test"
 ARC_CHALLENGE_TASK: Final = "arc_challenge"
 
-# Acceptance thresholds of the verification run.
 ACCEPTANCE: Final = {
     "min_agreement_pmi": 0.98,
     "min_agreement_per_char": 0.98,
     "max_mean_abs_sum_logits_diff": 0.05,
 }
 
-# Published instance columns holding the authors' predicted index per rule.
-# The per-byte column is empty in the source, so the per-byte prediction is
-# derived from the published per-choice ``logits_per_byte`` (bits per byte).
 _PUBLISHED_PREDICTION_COLUMNS: Final = {
     DecisionRule.RAW: "predicted_index_raw",
     DecisionRule.PER_TOKEN: "predicted_index_per_token",
@@ -90,7 +77,6 @@ class ArcChallengeSource:
 
 
 def load_arc_challenge_test(ref: str = "main") -> ArcChallengeSource:
-    """Pin ARC-Challenge, read every split, keep the ``test`` origin subset."""
     pin = resolve_dataset_pin(
         ARC_CHALLENGE_REPO,
         config=ARC_CHALLENGE_CONFIG,
@@ -130,7 +116,6 @@ def score_items(
     config: ProviderCallConfig,
     requests: Sequence[RcRequests],
 ) -> ScoringResult:
-    """One score request per context: the prompt and the unconditional one."""
     from dr_providers import ProviderScoreRequest  # noqa: PLC0415
 
     executions: list[LocalExecutionEvidence] = []
@@ -193,8 +178,6 @@ def _prompt_tokens(response: ProviderScoreResponse) -> int:
 
 @dataclass(frozen=True, slots=True)
 class PublishedKey:
-    """One checkpoint's rows in datadec's processed OLMES detail tables."""
-
     recipe: str
     params: str
     seed: str
@@ -223,7 +206,6 @@ class PublishedItem:
 def load_published(
     artifacts: DataArtifacts, key: PublishedKey
 ) -> dict[str, PublishedItem]:
-    """Published predictions and per-choice values keyed by native id."""
     filters = (
         (ds.field("recipe") == key.recipe)
         & (ds.field("params") == key.params)
@@ -334,7 +316,6 @@ class Comparison:
 def compare(
     ours: Sequence[ScoredItem], published: dict[str, PublishedItem]
 ) -> Comparison:
-    """Per-rule agreement and accuracy plus per-choice value differences."""
     our_ids = {item.native_id for item in ours}
     if our_ids != set(published):
         missing = sorted(set(published) - our_ids)[:5]
@@ -388,8 +369,6 @@ def compare(
                     abs(mine.unconditional_log_likelihood - theirs.sum_logits_uncond)
                 )
             token_agree += mine.token_count == theirs.num_tokens
-        # OLMES num_tokens_all counts context plus continuation tokens; the
-        # provider's prompt tokens count each forward input, one token less.
         context_agree += item.conditional_input_tokens == sum(
             choice.num_tokens_all - 1 for choice in reference.choices
         )

@@ -1,5 +1,3 @@
-"""Model card for a converted DataDecide checkpoint."""
-
 from __future__ import annotations
 
 import json
@@ -39,7 +37,6 @@ class CheckpointCardFacts:
 
 
 def render_model_card(facts: CheckpointCardFacts) -> str:
-    """Markdown card with Hub front matter."""
     checkpoint = facts.checkpoint
     seed = checkpoint.seed
     evidence = facts.final.evidence

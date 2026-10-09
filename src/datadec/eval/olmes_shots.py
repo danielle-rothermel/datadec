@@ -1,12 +1,3 @@
-"""First five OLMES:ARC-Challenge few-shot entries, copied as data.
-
-Origin: ``FEWSHOT_SOURCES["OLMES:ARC-Challenge"]`` in
-``oe_eval/tasks/fewshot_sources.py`` of https://github.com/allenai/olmes at
-commit 5a51f502d463b8cdc4a2dcad7d7096c41ff1197e (main on 2026-10-08).
-License: Apache License 2.0 (Copyright Allen Institute for AI).
-OLMES uses the first five entries of this list as its fixed 5-shot prefix.
-"""
-
 from __future__ import annotations
 
 from typing import Final
