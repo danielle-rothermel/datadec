@@ -1,37 +1,47 @@
-"""Computed measurements and references to linked data rows."""
+"""Claim-to-ranking references; numerical measurements live in the ranking dataset."""
 
 from dataclasses import dataclass
 
 
 @dataclass(frozen=True, slots=True)
-class PredictionMeasurement:
-    evidence_id: int
-    predictor_size: str
-    predictor_step: int
-    metric: str
-    compute: float
-    compute_ratio: float
-    decision_accuracy: float
-    decision_accuracy_std: float
-    seed_accuracies: tuple[float, ...]
-
-
-@dataclass(frozen=True, slots=True)
-class TaskMeasurement:
+class TaskEvidence:
     task: str
-    available_comparisons: int
-    unavailable_comparisons: int
-    best: PredictionMeasurement | None
+    evidence_ids: tuple[int, ...]
+    unavailable_ids: tuple[int, ...]
+    best_evidence_id: int | None
+
+    def __post_init__(self) -> None:
+        if self.evidence_ids:
+            if self.best_evidence_id not in self.evidence_ids:
+                raise ValueError(
+                    "best evidence ID must reference an available linked row"
+                )
+        elif self.best_evidence_id is not None:
+            raise ValueError("best evidence ID requires available linked rows")
+
+    @property
+    def available_comparisons(self) -> int:
+        return len(self.evidence_ids)
+
+    @property
+    def unavailable_comparisons(self) -> int:
+        return len(self.unavailable_ids)
 
 
 @dataclass(frozen=True, slots=True)
 class ClaimEvidence:
     claim_id: str
-    evidence_ids: tuple[int, ...]
-    unavailable_ids: tuple[int, ...]
-    measurements: tuple[TaskMeasurement, ...]
+    tasks: tuple[TaskEvidence, ...]
     related_tables: tuple[str, ...]
 
     @property
+    def evidence_ids(self) -> tuple[int, ...]:
+        return tuple(index for task in self.tasks for index in task.evidence_ids)
+
+    @property
+    def unavailable_ids(self) -> tuple[int, ...]:
+        return tuple(index for task in self.tasks for index in task.unavailable_ids)
+
+    @property
     def has_measurements(self) -> bool:
-        return any(measurement.best is not None for measurement in self.measurements)
+        return any(task.best_evidence_id is not None for task in self.tasks)

@@ -1,6 +1,5 @@
 """Predict recipe order at one exact checkpoint from another checkpoint."""
 
-import numpy as np
 import pandas as pd
 
 from eval.checkpoint_scores import checkpoint_rows, checkpoint_scores
@@ -10,7 +9,7 @@ from datadec.recipes import (
     load_recipe_name_resolver,
 )
 from eval.recipe_scores import MultiRecipeScores
-from eval.results import Checkpoint, PairwiseDecision, RankingResult, SingleSeedRanking
+from eval.results import Checkpoint, RankingResult, SingleSeedRanking
 
 
 def predict_recipe_ranking(
@@ -81,40 +80,26 @@ def predict_recipe_ranking(
     if target_compute <= 0:
         raise ValueError("target checkpoint compute must be positive")
     truth = target_scores.mean(axis=1).to_numpy()
-    left, right = np.triu_indices(len(canonical_recipes), k=1)
-    target_signs = np.sign(truth[left] - truth[right]) * (
-        1 if predicted_higher_is_better else -1
+    rankings = tuple(
+        SingleSeedRanking(
+            seed=seed,
+            predictor_per_recipe_scores=MultiRecipeScores(
+                dict(zip(canonical_recipes, map(float, pred_scores[seed]), strict=True))
+            ),
+            predictor_higher_is_better=predictor_higher_is_better,
+        )
+        for seed in predictor_seeds
     )
-    rankings = []
-    for seed in predictor_seeds:
-        scores = pred_scores[seed].to_numpy()
-        signs = np.sign(scores[left] - scores[right]) * (
-            1 if predictor_higher_is_better else -1
-        )
-        rankings.append(
-            SingleSeedRanking(
-                seed=seed,
-                predictor_per_recipe_scores=MultiRecipeScores(
-                    dict(zip(canonical_recipes, map(float, scores), strict=True))
-                ),
-                decisions=tuple(
-                    PairwiseDecision(
-                        canonical_recipes[a], canonical_recipes[b], int(p), int(t)
-                    )
-                    for a, b, p, t in zip(left, right, signs, target_signs, strict=True)
-                ),
-            )
-        )
     return RankingResult(
         predictor=Checkpoint(predictor_size, predictor_step, pred_compute),
         predicted=Checkpoint(predicted_size, predicted_step, target_compute),
         task=task,
         predictor_task_metric=predictor_task_metric,
         predicted_task_metric=predicted_task_metric,
-        recipes=canonical_recipes,
         target_seeds=predicted_seeds,
         target_per_recipe_scores=MultiRecipeScores(
             dict(zip(canonical_recipes, map(float, truth), strict=True))
         ),
-        seed_rankings=tuple(rankings),
+        predicted_higher_is_better=predicted_higher_is_better,
+        seed_rankings=rankings,
     )

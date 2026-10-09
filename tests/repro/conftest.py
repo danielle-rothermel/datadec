@@ -47,6 +47,11 @@ def sweep(config):
                     dict(
                         predictor_size="150M",
                         predictor_step=step,
+                        target_size="1B",
+                        target_step=10,
+                        target_compute=100.0,
+                        recipe_count=25,
+                        pair_count=300,
                         task=task,
                         metric=metric,
                         available=True,

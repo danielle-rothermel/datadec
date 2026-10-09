@@ -3,6 +3,7 @@ from io import StringIO
 import os
 from pathlib import Path
 
+import pandas as pd
 import pytest
 from rich.console import Console
 
@@ -54,6 +55,7 @@ def saved_run(sweep, config, tmp_path):
     write_claim_evidence(
         collect_claim_evidence(sweep, config), tmp_path / "claim_evidence.parquet"
     )
+    sweep.to_parquet(tmp_path / "rankings.parquet")
     return tmp_path, config
 
 
@@ -64,20 +66,10 @@ def test_report_uses_saved_numbers_and_extracts_only_source_text(saved_run):
         for r in read_claim_evidence(run_dir / "claim_evidence.parquet")
         if r.claim_id == "DD-0014"
     )
-    measurement = result.measurements[0]
-    result = replace(
-        result,
-        measurements=(
-            replace(
-                measurement,
-                best=replace(
-                    measurement.best,
-                    decision_accuracy=0.73,
-                    seed_accuracies=(0.72, 0.73, 0.74),
-                ),
-            ),
-        ),
-    )
+    index = result.tasks[0].best_evidence_id
+    rankings = pd.read_parquet(run_dir / "rankings.parquet")
+    rankings.at[index, "seed_accuracies"] = [0.72, 0.73, 0.74]
+    rankings.to_parquet(run_dir / "rankings.parquet")
     inventory = run_dir / "claims.toml"
     quote = "Original paper claim."
     (run_dir / "paper.tex").write_text("prefix " + quote + " suffix\n")
@@ -131,10 +123,7 @@ def test_report_keeps_all_selections_and_missing_measurements_visible(saved_run)
     )
     result = replace(
         result,
-        evidence_ids=(),
-        measurements=(
-            replace(result.measurements[0], best=None, available_comparisons=0),
-        ),
+        tasks=(replace(result.tasks[0], evidence_ids=(), best_evidence_id=None),),
     )
     write_claim_evidence((result,), run_dir / "claim_evidence.parquet")
     report = load_claim_report(
@@ -188,6 +177,9 @@ def test_latest_run_uses_manifest_time_and_ignores_incomplete_or_other_inventory
         write_run_metadata(metadata, output / "run.json")
         if name != "incomplete":
             write_claim_evidence((), output / "claim_evidence.parquet")
+            pd.read_parquet(run_dir / "rankings.parquet").to_parquet(
+                output / "rankings.parquet"
+            )
         os.utime(output / "run.json", ns=(timestamp, timestamp))
     historical = reports / "historical"
     historical.mkdir()
@@ -203,3 +195,33 @@ def test_explicit_run_does_not_accept_other_claim_inventory(saved_run):
     other.write_text(config.run.claim_inventory.read_text())
     with pytest.raises(ValueError, match="different claim inventory"):
         load_claim_report(other, config.run.paper_dir, run_dir)
+
+
+def test_report_requires_ranking_dataset(saved_run):
+    run_dir, config = saved_run
+    (run_dir / "rankings.parquet").unlink()
+    assert latest_run(run_dir, config.run.claim_inventory) is None
+    with pytest.raises(FileNotFoundError):
+        load_claim_report(config.run.claim_inventory, config.run.paper_dir, run_dir)
+
+
+def test_report_rejects_missing_ranking_reference(saved_run):
+    run_dir, config = saved_run
+    links = read_claim_evidence(run_dir / "claim_evidence.parquet")
+    index = links[0].tasks[0].best_evidence_id
+    rankings = pd.read_parquet(run_dir / "rankings.parquet")
+    rankings.drop(index=index).to_parquet(run_dir / "rankings.parquet")
+    with pytest.raises(ValueError, match="missing ranking evidence ID"):
+        load_claim_report(config.run.claim_inventory, config.run.paper_dir, run_dir)
+
+
+@pytest.mark.parametrize("field,value", [("task", "wrong-task"), ("available", False)])
+def test_report_rejects_mismatched_ranking_reference(saved_run, field, value):
+    run_dir, config = saved_run
+    links = read_claim_evidence(run_dir / "claim_evidence.parquet")
+    index = links[0].tasks[0].best_evidence_id
+    rankings = pd.read_parquet(run_dir / "rankings.parquet")
+    rankings.at[index, field] = value
+    rankings.to_parquet(run_dir / "rankings.parquet")
+    with pytest.raises(ValueError, match="does not match task/availability"):
+        load_claim_report(config.run.claim_inventory, config.run.paper_dir, run_dir)

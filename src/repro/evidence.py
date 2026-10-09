@@ -3,11 +3,7 @@
 import pandas as pd
 
 from repro.config import EvidenceSelection, EvaluationConfig
-from repro.results import (
-    ClaimEvidence,
-    PredictionMeasurement,
-    TaskMeasurement,
-)
+from repro.results import ClaimEvidence, TaskEvidence
 
 
 def _select_evidence(
@@ -25,29 +21,17 @@ def _select_evidence(
     return selected
 
 
-def _measure_task(selected: pd.DataFrame, task: str) -> TaskMeasurement:
+def _link_task(selected: pd.DataFrame, task: str) -> TaskEvidence:
     rows = selected.loc[selected["task"] == task]
     available = rows.loc[rows["available"]]
     unavailable = rows.loc[~rows["available"]]
-    best = None
-    if not available.empty:
-        row = available.loc[available["decision_accuracy"].idxmax()]
-        best = PredictionMeasurement(
-            evidence_id=int(row.name),
-            predictor_size=str(row["predictor_size"]),
-            predictor_step=int(row["predictor_step"]),
-            metric=str(row["metric"]),
-            compute=float(row["compute"]),
-            compute_ratio=float(row["compute_ratio"]),
-            decision_accuracy=float(row["decision_accuracy"]),
-            decision_accuracy_std=float(row["decision_accuracy_std"]),
-            seed_accuracies=tuple(float(value) for value in row["seed_accuracies"]),
-        )
-    return TaskMeasurement(
+    return TaskEvidence(
         task=task,
-        available_comparisons=len(available),
-        unavailable_comparisons=len(unavailable),
-        best=best,
+        evidence_ids=tuple(int(index) for index in available.index),
+        unavailable_ids=tuple(int(index) for index in unavailable.index),
+        best_evidence_id=int(available["decision_accuracy"].idxmax())
+        if not available.empty
+        else None,
     )
 
 
@@ -58,19 +42,11 @@ def collect_claim_evidence(
     results = []
     for claim_id, scope in config.claims.items():
         selected = _select_evidence(sweep, scope, config)
-        measurements = tuple(
-            _measure_task(selected, task) for task in config.tasks_for(scope)
-        )
+        tasks = tuple(_link_task(selected, task) for task in config.tasks_for(scope))
         results.append(
             ClaimEvidence(
                 claim_id=claim_id,
-                evidence_ids=tuple(
-                    int(index) for index in selected.loc[selected["available"]].index
-                ),
-                unavailable_ids=tuple(
-                    int(index) for index in selected.loc[~selected["available"]].index
-                ),
-                measurements=measurements,
+                tasks=tasks,
                 related_tables=scope.related_tables or config.default_related_tables,
             )
         )

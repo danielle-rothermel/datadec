@@ -21,7 +21,9 @@ class RecipeNameResolver:
     aliases: Mapping[str, DataRecipeName]
 
     def __post_init__(self) -> None:
-        aliases = TypeAdapter(dict[str, DataRecipeName]).validate_python(self.aliases)
+        aliases = dict(self.aliases)
+        if any(not isinstance(recipe, DataRecipeName) for recipe in aliases.values()):
+            raise TypeError("alias targets must be DataRecipeName members")
         for recipe in DataRecipeName:
             if recipe.value in aliases and aliases[recipe.value] != recipe:
                 raise ValueError(

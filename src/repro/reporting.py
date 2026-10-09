@@ -1,5 +1,6 @@
 """Present saved measurements beside claims extracted from paper text."""
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -9,7 +10,13 @@ from rich.table import Table
 from rich.text import Text
 
 from repro.claims import QuoteLocation, load_claims, read_quotes
-from repro.datasets import RunMetadata, read_claim_evidence, read_run_metadata
+from repro.datasets import (
+    RunMetadata,
+    read_claim_evidence,
+    read_rankings,
+    read_run_metadata,
+)
+from repro.observations import RankingObservation
 from repro.results import ClaimEvidence
 
 
@@ -31,6 +38,7 @@ class ClaimReport:
     run_dir: Path | None
     metadata: RunMetadata | None
     claims: tuple[ReportedClaim, ...]
+    rankings: Mapping[int, RankingObservation]
 
 
 def load_claim_report(
@@ -51,7 +59,12 @@ def load_claim_report(
         != claim_inventory.resolve()
     ):
         raise ValueError("saved run uses a different claim inventory")
+    rankings = (
+        read_rankings(run_dir / "rankings.parquet") if run_dir is not None else {}
+    )
+    validate_evidence_references(tuple(results.values()), rankings)
     return ClaimReport(
+        rankings=rankings,
         run_dir=run_dir,
         metadata=metadata,
         claims=tuple(
@@ -70,7 +83,32 @@ def load_claim_report(
     )
 
 
-def evidence_table(result: ClaimEvidence) -> Table:
+def validate_evidence_references(
+    evidence: tuple[ClaimEvidence, ...], rankings: Mapping[int, RankingObservation]
+) -> None:
+    """Require task/availability links to point to matching saved ranking rows."""
+    for claim in evidence:
+        for task in claim.tasks:
+            for available, indices in (
+                (True, task.evidence_ids),
+                (False, task.unavailable_ids),
+            ):
+                for index in indices:
+                    observation = rankings.get(index)
+                    if observation is None:
+                        raise ValueError(f"missing ranking evidence ID: {index}")
+                    if (
+                        observation.task != task.task
+                        or (observation.statistics is not None) != available
+                    ):
+                        raise ValueError(
+                            f"ranking evidence does not match task/availability: {index}"
+                        )
+
+
+def evidence_table(
+    result: ClaimEvidence, rankings: Mapping[int, RankingObservation]
+) -> Table:
     """Format stored observations as a table of numerical measurements."""
     table = Table(box=box.SIMPLE_HEAD, padding=(0, 1))
     for column in (
@@ -82,16 +120,23 @@ def evidence_table(result: ClaimEvidence) -> Table:
         "Available / unavailable",
     ):
         table.add_column(column, overflow="fold")
-    for measurement in result.measurements:
-        best = measurement.best
+    for measurement in result.tasks:
+        best = (
+            rankings[measurement.best_evidence_id]
+            if measurement.best_evidence_id is not None
+            else None
+        )
         coverage = f"{measurement.available_comparisons} / {measurement.unavailable_comparisons}"
         if best is None:
             cells = [measurement.task, "—", "—", "—", "—", coverage]
         else:
+            statistics = best.statistics
+            if statistics is None:
+                raise ValueError("best evidence must reference an available ranking")
             cells = [
                 measurement.task,
-                f"{best.decision_accuracy:.6f} ({best.decision_accuracy_std:.6f})",
-                f"{best.predictor_size} @ {best.predictor_step}",
+                f"{statistics.decision_accuracy:.6f} ({statistics.decision_accuracy_std:.6f})",
+                f"{best.predictor.size} @ {best.predictor.step}",
                 best.metric,
                 f"{best.compute_ratio:.8g}",
                 coverage,
@@ -130,7 +175,7 @@ def print_claim_report(report: ClaimReport, console: Console) -> None:
                 f"Linked ranking rows: {len(result.evidence_ids)} | "
                 f"Unavailable rows: {len(result.unavailable_ids)}"
             )
-            console.print(evidence_table(result))
+            console.print(evidence_table(result, report.rankings))
             console.print(
                 Text(
                     "Data tables: "

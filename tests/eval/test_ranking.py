@@ -60,8 +60,8 @@ def test_seed_decisions_are_averaged_after_target_seed_mean(evaluations):
     )
     assert isinstance(result.seed_rankings[0], SingleSeedRanking)
     assert all(isinstance(recipe, DataRecipeName) for recipe in result.recipes)
-    assert [r.decision_accuracy for r in result.seed_rankings] == [1.0, 1 / 3]
-    assert result.decision_accuracy == pytest.approx(2 / 3)
+    assert result.seed_accuracies() == (1.0, 1 / 3)
+    assert result.decision_accuracy() == pytest.approx(2 / 3)
     # Averaging predictor scores first would incorrectly produce accuracy 1/3.
     assert result.seed_rankings[1].predictor_per_recipe_scores == MultiRecipeScores(
         {
@@ -71,23 +71,35 @@ def test_seed_decisions_are_averaged_after_target_seed_mean(evaluations):
         }
     )
     assert result.compute_ratio == 0.2
-    assert result.decision_accuracy_std == pytest.approx(1 / 3)
-    assert [(p.recipe_a, p.recipe_b) for p in result.seed_rankings[0].decisions] == [
-        ("C4", "Falcon"),
-        ("C4", "Dolma1.7"),
-        ("Falcon", "Dolma1.7"),
-    ]
+    assert result.decision_accuracy_std() == pytest.approx(1 / 3)
+    assert result.recipe_count == 3
+    assert result.pair_count == 3
+    assert (
+        result.seed_rankings[0].decision(DataRecipeName.C4, DataRecipeName.FALCON) == 1
+    )
+    assert (
+        result.seed_rankings[1].decision(DataRecipeName.C4, DataRecipeName.FALCON) == -1
+    )
 
 
 def test_exact_ties_match_only_ties(evaluations):
     evaluations.loc[evaluations["data"] == "C4", "score"] = 2.0
     evaluations.loc[evaluations["data"] == "Falcon", "score"] = 2.0
     result = rank(evaluations)
-    assert all(r.decisions[0].correct for r in result.seed_rankings)
+    assert all(
+        r.decision(DataRecipeName.C4, DataRecipeName.FALCON) == 0
+        for r in result.seed_rankings
+    )
     evaluations.loc[
         (evaluations["data"] == "C4") & (evaluations["seed"] == "p1"), "score"
     ] = 3.0
-    assert not rank(evaluations).seed_rankings[0].decisions[0].correct
+    assert (
+        rank(evaluations)
+        .seed_rankings[0]
+        .decision(DataRecipeName.C4, DataRecipeName.FALCON)
+        == 1
+    )
+    assert rank(evaluations).seed_accuracies()[0] < 1.0
 
 
 def test_metric_direction_is_explicit(evaluations):
@@ -103,7 +115,7 @@ def test_metric_direction_is_explicit(evaluations):
         predicted_step=20,
         predictor_higher_is_better=False,
     )
-    assert loss.decision_accuracy == normal.decision_accuracy
+    assert loss.decision_accuracy() == normal.decision_accuracy()
 
 
 def test_indexed_and_unindexed_calls_match(evaluations):
@@ -174,11 +186,6 @@ def test_source_aliases_produce_identical_rankings_without_mutating_input(evalua
     original = aliased.copy(deep=True)
     result = rank(aliased, recipes=("c4", "falcon", "dolma1.7"))
     assert result == rank(evaluations)
-    assert all(
-        isinstance(pair.recipe_a, DataRecipeName)
-        and isinstance(pair.recipe_b, DataRecipeName)
-        for pair in result.seed_rankings[0].decisions
-    )
     pd.testing.assert_frame_equal(aliased, original)
 
 
@@ -209,4 +216,70 @@ def test_score_lookup_is_independent_of_recipe_order(evaluations):
     result = rank(evaluations, recipes=("Dolma1.7", "Falcon", "C4"))
     assert result.seed_rankings[1].predictor_per_recipe_scores[DataRecipeName.C4] == 1.0
     assert result.target_per_recipe_scores[DataRecipeName.DOLMA17] == 0.5
-    assert result.decision_accuracy == rank(evaluations).decision_accuracy
+    assert result.decision_accuracy() == rank(evaluations).decision_accuracy()
+
+
+def test_target_metric_direction_is_retained(evaluations):
+    result = predict_recipe_ranking(
+        evaluations,
+        "small",
+        "large",
+        "task",
+        "loss",
+        "loss",
+        predictor_step=10,
+        predicted_step=20,
+        predictor_higher_is_better=False,
+        predicted_higher_is_better=False,
+    )
+    assert result.predicted_higher_is_better is False
+    assert all(r.predictor_higher_is_better is False for r in result.seed_rankings)
+    assert result.seed_accuracies() == rank(evaluations).seed_accuracies()
+    assert (
+        result.seed_rankings[0].decision(DataRecipeName.C4, DataRecipeName.FALCON) == 1
+    )
+
+
+def test_result_stores_no_derived_recipe_or_decision_collections(evaluations):
+    from dataclasses import fields
+
+    result = rank(evaluations)
+    assert "recipes" not in {field.name for field in fields(result)}
+    assert "decisions" not in {field.name for field in fields(result.seed_rankings[0])}
+    assert result.recipes == tuple(result.target_per_recipe_scores)
+
+
+def test_single_seed_accuracy_requires_matching_recipe_sets(evaluations):
+    seed = rank(evaluations).seed_rankings[0]
+    with pytest.raises(ValueError, match="matching sets"):
+        seed.decision_accuracy(
+            MultiRecipeScores({DataRecipeName.C4: 1.0}), target_higher_is_better=True
+        )
+
+
+def test_single_seed_accuracy_handles_reordered_targets_and_ties():
+    predictor = MultiRecipeScores(
+        {
+            DataRecipeName.C4: 1.0,
+            DataRecipeName.FALCON: 1.0,
+            DataRecipeName.DOLMA17: 2.0,
+        }
+    )
+    seed = SingleSeedRanking("seed", predictor, True)
+    target = MultiRecipeScores(
+        {
+            DataRecipeName.DOLMA17: 20.0,
+            DataRecipeName.FALCON: 10.0,
+            DataRecipeName.C4: 10.0,
+        }
+    )
+    assert seed.decision(DataRecipeName.C4, DataRecipeName.FALCON) == 0
+    assert seed.decision_accuracy(target, target_higher_is_better=True) == 1.0
+    untied = MultiRecipeScores(
+        {
+            DataRecipeName.C4: 9.0,
+            DataRecipeName.FALCON: 10.0,
+            DataRecipeName.DOLMA17: 20.0,
+        }
+    )
+    assert seed.decision_accuracy(untied, target_higher_is_better=True) == 2 / 3

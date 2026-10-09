@@ -4,42 +4,16 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 import pytest
 
-from repro.datasets import (
-    read_claim_evidence,
-    write_claim_evidence,
-)
-from repro.results import (
-    ClaimEvidence,
-    PredictionMeasurement,
-    TaskMeasurement,
-)
+from repro.datasets import read_claim_evidence, write_claim_evidence
+from repro.results import ClaimEvidence, TaskEvidence
 
 
 @pytest.fixture
 def measured_result():
     return ClaimEvidence(
         claim_id="DD-0014",
-        evidence_ids=(7,),
-        unavailable_ids=(),
         related_tables=("curves.csv",),
-        measurements=(
-            TaskMeasurement(
-                task="mmlu",
-                available_comparisons=1,
-                unavailable_comparisons=0,
-                best=PredictionMeasurement(
-                    evidence_id=7,
-                    predictor_size="4M",
-                    predictor_step=5,
-                    metric="correct_prob_per_char",
-                    compute=100.0,
-                    compute_ratio=0.0001,
-                    decision_accuracy=0.81,
-                    decision_accuracy_std=0.01,
-                    seed_accuracies=(0.80, 0.81, 0.82),
-                ),
-            ),
-        ),
+        tasks=(TaskEvidence("mmlu", (7,), (), 7),),
     )
 
 
@@ -49,47 +23,32 @@ def test_claim_evidence_round_trip_with_and_without_measurements(
     unavailable = replace(
         measured_result,
         claim_id="DD-0016",
-        evidence_ids=(),
-        unavailable_ids=(8,),
-        measurements=(
-            TaskMeasurement(
-                task="hellaswag",
-                available_comparisons=0,
-                unavailable_comparisons=1,
-                best=None,
-            ),
-        ),
+        tasks=(TaskEvidence("hellaswag", (), (8,), None),),
     )
     path = tmp_path / "results.parquet"
     write_claim_evidence((measured_result, unavailable), path)
     assert read_claim_evidence(path) == (measured_result, unavailable)
+    assert measured_result.evidence_ids == (7,)
+    assert unavailable.unavailable_ids == (8,)
+    assert measured_result.tasks[0].available_comparisons == 1
+    assert unavailable.tasks[0].unavailable_comparisons == 1
 
 
-def test_claim_dataset_pins_persisted_keys_and_numbers(tmp_path, measured_result):
+def test_claim_dataset_pins_persisted_links_without_copied_measurements(
+    tmp_path, measured_result
+):
     path = tmp_path / "results.parquet"
     write_claim_evidence((measured_result,), path)
     assert pq.read_table(path).to_pylist() == [
         {
             "claim_id": "DD-0014",
-            "evidence_ids": [7],
-            "unavailable_ids": [],
             "related_tables": ["curves.csv"],
-            "measurements": [
+            "tasks": [
                 {
                     "task": "mmlu",
-                    "available_comparisons": 1,
-                    "unavailable_comparisons": 0,
-                    "best": {
-                        "evidence_id": 7,
-                        "predictor_size": "4M",
-                        "predictor_step": 5,
-                        "metric": "correct_prob_per_char",
-                        "compute": 100.0,
-                        "compute_ratio": 0.0001,
-                        "decision_accuracy": 0.81,
-                        "decision_accuracy_std": 0.01,
-                        "seed_accuracies": [0.80, 0.81, 0.82],
-                    },
+                    "evidence_ids": [7],
+                    "unavailable_ids": [],
+                    "best_evidence_id": 7,
                 }
             ],
         }
@@ -110,3 +69,9 @@ def test_claim_dataset_schema_drift_is_rejected(tmp_path):
     pq.write_table(pa.table({"claim_id": ["DD-0014"]}), path)
     with pytest.raises(ValueError, match="schema"):
         read_claim_evidence(path)
+
+
+@pytest.mark.parametrize("available,best", [((7,), 8), ((7,), None), ((), 7)])
+def test_best_row_must_be_an_available_link(available, best):
+    with pytest.raises(ValueError, match="best evidence ID"):
+        TaskEvidence("mmlu", available, (), best)

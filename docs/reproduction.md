@@ -11,8 +11,8 @@ uv run python scripts/repro/claims.py
 The Rich viewer adds evidence from the most recent completed run for this
 inventory under `outputs/repro/`, searching recursively. Recency is the
 modification time of `run.json`, which evaluation writes last; a completed run
-must also contain `claim_evidence.parquet`. Incomplete directories and runs for
-other inventories are excluded. If a saved run is malformed, viewing fails
+must also contain `claim_evidence.parquet` and `rankings.parquet`. Incomplete
+directories and runs for other inventories are excluded. If a saved run is malformed, viewing fails
 rather than silently substituting older evidence. Every selection is displayed,
 including those with zero linked measurements.
 
@@ -30,7 +30,8 @@ paper passages. It does not rerun analysis or require the original OLMES input
 or evaluation TOML. Terminal output uses Rich formatting and plain text when
 redirected. The evidence tables show per-task observed maxima, seed
 standard deviations, predictor checkpoints/metrics, compute ratios, and coverage.
-Full seed scores, FLOPs, and evidence IDs remain in the saved dataset.
+Seed accuracies, FLOPs, and evidence IDs remain in the saved ranking dataset.
+Viewing a saved run requires both the claim links and ranking dataset.
 
 To generate evidence, download the processed OLMES table if absent, then run
 from the repository root:
@@ -95,9 +96,9 @@ src/
     checkpoints.py        # Observed schedules and compute-budget selection
     sweep.py              # Paper ranking policy and experiment execution
     observations.py       # Typed observations and sweep DataFrame conversion
-    evidence.py           # Row selection and descriptive measurements
-    results.py            # Computed measurement types and row references
-    datasets.py           # Claim-evidence Parquet schema and run manifest I/O
+    evidence.py           # Row selection and maximum-row references
+    results.py            # Task-specific row links and derived coverage counts
+    datasets.py           # Claim-link schema, ranking reads, and run manifest I/O
     reporting.py          # Join claims and saved evidence; render with Rich
     diagnostics/
       curves.py           # Compute/accuracy slopes and reversals
@@ -114,8 +115,8 @@ scripts/repro/claims.py           # View paper quotes and latest/specified evide
 DataFrame with `params`, `step`, `task`, `data` (recipe), `seed`, `compute`, and
 metric columns. Pass a sorted `(params, step, task)` MultiIndex for repeated
 calls. Its result contains checkpoint compute, canonical recipe identities,
-recipe-keyed predictor and target scores, and every seed's pairwise decisions,
-mean accuracy, and population standard deviation.
+recipe-keyed predictor and target scores, and metric directions. Decisions,
+mean accuracy, and population standard deviation are calculated on demand.
 
 ```python
 from pathlib import Path
@@ -139,9 +140,15 @@ result = predict_recipe_ranking(
     predictor_seeds=config.predictors.seeds_for("150M"),
     predicted_seeds=config.target.seeds,
 )
-print(result.decision_accuracy, result.compute_ratio)
+print(result.decision_accuracy(), result.decision_accuracy_std(), result.compute_ratio)
 print(result.seed_rankings[0].predictor_per_recipe_scores[DataRecipeName.DOLMA17])
 print(result.target_per_recipe_scores[DataRecipeName.DOLMA17])
+seed = result.seed_rankings[0]
+print(seed.decision(DataRecipeName.DOLMA17, DataRecipeName.C4))
+print(seed.decision_accuracy(
+    result.target_per_recipe_scores,
+    target_higher_is_better=result.predicted_higher_is_better,
+))
 ```
 
 `DataRecipeName` defines one official name per DataDecide recipe. The default
@@ -149,8 +156,15 @@ print(result.target_per_recipe_scores[DataRecipeName.DOLMA17])
 `configs/olmes.toml`; matching is exact, and official names resolve to themselves.
 Unknown names fail. Each `SingleSeedRanking` holds an immutable
 `MultiRecipeScores` mapping in `predictor_per_recipe_scores`; the target seed
-mean uses the same type in `target_per_recipe_scores`. Keys and pairwise recipe
-identities are enum members, so score lookup does not depend on recipe order.
+mean uses the same type in `target_per_recipe_scores`. Score keys and the
+arguments to `decision()` are enum members, so lookup does not depend on recipe
+order. Each seed retains its predictor metric direction; the result retains
+the target metric direction. `decision()` returns +1 when the first recipe
+ranks higher, -1 when lower, and 0 for a tie. `decision_accuracy()` compares all
+unordered pairs without storing a decision tuple. `recipes`, `recipe_count`,
+and `pair_count` are derived from the target score mapping. `seed_accuracies()`,
+`decision_accuracy()`, and `decision_accuracy_std()` calculate the corresponding
+statistics across predictor seeds.
 
 For other source spellings, construct a resolver from an alias dictionary or
 load a TOML file containing a `[recipe_map]` table:
@@ -225,7 +239,7 @@ Outputs under `outputs/repro/ranking/`:
 
 | File | Contents |
 | --- | --- |
-| `claim_evidence.parquet` | Per-selection row links, available/unavailable counts, per-task maxima and their checkpoint/metric/compute/seed details, related data tables |
+| `claim_evidence.parquet` | Per-selection task links to available/unavailable ranking row IDs, the selected maximum row ID, and related data tables |
 | `run.json` | Input SHA-256 and effective configuration, including claim-inventory and paper-source paths |
 | `rankings.parquet` | One row per checkpoint/task/metric, seed accuracies, compute, recipe/pair counts, coverage failures; index `evidence_id` |
 | `checkpoints.csv` | Observed compute and schedule-completion coverage |
@@ -234,12 +248,14 @@ Outputs under `outputs/repro/ranking/`:
 | `matched_compute.csv` | Completed/intermediate evidence IDs, actual compute gaps, accuracy differences |
 | `recipe_crossovers.csv` | Strict recipe-order reversals between adjacent observed completed scales, using seed means |
 
-The evaluator writes numerical datasets. `claim_evidence.parquet` stores
-per-task maxima and their exact witnesses, predictor seed accuracies and their
-population standard deviation, and available/unavailable comparison counts.
-Evidence IDs link to every selected checkpoint/metric row in `rankings.parquet`;
-the separate diagnostic tables retain curve, proxy, compute-match, and crossover
-measurements. The viewer labels maxima explicitly and lists the related tables.
+The evaluator writes numerical datasets. `rankings.parquet` owns the ranking
+measurements. `claim_evidence.parquet` stores only task-specific available and
+unavailable row IDs, the selected maximum's row ID, and related table names.
+The viewer joins these references to ranking observations and derives counts
+from the linked IDs. Missing rows or mismatched task/availability links fail
+explicitly. The maximum's ID is selected during analysis; viewing does not
+rerun the experiment or select a new maximum. Separate diagnostic tables retain
+curve, proxy, compute-match, and crossover measurements.
 
 The claims viewer extracts each selected passage directly from its source
 coordinates and presents saved measurements as Rich tables. Scientific text
@@ -254,7 +270,11 @@ of linked data, not an assessment of the paper's statements. The current runner
 collects OLMES ranking measurements; selections without configured measurements
 remain visible with zero linked rows.
 
-Sweep observations have a frozen typed owner in `repro.observations`; the
-DataFrame conversion owns their tabular column names and null representation.
+Sweep observations have a frozen typed owner in `repro.observations`.
+`RankingStatistics` retains seed accuracies and recipe count; mean accuracy,
+population standard deviation, and pair count are derived. The DataFrame writer
+materializes these summaries as columns for analysis. The reader reconstructs
+observations from canonical values and computes their summaries. The conversion
+owns tabular column names and null representation.
 Diagnostic functions take only their required metric, task, and tolerance
 arguments; the runner supplies these from validated configuration.

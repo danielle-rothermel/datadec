@@ -1,20 +1,32 @@
 """Typed sweep observations and their tabular output boundary."""
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from types import MappingProxyType
 
+import numpy as np
 import pandas as pd
+from pydantic import TypeAdapter
 
 from eval.results import Checkpoint, RankingResult
 
 
 @dataclass(frozen=True, slots=True)
 class RankingStatistics:
-    decision_accuracy: float
-    decision_accuracy_std: float
     seed_accuracies: tuple[float, ...]
     recipe_count: int
-    pair_count: int
+
+    @property
+    def decision_accuracy(self) -> float:
+        return float(np.mean(self.seed_accuracies))
+
+    @property
+    def decision_accuracy_std(self) -> float:
+        return float(np.std(self.seed_accuracies))
+
+    @property
+    def pair_count(self) -> int:
+        return self.recipe_count * (self.recipe_count - 1) // 2
 
 
 @dataclass(frozen=True, slots=True)
@@ -27,6 +39,10 @@ class RankingObservation:
     statistics: RankingStatistics | None
     reason: str
 
+    @property
+    def compute_ratio(self) -> float:
+        return self.predictor.compute / self.target.compute
+
     @classmethod
     def successful(
         cls, result: RankingResult, *, schedule_complete: bool
@@ -38,13 +54,8 @@ class RankingObservation:
             metric=result.predictor_task_metric,
             schedule_complete=schedule_complete,
             statistics=RankingStatistics(
-                decision_accuracy=result.decision_accuracy,
-                decision_accuracy_std=result.decision_accuracy_std,
-                seed_accuracies=tuple(
-                    r.decision_accuracy for r in result.seed_rankings
-                ),
-                recipe_count=len(result.recipes),
-                pair_count=len(result.seed_rankings[0].decisions),
+                seed_accuracies=result.seed_accuracies(),
+                recipe_count=result.recipe_count,
             ),
             reason="",
         )
@@ -78,8 +89,7 @@ def observations_frame(observations: Sequence[RankingObservation]) -> pd.DataFra
                 "metric": observation.metric,
                 "compute": observation.predictor.compute,
                 "target_compute": observation.target.compute,
-                "compute_ratio": observation.predictor.compute
-                / observation.target.compute,
+                "compute_ratio": observation.compute_ratio,
                 "schedule_complete": observation.schedule_complete,
                 "available": statistics is not None,
                 "reason": observation.reason,
@@ -99,3 +109,39 @@ def observations_frame(observations: Sequence[RankingObservation]) -> pd.DataFra
     frame = pd.DataFrame.from_records(records)
     frame.index.name = "evidence_id"
     return frame
+
+
+_OBSERVATION_ADAPTER = TypeAdapter(RankingObservation)
+
+
+def observations_from_frame(frame: pd.DataFrame) -> Mapping[int, RankingObservation]:
+    """Read canonical values from saved rows; derive summaries from seed accuracies."""
+    if not frame.index.is_unique:
+        raise ValueError("ranking evidence IDs must be unique")
+    observations = {}
+    for index, row in frame.iterrows():
+        observations[int(index)] = _OBSERVATION_ADAPTER.validate_python(
+            {
+                "predictor": {
+                    "size": row["predictor_size"],
+                    "step": row["predictor_step"],
+                    "compute": row["compute"],
+                },
+                "target": {
+                    "size": row["target_size"],
+                    "step": row["target_step"],
+                    "compute": row["target_compute"],
+                },
+                "task": row["task"],
+                "metric": row["metric"],
+                "schedule_complete": row["schedule_complete"],
+                "statistics": {
+                    "seed_accuracies": tuple(row["seed_accuracies"]),
+                    "recipe_count": row["recipe_count"],
+                }
+                if row["available"]
+                else None,
+                "reason": row["reason"],
+            }
+        )
+    return MappingProxyType(observations)

@@ -1,45 +1,32 @@
 """Persist and load computed measurements and run metadata."""
 
+from collections.abc import Mapping
 from dataclasses import asdict
 from pathlib import Path
 
+import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 from pydantic import BaseModel, ConfigDict, TypeAdapter
 
 from repro.config import EvaluationConfig
 from repro.results import ClaimEvidence
+from repro.observations import RankingObservation, observations_from_frame
 
 
-# Explicit persisted column ownership, including nested measurements. Keep this
-# independent of dataclass field enumeration so schema changes are deliberate.
-_PREDICTION = pa.struct(
-    [
-        pa.field("evidence_id", pa.int64(), nullable=False),
-        pa.field("predictor_size", pa.string(), nullable=False),
-        pa.field("predictor_step", pa.int64(), nullable=False),
-        pa.field("metric", pa.string(), nullable=False),
-        pa.field("compute", pa.float64(), nullable=False),
-        pa.field("compute_ratio", pa.float64(), nullable=False),
-        pa.field("decision_accuracy", pa.float64(), nullable=False),
-        pa.field("decision_accuracy_std", pa.float64(), nullable=False),
-        pa.field("seed_accuracies", pa.list_(pa.float64()), nullable=False),
-    ]
-)
-_TASK_MEASUREMENT = pa.struct(
+# Explicit persisted link ownership. Ranking measurements come from rankings.parquet.
+_TASK_EVIDENCE = pa.struct(
     [
         pa.field("task", pa.string(), nullable=False),
-        pa.field("available_comparisons", pa.int64(), nullable=False),
-        pa.field("unavailable_comparisons", pa.int64(), nullable=False),
-        pa.field("best", _PREDICTION),
+        pa.field("evidence_ids", pa.list_(pa.int64()), nullable=False),
+        pa.field("unavailable_ids", pa.list_(pa.int64()), nullable=False),
+        pa.field("best_evidence_id", pa.int64()),
     ]
 )
 CLAIM_EVIDENCE_SCHEMA = pa.schema(
     [
         pa.field("claim_id", pa.string(), nullable=False),
-        pa.field("evidence_ids", pa.list_(pa.int64()), nullable=False),
-        pa.field("unavailable_ids", pa.list_(pa.int64()), nullable=False),
-        pa.field("measurements", pa.list_(_TASK_MEASUREMENT), nullable=False),
+        pa.field("tasks", pa.list_(_TASK_EVIDENCE), nullable=False),
         pa.field("related_tables", pa.list_(pa.string()), nullable=False),
     ]
 )
@@ -74,6 +61,10 @@ def read_claim_evidence(path: Path) -> tuple[ClaimEvidence, ...]:
     return _EVIDENCE_ADAPTER.validate_python(table.to_pylist())
 
 
+def read_rankings(path: Path) -> Mapping[int, RankingObservation]:
+    return observations_from_frame(pd.read_parquet(path))
+
+
 def write_run_metadata(metadata: RunMetadata, path: Path) -> None:
     path.write_text(metadata.model_dump_json(indent=2) + "\n", encoding="utf-8")
 
@@ -86,7 +77,7 @@ def latest_run(reports_dir: Path, claim_inventory: Path) -> Path | None:
     """Find the newest completed run for this inventory by manifest mtime.
 
     The evaluator writes run.json last. Directories missing either the manifest
-    or claim dataset are incomplete; malformed completed runs remain errors.
+    or either dataset are incomplete; malformed completed runs remain errors.
     """
     manifests = sorted(
         reports_dir.rglob("run.json"),
@@ -94,7 +85,10 @@ def latest_run(reports_dir: Path, claim_inventory: Path) -> Path | None:
         reverse=True,
     )
     for manifest in manifests:
-        if not (manifest.parent / "claim_evidence.parquet").is_file():
+        if not all(
+            (manifest.parent / name).is_file()
+            for name in ("claim_evidence.parquet", "rankings.parquet")
+        ):
             continue
         metadata = read_run_metadata(manifest)
         if (

@@ -4,7 +4,12 @@ import pandas as pd
 import pytest
 
 from eval.results import Checkpoint
-from repro.observations import RankingObservation, RankingStatistics, observations_frame
+from repro.observations import (
+    RankingObservation,
+    RankingStatistics,
+    observations_frame,
+    observations_from_frame,
+)
 
 
 def test_observation_boundary_pins_sweep_schema_and_unavailable_nulls(tmp_path):
@@ -14,7 +19,7 @@ def test_observation_boundary_pins_sweep_schema_and_unavailable_nulls(tmp_path):
         task="mmlu",
         metric="primary_metric",
         schedule_complete=False,
-        statistics=RankingStatistics(0.75, 0.25, (0.5, 1.0), 2, 1),
+        statistics=RankingStatistics((0.5, 1.0), 2),
         reason="",
     )
     missing = RankingObservation.unavailable(
@@ -67,3 +72,35 @@ def test_observation_boundary_pins_sweep_schema_and_unavailable_nulls(tmp_path):
     pd.testing.assert_frame_equal(pd.read_parquet(path), frame)
     with pytest.raises(FrozenInstanceError):
         measured.reason = "mutated"
+
+
+def test_statistics_derive_summaries_and_pair_count():
+    from dataclasses import fields
+
+    statistics = RankingStatistics((0.5, 1.0), 3)
+    assert {field.name for field in fields(statistics)} == {
+        "seed_accuracies",
+        "recipe_count",
+    }
+    assert statistics.decision_accuracy == 0.75
+    assert statistics.decision_accuracy_std == 0.25
+    assert statistics.pair_count == 3
+
+
+def test_observation_reader_uses_canonical_values_not_materialized_summaries():
+    observed = RankingObservation(
+        Checkpoint("4M", 5, 10.0),
+        Checkpoint("1B", 20, 100.0),
+        "mmlu",
+        "primary_metric",
+        False,
+        RankingStatistics((0.5, 1.0), 3),
+        "",
+    )
+    frame = observations_frame((observed,))
+    frame.loc[
+        0, ["decision_accuracy", "decision_accuracy_std", "pair_count", "compute_ratio"]
+    ] = -999
+    assert observations_from_frame(frame)[0] == observed
+    with pytest.raises(ValueError, match="unique"):
+        observations_from_frame(pd.concat([frame, frame]))

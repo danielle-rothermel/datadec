@@ -180,10 +180,15 @@ metric_groups = ["primary"]
         text=True,
         check=True,
     )
-    from repro.datasets import read_claim_evidence
+    from repro.datasets import read_claim_evidence, read_rankings
 
     claim = read_claim_evidence(output / "claim_evidence.parquet")[0]
-    assert claim.measurements[0].best.decision_accuracy == 1.0
+    assert (
+        read_rankings(output / "rankings.parquet")[
+            claim.tasks[0].best_evidence_id
+        ].statistics.decision_accuracy
+        == 1.0
+    )
     from repro.claims import load_claims, read_quotes
 
     quotes = read_quotes(
