@@ -387,5 +387,3 @@ uv run ty check src
 uv run pytest
 uv run pytest -m hub   # opt-in tests that read the Hugging Face Hub
 ```
-
-
