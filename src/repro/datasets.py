@@ -1,4 +1,4 @@
-"""Persist and load computed claim results and their run provenance."""
+"""Persist and load computed measurements and run metadata."""
 
 from dataclasses import asdict
 from pathlib import Path
@@ -32,22 +32,18 @@ _TASK_MEASUREMENT = pa.struct(
         pa.field("available_comparisons", pa.int64(), nullable=False),
         pa.field("unavailable_comparisons", pa.int64(), nullable=False),
         pa.field("best", _PREDICTION),
-        pa.field("accuracy_gt", pa.float64()),
-        pa.field("passes_bound", pa.bool_()),
     ]
 )
-CLAIM_RESULTS_SCHEMA = pa.schema(
+CLAIM_EVIDENCE_SCHEMA = pa.schema(
     [
         pa.field("claim_id", pa.string(), nullable=False),
-        pa.field("status", pa.string(), nullable=False),
         pa.field("evidence_ids", pa.list_(pa.int64()), nullable=False),
         pa.field("unavailable_ids", pa.list_(pa.int64()), nullable=False),
         pa.field("measurements", pa.list_(_TASK_MEASUREMENT), nullable=False),
-        pa.field("judgment", pa.string(), nullable=False),
-        pa.field("supporting_tables", pa.list_(pa.string()), nullable=False),
+        pa.field("related_tables", pa.list_(pa.string()), nullable=False),
     ]
 )
-_RESULTS_ADAPTER = TypeAdapter(tuple[ClaimEvidence, ...])
+_EVIDENCE_ADAPTER = TypeAdapter(tuple[ClaimEvidence, ...])
 
 
 class InputArtifact(BaseModel):
@@ -64,18 +60,18 @@ class RunMetadata(BaseModel):
     configuration: EvaluationConfig
 
 
-def write_claim_results(results: tuple[ClaimEvidence, ...], path: Path) -> None:
+def write_claim_evidence(results: tuple[ClaimEvidence, ...], path: Path) -> None:
     table = pa.Table.from_pylist(
-        [asdict(result) for result in results], schema=CLAIM_RESULTS_SCHEMA
+        [asdict(result) for result in results], schema=CLAIM_EVIDENCE_SCHEMA
     )
     pq.write_table(table, path)
 
 
-def read_claim_results(path: Path) -> tuple[ClaimEvidence, ...]:
+def read_claim_evidence(path: Path) -> tuple[ClaimEvidence, ...]:
     table = pq.read_table(path)
-    if not table.schema.equals(CLAIM_RESULTS_SCHEMA, check_metadata=False):
-        raise ValueError("unexpected claim-results dataset schema")
-    return _RESULTS_ADAPTER.validate_python(table.to_pylist())
+    if not table.schema.equals(CLAIM_EVIDENCE_SCHEMA, check_metadata=False):
+        raise ValueError("unexpected claim-evidence dataset schema")
+    return _EVIDENCE_ADAPTER.validate_python(table.to_pylist())
 
 
 def write_run_metadata(metadata: RunMetadata, path: Path) -> None:
@@ -98,7 +94,7 @@ def latest_run(reports_dir: Path, claim_inventory: Path) -> Path | None:
         reverse=True,
     )
     for manifest in manifests:
-        if not (manifest.parent / "claim_results.parquet").is_file():
+        if not (manifest.parent / "claim_evidence.parquet").is_file():
             continue
         metadata = read_run_metadata(manifest)
         if (

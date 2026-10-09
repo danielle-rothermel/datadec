@@ -285,13 +285,13 @@ Full-recipe detail preprocessing and verification can take a long time and requi
 
 ## Paper reproduction
 
-The reproduction tools link paper claims to their source passages and evaluate
-recipe-ranking predictions across checkpoints and metrics. Claim
-inventories live in [`configs/repro_claims/`](configs/repro_claims/), with
-reusable loading and quote lookup helpers in [`src/repro/`](src/repro/).
-Paper source text and attribution are bundled under [`docs/papers/`](docs/papers/).
+The reproduction tools extract selected paper passages and display numerical
+measurements computed from local data. Selection coordinates live in
+[`configs/repro_claims/`](configs/repro_claims/), with reusable extraction and
+analysis helpers in [`src/repro/`](src/repro/). Paper source text and attribution
+are bundled under [`docs/papers/`](docs/papers/).
 
-From the repository root, view DataDecide claims, extracted paper quotes, and
+From the repository root, view extracted DataDecide passages and
 any locally saved analysis evidence with Rich formatting:
 
 ```bash

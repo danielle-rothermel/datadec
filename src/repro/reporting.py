@@ -9,8 +9,8 @@ from rich.table import Table
 from rich.text import Text
 
 from repro.claims import QuoteLocation, load_claims, read_quotes
-from repro.datasets import RunMetadata, read_claim_results, read_run_metadata
-from repro.results import ClaimEvidence, ClaimStatus
+from repro.datasets import RunMetadata, read_claim_evidence, read_run_metadata
+from repro.results import ClaimEvidence
 
 
 @dataclass(frozen=True, slots=True)
@@ -22,7 +22,6 @@ class PaperPassage:
 @dataclass(frozen=True, slots=True)
 class ReportedClaim:
     claim_id: str
-    statement: str
     quotes: tuple[PaperPassage, ...]
     evidence: ClaimEvidence | None
 
@@ -37,12 +36,12 @@ class ClaimReport:
 def load_claim_report(
     claim_inventory: Path, paper_dir: Path, run_dir: Path | None = None
 ) -> ClaimReport:
-    """Read every source claim and join any saved evidence by claim ID."""
+    """Extract source selections and join saved numerical evidence by ID."""
     inventory = load_claims(claim_inventory)
     quotes = read_quotes(inventory, paper_dir)
     metadata = read_run_metadata(run_dir / "run.json") if run_dir is not None else None
     results = (
-        {r.claim_id: r for r in read_claim_results(run_dir / "claim_results.parquet")}
+        {r.claim_id: r for r in read_claim_evidence(run_dir / "claim_evidence.parquet")}
         if run_dir is not None
         else {}
     )
@@ -58,7 +57,6 @@ def load_claim_report(
         claims=tuple(
             ReportedClaim(
                 claim_id=claim_id,
-                statement=claim.statement,
                 quotes=tuple(
                     PaperPassage(location=location, text=text)
                     for location, text in zip(
@@ -72,31 +70,23 @@ def load_claim_report(
     )
 
 
-_STATUS_STYLES = {
-    ClaimStatus.SUPPORTED: "green",
-    ClaimStatus.NOT_SUPPORTED: "red",
-    ClaimStatus.REQUIRES_JUDGMENT: "yellow",
-    ClaimStatus.INSUFFICIENT_DATA: "yellow",
-}
-
-
 def evidence_table(result: ClaimEvidence) -> Table:
-    """Format stored observations without recalculating measurements or verdicts."""
+    """Format stored observations as a table of numerical measurements."""
     table = Table(box=box.SIMPLE_HEAD, padding=(0, 1))
     for column in (
         "Task",
-        "Accuracy (std)",
+        "Max accuracy (std)",
         "Predictor @ step",
         "Metric",
         "Compute / target",
-        "OK / missing",
+        "Available / unavailable",
     ):
         table.add_column(column, overflow="fold")
     for measurement in result.measurements:
         best = measurement.best
         coverage = f"{measurement.available_comparisons} / {measurement.unavailable_comparisons}"
         if best is None:
-            cells = [measurement.task, "No measurement", "—", "—", "—", coverage]
+            cells = [measurement.task, "—", "—", "—", "—", coverage]
         else:
             cells = [
                 measurement.task,
@@ -111,56 +101,40 @@ def evidence_table(result: ClaimEvidence) -> Table:
 
 
 def print_claim_report(report: ClaimReport, console: Console) -> None:
-    console.print("DataDecide claims and evidence", style="bold")
+    console.print("Paper selections and linked measurements", style="bold")
+    with_measurements = sum(
+        claim.evidence is not None and claim.evidence.has_measurements
+        for claim in report.claims
+    )
+    console.print(
+        f"Selections: {len(report.claims)} | With measurements: {with_measurements} | "
+        f"Without measurements: {len(report.claims) - with_measurements}"
+    )
     if report.run_dir is None:
-        console.print("No saved analysis report found.", style="yellow")
+        console.print("Saved report: none", style="dim")
     else:
         console.print(Text(f"Saved report: {report.run_dir.resolve()}", style="dim"))
-    console.print(
-        "Evidence shows per-task observed maxima, seed standard deviations, compute / target, and available / unavailable comparisons.",
-        style="dim",
-    )
-    console.print(
-        "Full seed scores, FLOPs, and evidence IDs remain in claim_results.parquet.",
-        style="dim",
-    )
     console.print()
     for claim in report.claims:
-        heading = Text(claim.claim_id, style="bold cyan")
-        if claim.evidence is not None:
-            status = claim.evidence.status
-            heading.append(f" · {status}", style=_STATUS_STYLES[status])
-        console.print(heading)
-        console.print(Text(claim.statement, style="bold"))
-        console.print()
+        console.print(Text(claim.claim_id, style="bold cyan"))
         for passage in claim.quotes:
             location = passage.location
-            console.print(
-                Text(
-                    f"{location.section} ({location.source_file}:{location.line})",
-                    style="cyan",
-                )
-            )
-            console.print(Text(passage.text, style="italic"))
+            console.print(Text(f"{location.source_file}:{location.line}", style="cyan"))
+            console.print(Text(passage.text))
             console.print()
-        if claim.evidence is None:
-            console.print("No relevant evidence has been extracted.", style="yellow")
+        result = claim.evidence
+        if result is None:
+            console.print("Linked ranking rows: 0", style="dim")
         else:
-            result = claim.evidence
+            console.print(
+                f"Linked ranking rows: {len(result.evidence_ids)} | "
+                f"Unavailable rows: {len(result.unavailable_ids)}"
+            )
             console.print(evidence_table(result))
-            bounds = [
-                f"{m.task} > {m.accuracy_gt:g}: "
-                + ("pending" if m.passes_bound is None else str(m.passes_bound).lower())
-                for m in result.measurements
-                if m.accuracy_gt is not None
-            ]
-            if bounds:
-                console.print(Text("Bound outcomes: " + "; ".join(bounds)))
-            console.print(Text(f"Criterion / remaining judgment: {result.judgment}"))
             console.print(
                 Text(
-                    "Evidence datasets: "
-                    + ", ".join(("rankings.parquet", *result.supporting_tables)),
+                    "Data tables: "
+                    + ", ".join(("rankings.parquet", *result.related_tables)),
                     style="dim",
                 )
             )

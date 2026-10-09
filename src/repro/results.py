@@ -1,15 +1,6 @@
-"""Computed claim measurements, verdicts, and evidence references."""
+"""Computed measurements and references to linked data rows."""
 
 from dataclasses import dataclass
-from enum import UNIQUE, StrEnum, auto, verify
-
-
-@verify(UNIQUE)
-class ClaimStatus(StrEnum):
-    SUPPORTED = auto()
-    NOT_SUPPORTED = auto()
-    REQUIRES_JUDGMENT = auto()
-    INSUFFICIENT_DATA = auto()
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,16 +22,16 @@ class TaskMeasurement:
     available_comparisons: int
     unavailable_comparisons: int
     best: PredictionMeasurement | None
-    accuracy_gt: float | None
-    passes_bound: bool | None
 
 
 @dataclass(frozen=True, slots=True)
 class ClaimEvidence:
     claim_id: str
-    status: ClaimStatus
     evidence_ids: tuple[int, ...]
     unavailable_ids: tuple[int, ...]
     measurements: tuple[TaskMeasurement, ...]
-    judgment: str
-    supporting_tables: tuple[str, ...]
+    related_tables: tuple[str, ...]
+
+    @property
+    def has_measurements(self) -> bool:
+        return any(measurement.best is not None for measurement in self.measurements)

@@ -1,8 +1,8 @@
 # DataDecide single-scale reproduction
 
 The claim inventory in `configs/repro_claims/magnusson2025-datadecide.toml`
-links unique claims to passages in the bundled paper source. View all claims
-and extracted quotes without downloading anything:
+stores only source coordinates and IDs for passages in the bundled paper.
+View the extracted passages without downloading anything:
 
 ```bash
 uv run python scripts/repro/claims.py
@@ -11,10 +11,10 @@ uv run python scripts/repro/claims.py
 The Rich viewer adds evidence from the most recent completed run for this
 inventory under `outputs/repro/`, searching recursively. Recency is the
 modification time of `run.json`, which evaluation writes last; a completed run
-must also contain `claim_results.parquet`. Incomplete directories and runs for
+must also contain `claim_evidence.parquet`. Incomplete directories and runs for
 other inventories are excluded. If a saved run is malformed, viewing fails
-rather than silently substituting older evidence. Claims missing from the
-selected run explicitly say no relevant evidence has been extracted.
+rather than silently substituting older evidence. Every selection is displayed,
+including those with zero linked measurements.
 
 Select a specific run or a different search directory:
 
@@ -25,10 +25,10 @@ uv run python scripts/repro/claims.py --reports-dir outputs/repro
 uv run python scripts/repro/claims.py --width 120
 ```
 
-The viewer is read-only: it loads saved measurements/verdicts and extracts
+The viewer is read-only: it loads saved measurements and extracts
 paper passages. It does not rerun analysis or require the original OLMES input
-or evaluation TOML. Terminal output uses colors when supported and plain text
-when redirected. The evidence tables show per-task observed maxima, seed
+or evaluation TOML. Terminal output uses Rich formatting and plain text when
+redirected. The evidence tables show per-task observed maxima, seed
 standard deviations, predictor checkpoints/metrics, compute ratios, and coverage.
 Full seed scores, FLOPs, and evidence IDs remain in the saved dataset.
 
@@ -57,17 +57,16 @@ The default experiment lives in
 `configs/repro_evaluations/magnusson2025-datadecide.toml`. It owns run paths,
 paper source directory, target size/step/metric/seeds, predictor seed sets,
 benchmark aggregation, sweep metrics, compute matching tolerance, and claim
-analysis scopes. Claim statements and paper locations remain in the separate
-`repro_claims` inventory.
+row-selection scopes. The separate `repro_claims` inventory contains source
+filenames, line/slice coordinates, and IDs. Paper passages are read at display
+time; there are no authored claim statements or section labels.
 The default evaluation config is also included in the wheel.
 
 Named task and metric groups keep repeated selections in one place. Each
 `[claims.<id>]` entry selects explicit names and/or named groups, an optional
-predictor size and compute range, supporting tables, and the judgment still
-required. Numerical claims reference a criterion in `[criteria]`; the runner
-applies the criterion without branching on claim IDs. The configured
-`accuracy_gt` bound is strict and must be met separately for every selected
-task. These paper wrappers use higher-is-better metrics.
+predictor size and compute range, and related data tables. These are filters
+for collecting measurements. The runner does not assign support labels or
+interpret the paper's wording. These paper wrappers use higher-is-better metrics.
 
 Use `--config PATH` to choose another experiment. Paths inside the TOML resolve
 from the repository root; explicit CLI paths resolve from the current working
@@ -93,9 +92,9 @@ src/
     checkpoints.py        # Observed schedules and compute-budget selection
     sweep.py              # Paper ranking policy and experiment execution
     observations.py       # Typed observations and sweep DataFrame conversion
-    claim_evaluation.py   # Evidence selection and numerical verdicts
-    results.py            # Claim status and computed measurement types
-    datasets.py           # Claim-results Parquet schema and run manifest I/O
+    evidence.py           # Row selection and descriptive measurements
+    results.py            # Computed measurement types and row references
+    datasets.py           # Claim-evidence Parquet schema and run manifest I/O
     reporting.py          # Join claims and saved evidence; render with Rich
     diagnostics/
       curves.py           # Compute/accuracy slopes and reversals
@@ -187,7 +186,7 @@ Outputs under `outputs/repro/ranking/`:
 
 | File | Contents |
 | --- | --- |
-| `claim_results.parquet` | One computed record per claim: verdict, per-task coverage, best observed score and checkpoint/metric/compute/seed details, applied bound, evidence IDs, remaining criterion notes |
+| `claim_evidence.parquet` | Per-selection row links, available/unavailable counts, per-task maxima and their checkpoint/metric/compute/seed details, related data tables |
 | `run.json` | Input SHA-256 and effective configuration, including claim-inventory and paper-source paths |
 | `rankings.parquet` | One row per checkpoint/task/metric, seed accuracies, compute, recipe/pair counts, coverage failures; index `evidence_id` |
 | `checkpoints.csv` | Observed compute and schedule-completion coverage |
@@ -196,41 +195,27 @@ Outputs under `outputs/repro/ranking/`:
 | `matched_compute.csv` | Completed/intermediate evidence IDs, actual compute gaps, accuracy differences |
 | `recipe_crossovers.csv` | Strict recipe-order reversals between adjacent observed completed scales, using seed means |
 
-The evaluator writes numerical results without generating prose summaries.
-`claim_results.parquet` stores per-task maxima and their exact witnesses, the
-three predictor seed accuracies and their population standard deviation,
-coverage counts, the applied strict bound (if any), and its outcome. Evidence
-IDs link to every selected checkpoint/metric row in `rankings.parquet`; the
-separate diagnostic datasets retain curve, proxy, compute-match, and crossover
-measurements. Best observations are descriptive maxima over the selected grid,
-not aggregate evidence that every qualitative assertion is true.
+The evaluator writes numerical datasets. `claim_evidence.parquet` stores
+per-task maxima and their exact witnesses, predictor seed accuracies and their
+population standard deviation, and available/unavailable comparison counts.
+Evidence IDs link to every selected checkpoint/metric row in `rankings.parquet`;
+the separate diagnostic tables retain curve, proxy, compute-match, and crossover
+measurements. The viewer labels maxima explicitly and lists the related tables.
 
-The claims viewer reads persisted verdicts and measurements, then uses the
-claim inventory's source locations to extract quotes from paper text. Numerical
-values and verdicts are not recalculated during viewing. Authored `judgment`
-text in the config describes the analysis criterion or a remaining research
-decision; it is not a computed finding.
+The claims viewer extracts each selected passage directly from its source
+coordinates and presents saved measurements as Rich tables. Scientific text
+comes from the paper; measurements come from code applied to data. IDs,
+filenames, table headings, and availability counts are presentation metadata.
+There are no authored paraphrases, findings, judgments, or support verdicts.
+
+The summary counts a selection as having measurements when at least one
+configured task has an available observation. Partial coverage still counts;
+per-task available/unavailable counts remain visible. This is an accounting
+of linked data, not an assessment of the paper's statements. The current runner
+collects OLMES ranking measurements; selections without configured measurements
+remain visible with zero linked rows.
 
 Sweep observations have a frozen typed owner in `repro.observations`; the
 DataFrame conversion owns their tabular column names and null representation.
 Diagnostic functions take only their required metric, task, and tolerance
 arguments; the runner supplies these from validated configuration.
-
-The candidate claim scopes are declared in the evaluation TOML and applied by
-`repro.claim_evaluation`. DD-0014, DD-0015,
-and DD-0016 state explicit numerical existence bounds: at least one observed
-continuous proxy/checkpoint must exceed 0.80 decision accuracy within 0.0001
-of target compute. ARC is evaluated separately on both Easy and Challenge;
-both must satisfy the bound. `supported` is observed numerical support,
-`not_supported` means the fully available observed grid does not meet the
-bound, and `insufficient_data` records absent evidence that prevents a verdict.
-These are observed-grid checks, not statistical significance or universal
-reproducibility guarantees.
-
-Other candidate claims receive `requires_judgment`, with supporting rows and a
-specific remaining decision. Terms such as “strong,” “roughly log-linear,”
-“equivalent,” “small,” and “frequently” do not have numerical tolerances in the
-paper. Inspect their evidence and settle those criteria before relying on a
-reproduction verdict. DD-0011 retains the observed 150M curve rather than
-pretending its latest checkpoint is fully trained. DD-0207 also requires
-checking metric definitions for its incorrect-answer penalty assertion.

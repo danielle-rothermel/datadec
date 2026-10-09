@@ -10,7 +10,7 @@ import pandas as pd
 
 from datadec.data.artifacts import DataArtifacts
 from repro.aggregation import load_evaluations
-from repro.claim_evaluation import evaluate_claims
+from repro.evidence import collect_claim_evidence
 from repro.claims import load_claims
 from repro.config import DEFAULT_CONFIG_PATH, EvaluationConfig, load_evaluation_config
 from repro.checkpoints import observed_checkpoints
@@ -21,7 +21,7 @@ from repro.diagnostics.proxies import proxy_comparisons
 from repro.datasets import (
     InputArtifact,
     RunMetadata,
-    write_claim_results,
+    write_claim_evidence,
     write_run_metadata,
 )
 from repro.results import ClaimEvidence
@@ -77,9 +77,7 @@ def resolve_config(args: argparse.Namespace) -> EvaluationConfig:
 def validate_run_claims(config: EvaluationConfig) -> None:
     """Check configured claim references before starting the expensive sweep."""
     claims = load_claims(config.run.claim_inventory)
-    unknown = (
-        set(config.claims) | set(config.skipped_math_code_claims)
-    ) - claims.keys()
+    unknown = set(config.claims) - claims.keys()
     if unknown:
         raise ValueError(f"unknown claim IDs in evaluation config: {sorted(unknown)}")
 
@@ -126,7 +124,7 @@ def write_run_outputs(
     output = config.run.output_dir
     output.mkdir(parents=True, exist_ok=True)
     write_analysis_tables(output, evaluations, sweep, config)
-    write_claim_results(evidence, output / "claim_results.parquet")
+    write_claim_evidence(evidence, output / "claim_evidence.parquet")
     metadata = RunMetadata(
         input=InputArtifact(path=source.resolve(), sha256=source_sha256),
         configuration=config,
@@ -151,7 +149,7 @@ def main() -> None:
     source_sha256 = hash_file(source)
     evaluations = load_evaluations(config.run.data_dir, config)
     sweep = sweep_rankings(evaluations, config, progress=LOGGER.info)
-    evidence = evaluate_claims(sweep, config)
+    evidence = collect_claim_evidence(sweep, config)
     write_run_outputs(evaluations, sweep, evidence, config, source, source_sha256)
     log_saved_report(config.run.output_dir)
 

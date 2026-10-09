@@ -46,23 +46,15 @@ class AggregationSettings(_ConfigModel):
     subject_count: int = Field(gt=0)
 
 
-class AccuracyBound(_ConfigModel):
-    """An existence bound: at least one eligible result > accuracy_gt per task."""
-
-    accuracy_gt: float = Field(ge=0, le=1)
-
-
-class ClaimAnalysis(_ConfigModel):
+class EvidenceSelection(_ConfigModel):
     tasks: tuple[str, ...] = ()
     task_groups: tuple[str, ...] = ()
     metrics: tuple[str, ...] = ()
     metric_groups: tuple[str, ...] = ()
-    judgment: str
     min_compute_ratio: float = Field(default=0, ge=0, le=1)
     max_compute_ratio: float = Field(default=1, ge=0, le=1)
     predictor_size: str | None = None
-    criterion: str | None = None
-    supporting_tables: tuple[str, ...] | None = Field(default=None, min_length=1)
+    related_tables: tuple[str, ...] | None = Field(default=None, min_length=1)
 
     @model_validator(mode="after")
     def validate_range(self) -> Self:
@@ -94,10 +86,8 @@ class EvaluationConfig(_ConfigModel):
     sweep_metric_group: str
     task_groups: dict[str, tuple[str, ...]]
     metric_groups: dict[str, tuple[str, ...]]
-    criteria: dict[str, AccuracyBound]
-    claims: dict[str, ClaimAnalysis] = Field(min_length=1)
-    default_supporting_tables: tuple[str, ...] = Field(min_length=1)
-    skipped_math_code_claims: tuple[str, ...]
+    claims: dict[str, EvidenceSelection] = Field(min_length=1)
+    default_related_tables: tuple[str, ...] = Field(min_length=1)
 
     @property
     def benchmarks(self) -> tuple[str, ...]:
@@ -111,10 +101,10 @@ class EvaluationConfig(_ConfigModel):
     def metrics(self) -> tuple[str, ...]:
         return self.metric_groups[self.sweep_metric_group]
 
-    def tasks_for(self, claim: ClaimAnalysis) -> tuple[str, ...]:
+    def tasks_for(self, claim: EvidenceSelection) -> tuple[str, ...]:
         return _resolve_selection(claim.tasks, claim.task_groups, self.task_groups)
 
-    def metrics_for(self, claim: ClaimAnalysis) -> tuple[str, ...]:
+    def metrics_for(self, claim: EvidenceSelection) -> tuple[str, ...]:
         return _resolve_selection(
             claim.metrics, claim.metric_groups, self.metric_groups
         )
@@ -156,10 +146,6 @@ class EvaluationConfig(_ConfigModel):
                 self.metrics
             ):
                 raise ValueError(f"invalid metrics for {claim_id}")
-            if claim.criterion is not None and claim.criterion not in self.criteria:
-                raise ValueError(f"unknown criterion for {claim_id}: {claim.criterion}")
-        if set(self.claims) & set(self.skipped_math_code_claims):
-            raise ValueError("an evaluated claim cannot also be skipped")
 
     @model_validator(mode="after")
     def validate_references(self) -> Self:

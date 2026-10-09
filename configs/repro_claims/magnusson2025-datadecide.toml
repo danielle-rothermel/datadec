@@ -2,7 +2,7 @@
 # Ian Magnusson et al. (2025), arXiv:2504.11393v2, CC BY 4.0.
 # Paper text and source provenance: docs/papers/2504.11393v2/README.md.
 # Claim IDs originate in PR #43 at e56139f8a9539cca4c7d9847279b3b02d77d7f5c.
-# Each claim owns one assertion and all its paper locations.
+# Each ID selects one or more verbatim paper passages.
 # original_entry_ids records the registry entries grouped under that claim.
 # Coordinates: line is 1-based; start/end are 0-based Python character offsets,
 # with end exclusive. Quotes preserve the paper source and LaTeX macros.
@@ -11,7 +11,6 @@
 # DD-0356, DD-0368, DD-0369, DD-0413, DD-0414.
 
 [claims.DD-0010]
-statement = "Single-scale recipe rankings provide a strong baseline for predicting 1B recipe rankings."
 original_entry_ids = ["DD-0010", "DD-0192"]
 
 [[claims.DD-0010.locations]]
@@ -19,17 +18,14 @@ source_file = "example_paper.tex"
 line = 239
 start = 0
 end = 199
-section = "Abstract"
 
 [[claims.DD-0010.locations]]
 source_file = "example_paper.tex"
 line = 391
 start = 267
 end = 375
-section = "Results / Scaling-law comparison"
 
 [claims.DD-0011]
-statement = "A 150M single-scale ranking gets approximately 80% of pairwise comparisons correct at 1B."
 original_entry_ids = ["DD-0011"]
 
 [[claims.DD-0011.locations]]
@@ -37,10 +33,8 @@ source_file = "example_paper.tex"
 line = 239
 start = 0
 end = 199
-section = "Abstract"
 
 [claims.DD-0013]
-statement = "The evaluated scaling-law methods do not exceed the single-scale compute-decision frontier."
 original_entry_ids = ["DD-0013", "DD-0054", "DD-0180", "DD-0181"]
 
 [[claims.DD-0013.locations]]
@@ -48,31 +42,26 @@ source_file = "example_paper.tex"
 line = 240
 start = 0
 end = 187
-section = "Abstract"
 
 [[claims.DD-0013.locations]]
 source_file = "example_paper.tex"
 line = 286
 start = 43
 end = 170
-section = "Introduction"
 
 [[claims.DD-0013.locations]]
 source_file = "example_paper.tex"
 line = 378
 start = 85
 end = 183
-section = "Figure: scaling-law decision accuracy"
 
 [[claims.DD-0013.locations]]
 source_file = "example_paper.tex"
 line = 384
 start = 8
 end = 114
-section = "Results / Scaling-law comparison"
 
 [claims.DD-0014]
-statement = "Using continuous likelihood proxy metrics makes MMLU more than 80% predictable at the target 1B scale with 0.01% of target compute."
 original_entry_ids = ["DD-0014"]
 
 [[claims.DD-0014.locations]]
@@ -80,10 +69,8 @@ source_file = "example_paper.tex"
 line = 240
 start = 188
 end = 437
-section = "Abstract"
 
 [claims.DD-0015]
-statement = "Using continuous likelihood proxy metrics makes ARC more than 80% predictable at the target 1B scale with 0.01% of target compute."
 original_entry_ids = ["DD-0015"]
 
 [[claims.DD-0015.locations]]
@@ -91,10 +78,8 @@ source_file = "example_paper.tex"
 line = 240
 start = 188
 end = 437
-section = "Abstract"
 
 [claims.DD-0016]
-statement = "Using continuous likelihood proxy metrics makes HellaSwag more than 80% predictable at the target 1B scale with 0.01% of target compute."
 original_entry_ids = ["DD-0016"]
 
 [[claims.DD-0016.locations]]
@@ -102,10 +87,8 @@ source_file = "example_paper.tex"
 line = 240
 start = 188
 end = 437
-section = "Abstract"
 
 [claims.DD-0017]
-statement = "Using continuous likelihood proxy metrics makes MBPP more than 80% predictable at the target 1B scale with 0.01% of target compute."
 original_entry_ids = ["DD-0017"]
 
 [[claims.DD-0017.locations]]
@@ -113,10 +96,8 @@ source_file = "example_paper.tex"
 line = 240
 start = 188
 end = 437
-section = "Abstract"
 
 [claims.DD-0018]
-statement = "Using continuous likelihood proxy metrics makes HumanEval more than 80% predictable at the target 1B scale with 0.01% of target compute."
 original_entry_ids = ["DD-0018"]
 
 [[claims.DD-0018.locations]]
@@ -124,10 +105,8 @@ source_file = "example_paper.tex"
 line = 240
 start = 188
 end = 437
-section = "Abstract"
 
 [claims.DD-0051]
-statement = "The compute required for accurate recipe decisions differs substantially across tasks."
 original_entry_ids = ["DD-0051", "DD-0166"]
 
 [[claims.DD-0051.locations]]
@@ -135,17 +114,14 @@ source_file = "example_paper.tex"
 line = 285
 start = 39
 end = 130
-section = "Introduction"
 
 [[claims.DD-0051.locations]]
 source_file = "example_paper.tex"
 line = 367
 start = 138
 end = 213
-section = "Results / Compute for data decisions"
 
 [claims.DD-0052]
-statement = "MMLU and ARC require less compute than HellaSwag to achieve comparable decision accuracy."
 original_entry_ids = ["DD-0052", "DD-0167"]
 
 [[claims.DD-0052.locations]]
@@ -153,17 +129,14 @@ source_file = "example_paper.tex"
 line = 285
 start = 131
 end = 271
-section = "Introduction"
 
 [[claims.DD-0052.locations]]
 source_file = "example_paper.tex"
 line = 367
 start = 214
 end = 290
-section = "Results / Compute for data decisions"
 
 [claims.DD-0053]
-statement = "SocialIQA is difficult to predict at all examined scales."
 original_entry_ids = ["DD-0053"]
 
 [[claims.DD-0053.locations]]
@@ -171,10 +144,8 @@ source_file = "example_paper.tex"
 line = 285
 start = 131
 end = 271
-section = "Introduction"
 
 [claims.DD-0055]
-statement = "At small scales, continuous answer-likelihood metrics are better or equivalent decision predictors than target accuracy."
 original_entry_ids = ["DD-0055"]
 
 [[claims.DD-0055.locations]]
@@ -182,10 +153,8 @@ source_file = "example_paper.tex"
 line = 287
 start = 47
 end = 208
-section = "Introduction"
 
 [claims.DD-0056]
-statement = "Lower seed noise and wider between-recipe spread help explain better decision accuracy."
 original_entry_ids = ["DD-0056", "DD-0211"]
 
 [[claims.DD-0056.locations]]
@@ -193,17 +162,14 @@ source_file = "example_paper.tex"
 line = 288
 start = 46
 end = 231
-section = "Introduction"
 
 [[claims.DD-0056.locations]]
 source_file = "example_paper.tex"
 line = 429
 start = 8
 end = 146
-section = "Results / Benchmark predictability"
 
 [claims.DD-0057]
-statement = "Proxy metrics can improve the noise/spread traits that explain decision quality."
 original_entry_ids = ["DD-0057"]
 
 [[claims.DD-0057.locations]]
@@ -211,10 +177,8 @@ source_file = "example_paper.tex"
 line = 288
 start = 46
 end = 231
-section = "Introduction"
 
 [claims.DD-0098]
-statement = "At the 1B 5x Chinchilla scale, between-run standard deviation can reach 2 percentage points of accuracy for some recipes on most tasks."
 original_entry_ids = ["DD-0098"]
 
 [[claims.DD-0098.locations]]
@@ -222,10 +186,8 @@ source_file = "example_paper.tex"
 line = 304
 start = 420
 end = 585
-section = "Methods / The DataDecide suite"
 
 [claims.DD-0119]
-statement = "No explored multi-scale variant makes substantially better decisions than the baseline."
 original_entry_ids = ["DD-0119"]
 
 [[claims.DD-0119.locations]]
@@ -233,10 +195,8 @@ source_file = "example_paper.tex"
 line = 324
 start = 0
 end = 232
-section = "Methods / Prediction methods"
 
 [claims.DD-0142]
-statement = "All selected tasks except BoolQ receive non-trivial performance at the examined model scales."
 original_entry_ids = ["DD-0142"]
 
 [[claims.DD-0142.locations]]
@@ -244,10 +204,8 @@ source_file = "example_paper.tex"
 line = 345
 start = 573
 end = 689
-section = "Methods / Performance evaluation with OLMES"
 
 [claims.DD-0148]
-statement = "Recipe decision accuracy varies substantially between tasks at a given compute budget."
 original_entry_ids = ["DD-0148", "DD-0174"]
 
 [[claims.DD-0148.locations]]
@@ -255,17 +213,14 @@ source_file = "example_paper.tex"
 line = 350
 start = 180
 end = 374
-section = "Figure: per-task decision accuracy"
 
 [[claims.DD-0148.locations]]
 source_file = "example_paper.tex"
 line = 372
 start = 248
 end = 514
-section = "Results / Compute for data decisions"
 
 [claims.DD-0149]
-statement = "ARC Easy is predictable at small scales."
 original_entry_ids = ["DD-0149"]
 
 [[claims.DD-0149.locations]]
@@ -273,10 +228,8 @@ source_file = "example_paper.tex"
 line = 350
 start = 180
 end = 374
-section = "Figure: per-task decision accuracy"
 
 [claims.DD-0150]
-statement = "HellaSwag requires substantially more compute to predict than ARC Easy."
 original_entry_ids = ["DD-0150"]
 
 [[claims.DD-0150.locations]]
@@ -284,10 +237,8 @@ source_file = "example_paper.tex"
 line = 350
 start = 180
 end = 374
-section = "Figure: per-task decision accuracy"
 
 [claims.DD-0164]
-statement = "More compute makes better decisions."
 original_entry_ids = ["DD-0164"]
 
 [[claims.DD-0164.locations]]
@@ -295,10 +246,8 @@ source_file = "example_paper.tex"
 line = 367
 start = 8
 end = 44
-section = "Results / Compute for data decisions"
 
 [claims.DD-0165]
-statement = "Intermediate checkpoints make decisions as accurately as compute-equivalent final checkpoints."
 original_entry_ids = ["DD-0165"]
 
 [[claims.DD-0165.locations]]
@@ -306,10 +255,8 @@ source_file = "example_paper.tex"
 line = 367
 start = 45
 end = 137
-section = "Results / Compute for data decisions"
 
 [claims.DD-0168]
-statement = "The remaining OLMES tasks are markedly less reliable across examined scales."
 original_entry_ids = ["DD-0168"]
 
 [[claims.DD-0168.locations]]
@@ -317,10 +264,8 @@ source_file = "example_paper.tex"
 line = 367
 start = 291
 end = 387
-section = "Results / Compute for data decisions"
 
 [claims.DD-0169]
-statement = "Aggregate OLMES decision accuracy has a positive, roughly log-linear relationship with experimental compute."
 original_entry_ids = ["DD-0169"]
 
 [[claims.DD-0169.locations]]
@@ -328,10 +273,8 @@ source_file = "example_paper.tex"
 line = 370
 start = 0
 end = 217
-section = "Results / Compute for data decisions"
 
 [claims.DD-0175]
-statement = "ARC Easy remains predictable with five orders of magnitude less compute."
 original_entry_ids = ["DD-0175"]
 
 [[claims.DD-0175.locations]]
@@ -339,10 +282,8 @@ source_file = "example_paper.tex"
 line = 372
 start = 248
 end = 514
-section = "Results / Compute for data decisions"
 
 [claims.DD-0176]
-statement = "BoolQ exceeds trivial decision accuracy only at intermediate checkpoints of target runs."
 original_entry_ids = ["DD-0176"]
 
 [[claims.DD-0176.locations]]
@@ -350,10 +291,8 @@ source_file = "example_paper.tex"
 line = 372
 start = 248
 end = 514
-section = "Results / Compute for data decisions"
 
 [claims.DD-0177]
-statement = "HellaSwag has an insensitive region followed by a roughly log-linear rise after a compute threshold."
 original_entry_ids = ["DD-0177"]
 
 [[claims.DD-0177.locations]]
@@ -361,10 +300,8 @@ source_file = "example_paper.tex"
 line = 372
 start = 515
 end = 673
-section = "Results / Compute for data decisions"
 
 [claims.DD-0178]
-statement = "SocialIQA has an insensitive region followed by a roughly log-linear rise after a compute threshold."
 original_entry_ids = ["DD-0178"]
 
 [[claims.DD-0178.locations]]
@@ -372,10 +309,8 @@ source_file = "example_paper.tex"
 line = 372
 start = 515
 end = 673
-section = "Results / Compute for data decisions"
 
 [claims.DD-0179]
-statement = "WinoGrande has an insensitive region followed by a roughly log-linear rise after a compute threshold."
 original_entry_ids = ["DD-0179"]
 
 [[claims.DD-0179.locations]]
@@ -383,10 +318,8 @@ source_file = "example_paper.tex"
 line = 372
 start = 515
 end = 673
-section = "Results / Compute for data decisions"
 
 [claims.DD-0189]
-statement = "The 2-parameter and 3-parameter variants are among the top decision-accuracy methods."
 original_entry_ids = ["DD-0189"]
 
 [[claims.DD-0189.locations]]
@@ -394,10 +327,8 @@ source_file = "example_paper.tex"
 line = 389
 start = 400
 end = 469
-section = "Results / Scaling-law comparison"
 
 [claims.DD-0194]
-statement = "Observed scaling trends cross over frequently."
 original_entry_ids = ["DD-0194"]
 
 [[claims.DD-0194.locations]]
@@ -405,10 +336,8 @@ source_file = "example_paper.tex"
 line = 391
 start = 376
 end = 517
-section = "Results / Scaling-law comparison"
 
 [claims.DD-0196]
-statement = "At small scales, character-normalized Correct Prob and Total Prob are better or equivalent decision predictors than target Accuracy."
 original_entry_ids = ["DD-0196"]
 
 [[claims.DD-0196.locations]]
@@ -416,10 +345,8 @@ source_file = "example_paper.tex"
 line = 400
 start = 8
 end = 238
-section = "Results / Proxy metrics"
 
 [claims.DD-0197]
-statement = "Proxy-metric trends are similar across length normalizations."
 original_entry_ids = ["DD-0197"]
 
 [[claims.DD-0197.locations]]
@@ -427,10 +354,8 @@ source_file = "example_paper.tex"
 line = 404
 start = 178
 end = 317
-section = "Results / Proxy metrics"
 
 [claims.DD-0198]
-statement = "Character normalization is empirically optimal for most observed tasks."
 original_entry_ids = ["DD-0198"]
 
 [[claims.DD-0198.locations]]
@@ -438,10 +363,8 @@ source_file = "example_paper.tex"
 line = 404
 start = 178
 end = 317
-section = "Results / Proxy metrics"
 
 [claims.DD-0199]
-statement = "Correct Prob or Total Prob matches or exceeds every other metric at most small scales."
 original_entry_ids = ["DD-0199"]
 
 [[claims.DD-0199.locations]]
@@ -449,10 +372,8 @@ source_file = "example_paper.tex"
 line = 406
 start = 0
 end = 117
-section = "Results / Proxy metrics"
 
 [claims.DD-0202]
-statement = "Across tasks, proxy curves follow one of two distinct trend types."
 original_entry_ids = ["DD-0202"]
 
 [[claims.DD-0202.locations]]
@@ -460,10 +381,8 @@ source_file = "example_paper.tex"
 line = 408
 start = 0
 end = 69
-section = "Results / Proxy metrics"
 
 [claims.DD-0203]
-statement = "In one trend type, proxy metrics are nearly indistinguishable and improve with compute."
 original_entry_ids = ["DD-0203"]
 
 [[claims.DD-0203.locations]]
@@ -471,10 +390,8 @@ source_file = "example_paper.tex"
 line = 408
 start = 70
 end = 344
-section = "Results / Proxy metrics"
 
 [claims.DD-0204]
-statement = "In the other trend type, Correct Prob and Total Prob stay flat while other metrics rise toward them near full target compute."
 original_entry_ids = ["DD-0204"]
 
 [[claims.DD-0204.locations]]
@@ -482,10 +399,8 @@ source_file = "example_paper.tex"
 line = 408
 start = 70
 end = 344
-section = "Results / Proxy metrics"
 
 [claims.DD-0205]
-statement = "Within the last order of magnitude below target compute, Accuracy and other metrics tend to overtake Correct Prob and Total Prob."
 original_entry_ids = ["DD-0205"]
 
 [[claims.DD-0205.locations]]
@@ -493,10 +408,8 @@ source_file = "example_paper.tex"
 line = 408
 start = 345
 end = 553
-section = "Results / Proxy metrics"
 
 [claims.DD-0206]
-statement = "Correct Prob and Total Prob sometimes decrease in decision accuracy near target compute."
 original_entry_ids = ["DD-0206"]
 
 [[claims.DD-0206.locations]]
@@ -504,10 +417,8 @@ source_file = "example_paper.tex"
 line = 408
 start = 345
 end = 553
-section = "Results / Proxy metrics"
 
 [claims.DD-0207]
-statement = "Norm Correct Prob and Margin trend with Accuracy and penalize probability on incorrect answers."
 original_entry_ids = ["DD-0207"]
 
 [[claims.DD-0207.locations]]
@@ -515,10 +426,8 @@ source_file = "example_paper.tex"
 line = 408
 start = 554
 end = 732
-section = "Results / Proxy metrics"
 
 [claims.DD-0208]
-statement = "Five tasks benefit at smaller scales from Correct Prob or Total Prob rather than Accuracy, Norm Correct Prob, or Margin."
 original_entry_ids = ["DD-0208"]
 
 [[claims.DD-0208.locations]]
@@ -526,10 +435,8 @@ source_file = "example_paper.tex"
 line = 414
 start = 110
 end = 417
-section = "Figure: proxy metric decision accuracy"
 
 [claims.DD-0209]
-statement = "At 150M with Correct Prob, HellaSwag succeeds with low run-to-run variance."
 original_entry_ids = ["DD-0209"]
 
 [[claims.DD-0209.locations]]
@@ -537,10 +444,8 @@ source_file = "example_paper.tex"
 line = 422
 start = 81
 end = 267
-section = "Figure: seed noise and recipe spread"
 
 [claims.DD-0210]
-statement = "At 150M with Correct Prob, SocialIQA has widely spread performance across data recipes."
 original_entry_ids = ["DD-0210"]
 
 [[claims.DD-0210.locations]]
@@ -548,10 +453,8 @@ source_file = "example_paper.tex"
 line = 422
 start = 81
 end = 267
-section = "Figure: seed noise and recipe spread"
 
 [claims.DD-0212]
-statement = "Correct Prob widens spread or reduces noise for many tasks."
 original_entry_ids = ["DD-0212"]
 
 [[claims.DD-0212.locations]]
@@ -559,10 +462,8 @@ source_file = "example_paper.tex"
 line = 429
 start = 147
 end = 219
-section = "Results / Benchmark predictability"
 
 [claims.DD-0213]
-statement = "Continuous correct-answer likelihood makes code recipe rankings predictable where accuracy-based predictors are near trivial."
 original_entry_ids = ["DD-0213", "DD-0221"]
 
 [[claims.DD-0213.locations]]
@@ -570,17 +471,14 @@ source_file = "example_paper.tex"
 line = 429
 start = 220
 end = 336
-section = "Results / Benchmark predictability"
 
 [[claims.DD-0213.locations]]
 source_file = "example_paper.tex"
 line = 438
 start = 13
 end = 182
-section = "Figure: math and code decision accuracy"
 
 [claims.DD-0218]
-statement = "MMLU predictability is characterized by low run-to-run noise."
 original_entry_ids = ["DD-0218"]
 
 [[claims.DD-0218.locations]]
@@ -588,10 +486,8 @@ source_file = "example_paper.tex"
 line = 432
 start = 599
 end = 780
-section = "Results / Benchmark predictability"
 
 [claims.DD-0219]
-statement = "ARC Easy predictability is characterized by wide recipe spread."
 original_entry_ids = ["DD-0219"]
 
 [[claims.DD-0219.locations]]
@@ -599,10 +495,8 @@ source_file = "example_paper.tex"
 line = 432
 start = 599
 end = 780
-section = "Results / Benchmark predictability"
 
 [claims.DD-0220]
-statement = "Correct Prob improvements often align with lower noise or wider spread."
 original_entry_ids = ["DD-0220"]
 
 [[claims.DD-0220.locations]]
@@ -610,10 +504,8 @@ source_file = "example_paper.tex"
 line = 432
 start = 781
 end = 903
-section = "Results / Benchmark predictability"
 
 [claims.DD-0222]
-statement = "Common math tasks stay near trivial decision accuracy regardless of proxy metric."
 original_entry_ids = ["DD-0222"]
 
 [[claims.DD-0222.locations]]
@@ -621,10 +513,8 @@ source_file = "example_paper.tex"
 line = 438
 start = 183
 end = 270
-section = "Figure: math and code decision accuracy"
 
 [claims.DD-0224]
-statement = "Correct Prob raises code-task decision accuracy from trivial to approximately 80%."
 original_entry_ids = ["DD-0224"]
 
 [[claims.DD-0224.locations]]
@@ -632,10 +522,8 @@ source_file = "example_paper.tex"
 line = 442
 start = 245
 end = 351
-section = "Results / Benchmark predictability"
 
 [claims.DD-0225]
-statement = "Correct Prob lets small code-task models exceed the noise floor while predicting large-scale Accuracy."
 original_entry_ids = ["DD-0225"]
 
 [[claims.DD-0225.locations]]
@@ -643,10 +531,8 @@ source_file = "example_paper.tex"
 line = 442
 start = 352
 end = 491
-section = "Results / Benchmark predictability"
 
 [claims.DD-0226]
-statement = "Minerva and GSM8K do not gain comparable predictability from switching the proxy to Correct Prob."
 original_entry_ids = ["DD-0226"]
 
 [[claims.DD-0226.locations]]
@@ -654,10 +540,8 @@ source_file = "example_paper.tex"
 line = 442
 start = 492
 end = 621
-section = "Results / Benchmark predictability"
 
 [claims.DD-0227]
-statement = "Minerva and GSM8K exceed 80% decision accuracy if the target metric is changed to Correct Prob."
 original_entry_ids = ["DD-0227"]
 
 [[claims.DD-0227.locations]]
@@ -665,10 +549,8 @@ source_file = "example_paper.tex"
 line = 442
 start = 622
 end = 823
-section = "Results / Benchmark predictability"
 
 [claims.DD-0301]
-statement = "3-parameter with helpers and >50% checkpoints: relative error 5.6; absolute error 2.6."
 original_entry_ids = ["DD-0301"]
 
 [[claims.DD-0301.locations]]
@@ -676,10 +558,8 @@ source_file = "tables/pred_error.tex"
 line = 6
 start = 0
 end = 63
-section = "Table: scaling-law prediction errors"
 
 [claims.DD-0302]
-statement = "3-parameter with helper points: relative error 6.0; absolute error 2.8."
 original_entry_ids = ["DD-0302"]
 
 [[claims.DD-0302.locations]]
@@ -687,10 +567,8 @@ source_file = "tables/pred_error.tex"
 line = 7
 start = 0
 end = 45
-section = "Table: scaling-law prediction errors"
 
 [claims.DD-0303]
-statement = "3-parameter step 2 fit with >50% checkpoints: relative error 5.9; absolute error 2.9."
 original_entry_ids = ["DD-0303"]
 
 [[claims.DD-0303.locations]]
@@ -698,10 +576,8 @@ source_file = "tables/pred_error.tex"
 line = 8
 start = 0
 end = 62
-section = "Table: scaling-law prediction errors"
 
 [claims.DD-0304]
-statement = "3-parameter: relative error 6.5; absolute error 3.1."
 original_entry_ids = ["DD-0304"]
 
 [[claims.DD-0304.locations]]
@@ -709,10 +585,8 @@ source_file = "tables/pred_error.tex"
 line = 9
 start = 0
 end = 26
-section = "Table: scaling-law prediction errors"
 
 [claims.DD-0305]
-statement = "2-parameter: relative error 6.5; absolute error 3.2."
 original_entry_ids = ["DD-0305"]
 
 [[claims.DD-0305.locations]]
@@ -720,10 +594,8 @@ source_file = "tables/pred_error.tex"
 line = 10
 start = 0
 end = 26
-section = "Table: scaling-law prediction errors"
 
 [claims.DD-0306]
-statement = "5-parameter, single step: relative error 42.8; absolute error 17.4."
 original_entry_ids = ["DD-0306"]
 
 [[claims.DD-0306.locations]]
@@ -731,10 +603,8 @@ source_file = "tables/pred_error.tex"
 line = 11
 start = 0
 end = 41
-section = "Table: scaling-law prediction errors"
 
 [claims.DD-0307]
-statement = "3-parameter, single step: relative error 42.9; absolute error 42.3."
 original_entry_ids = ["DD-0307"]
 
 [[claims.DD-0307.locations]]
@@ -742,10 +612,8 @@ source_file = "tables/pred_error.tex"
 line = 12
 start = 0
 end = 41
-section = "Table: scaling-law prediction errors"
 
 [claims.DD-0308]
-statement = "5-parameter: relative error 230.8; absolute error 65.4."
 original_entry_ids = ["DD-0308"]
 
 [[claims.DD-0308.locations]]
@@ -753,10 +621,8 @@ source_file = "tables/pred_error.tex"
 line = 13
 start = 0
 end = 29
-section = "Table: scaling-law prediction errors"
 
 [claims.DD-0311]
-statement = "Prediction errors are comparable among scaling-law variants other than single-step and five-parameter methods."
 original_entry_ids = ["DD-0311", "DD-0330"]
 
 [[claims.DD-0311.locations]]
@@ -764,17 +630,14 @@ source_file = "example_paper.tex"
 line = 512
 start = 157
 end = 377
-section = "Table: scaling-law prediction errors"
 
 [[claims.DD-0311.locations]]
 source_file = "example_paper.tex"
 line = 564
 start = 103
 end = 230
-section = "Appendix / Scaling-law variants"
 
 [claims.DD-0312]
-statement = "Single-step and 5-parameter error patterns roughly follow their compute-decision-frontier performance."
 original_entry_ids = ["DD-0312"]
 
 [[claims.DD-0312.locations]]
@@ -782,4 +645,3 @@ source_file = "example_paper.tex"
 line = 512
 start = 157
 end = 377
-section = "Table: scaling-law prediction errors"

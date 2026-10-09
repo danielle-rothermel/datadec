@@ -64,8 +64,7 @@ def test_main_runs_custom_toml_and_writes_effective_config(tmp_path, config):
     # A small complete experiment exercises config loading, aggregation, all
     # runner helpers, and report serialization through the actual entry point.
     source = f'''sweep_metric_group = "all"
-default_supporting_tables = ["curves.csv"]
-skipped_math_code_claims = []
+default_related_tables = ["curves.csv"]
 
 [run]
 data_dir = "data"
@@ -97,14 +96,10 @@ benchmarks = ["mmlu"]
 [metric_groups]
 all = ["primary_metric"]
 primary = ["primary_metric"]
-[criteria.high_predictability]
-accuracy_gt = 0.8
 
 [claims.DD-0014]
 tasks = ["mmlu"]
 metric_groups = ["primary"]
-criterion = "high_predictability"
-judgment = "Configured numerical bound."
 '''
     config_path = tmp_path / "evaluation.toml"
     config_path.write_text(source)
@@ -165,7 +160,7 @@ judgment = "Configured numerical bound."
         "recipe_crossovers.csv",
         "matched_compute.csv",
         "checkpoints.csv",
-        "claim_results.parquet",
+        "claim_evidence.parquet",
         "run.json",
     }
     # Reporting must use persisted measurements and config, with no OLMES read
@@ -185,19 +180,19 @@ judgment = "Configured numerical bound."
         text=True,
         check=True,
     )
-    from repro.datasets import read_claim_results
+    from repro.datasets import read_claim_evidence
 
-    claim = read_claim_results(output / "claim_results.parquet")[0]
-    assert claim.status == "supported"
+    claim = read_claim_evidence(output / "claim_evidence.parquet")[0]
     assert claim.measurements[0].best.decision_accuracy == 1.0
     from repro.claims import load_claims, read_quotes
 
     quotes = read_quotes(
         load_claims(ROOT / config.run.claim_inventory), ROOT / config.run.paper_dir
     )
-    assert "DD-0014 · supported" in viewed.stdout
+    assert "DD-0014" in viewed.stdout
+    assert "With measurements: 1 | Without measurements: 63" in viewed.stdout
     assert "1.000000" in viewed.stdout
-    assert "No relevant evidence has been extracted." in viewed.stdout
+    assert "Linked ranking rows: 0" in viewed.stdout
     # Rich wraps passages for the terminal; the loaded source remains exact.
     from repro.reporting import load_claim_report
 

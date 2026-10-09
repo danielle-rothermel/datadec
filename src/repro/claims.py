@@ -17,14 +17,12 @@ class QuoteLocation:
     line: int
     start: int
     end: int
-    section: str
 
 
 @dataclass(frozen=True, slots=True)
 class Claim:
-    """One assertion with its occurrences in the paper."""
+    """Source selections grouped under a stable ID."""
 
-    statement: str
     locations: tuple[QuoteLocation, ...]
     original_entry_ids: tuple[str, ...]
 
@@ -36,7 +34,6 @@ class _QuoteLocationConfig(BaseModel):
     line: int = Field(ge=1)
     start: int = Field(ge=0)
     end: int = Field(gt=0)
-    section: str
 
     @model_validator(mode="after")
     def validate_character_range(self) -> Self:
@@ -48,7 +45,6 @@ class _QuoteLocationConfig(BaseModel):
 class _ClaimConfig(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    statement: str
     locations: tuple[_QuoteLocationConfig, ...] = Field(min_length=1)
     original_entry_ids: tuple[str, ...] = Field(min_length=1)
 
@@ -65,14 +61,12 @@ def load_claims(path: Path) -> dict[str, Claim]:
         inventory = _ClaimInventoryConfig.model_validate(tomllib.load(file))
     return {
         claim_id: Claim(
-            statement=claim.statement,
             locations=tuple(
                 QuoteLocation(
                     source_file=location.source_file,
                     line=location.line,
                     start=location.start,
                     end=location.end,
-                    section=location.section,
                 )
                 for location in claim.locations
             ),

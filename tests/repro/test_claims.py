@@ -35,9 +35,9 @@ def test_claim_command_uses_bundled_paper_from_any_working_directory(
     lines = result.stdout.splitlines()
     assert sum(line.startswith("DD-") for line in lines) == 64
     assert "DD-0011" in result.stdout
-    assert "A 150M single-scale ranking" in result.stdout
-    assert "No saved analysis report found." in result.stdout
-    assert result.stdout.count("No relevant evidence has been extracted.") == 64
+    assert "best models at our larger target scale" in result.stdout
+    assert "Saved report: none" in result.stdout
+    assert result.stdout.count("Linked ranking rows: 0") == 64
     assert r"\rankingMethod{}" in result.stdout
     assert result.stderr == ""
 
@@ -52,16 +52,14 @@ def test_read_quotes_uses_source_lines_and_character_ranges(tmp_path: Path) -> N
     )
     claims = {
         "DD-0003": Claim(
-            "One assertion in two paper sections.",
             (
-                QuoteLocation("paper.tex", 2, 4, 11, "Introduction"),
-                QuoteLocation("tables/errors.tex", 2, 8, 11, "Error table"),
+                QuoteLocation("paper.tex", 2, 4, 11),
+                QuoteLocation("tables/errors.tex", 2, 8, 11),
             ),
             ("DD-0003",),
         ),
         "DD-0001": Claim(
-            "Another assertion in the same sentence.",
-            (QuoteLocation("paper.tex", 2, 4, 11, "Introduction"),),
+            (QuoteLocation("paper.tex", 2, 4, 11),),
             ("DD-0001",),
         ),
     }
@@ -74,7 +72,7 @@ def test_read_quotes_uses_source_lines_and_character_ranges(tmp_path: Path) -> N
     ]
 
 
-def test_inventory_groups_restatements_and_preserves_distinct_assertions() -> None:
+def test_inventory_preserves_source_groups_and_ids() -> None:
     claims = load_claims(CLAIMS_FILE)
 
     assert len(claims) == 64
@@ -84,12 +82,6 @@ def test_inventory_groups_restatements_and_preserves_distinct_assertions() -> No
         "DD-0054",
         "DD-0180",
         "DD-0181",
-    )
-    assert tuple(location.section for location in claims["DD-0013"].locations) == (
-        "Abstract",
-        "Introduction",
-        "Figure: scaling-law decision accuracy",
-        "Results / Scaling-law comparison",
     )
     assert (
         not {
@@ -108,24 +100,21 @@ def test_inventory_groups_restatements_and_preserves_distinct_assertions() -> No
     )
     for first, second in (("DD-0010", "DD-0011"), ("DD-0014", "DD-0015")):
         assert claims[first].locations[0] == claims[second].locations[0]
-        assert claims[first].statement != claims[second].statement
 
 
 def test_load_claims_preserves_order_and_provenance(tmp_path: Path) -> None:
     config = tmp_path / "claims.toml"
     config.write_text(
         """[claims.DD-0003]
-statement = "The α model improves."
 original_entry_ids = ["DD-0003", "DD-0008"]
 locations = [
-    {source_file = "paper.tex", line = 2, start = 4, end = 11, section = "Introduction"},
-    {source_file = "table.tex", line = 1, start = 0, end = 3, section = "Table"},
+    {source_file = "paper.tex", line = 2, start = 4, end = 11},
+    {source_file = "table.tex", line = 1, start = 0, end = 3},
 ]
 
 [claims.DD-0001]
-statement = "A distinct assertion."
 original_entry_ids = ["DD-0001"]
-locations = [{source_file = "paper.tex", line = 2, start = 4, end = 11, section = "Introduction"}]
+locations = [{source_file = "paper.tex", line = 2, start = 4, end = 11}]
 """,
         encoding="utf-8",
     )
@@ -134,10 +123,9 @@ locations = [{source_file = "paper.tex", line = 2, start = 4, end = 11, section 
 
     assert list(claims) == ["DD-0003", "DD-0001"]
     assert claims["DD-0003"] == Claim(
-        statement="The α model improves.",
         locations=(
-            QuoteLocation("paper.tex", 2, 4, 11, "Introduction"),
-            QuoteLocation("table.tex", 1, 0, 3, "Table"),
+            QuoteLocation("paper.tex", 2, 4, 11),
+            QuoteLocation("table.tex", 1, 0, 3),
         ),
         original_entry_ids=("DD-0003", "DD-0008"),
     )
@@ -146,7 +134,7 @@ locations = [{source_file = "paper.tex", line = 2, start = 4, end = 11, section 
 @pytest.mark.parametrize(
     ("original", "replacement", "error"),
     [
-        ('statement = "An assertion."', 'statment = "An assertion."', "statement"),
+        ("locations = [", 'statement = "Unquoted text"\nlocations = [', "Extra inputs"),
         ("line = 2", 'line = "second"', "line"),
         ("start = 4", "start = 11", "quote end must be greater than start"),
         ("line = 2", "line = 0", "line"),
@@ -164,12 +152,27 @@ def test_load_claims_rejects_invalid_config(
     config = tmp_path / "claims.toml"
     config.write_text(
         """[claims.DD-0001]
-statement = "An assertion."
 original_entry_ids = ["DD-0001"]
-locations = [{source_file = "paper.tex", line = 2, start = 4, end = 11, section = "Introduction"}]
+locations = [{source_file = "paper.tex", line = 2, start = 4, end = 11}]
 """.replace(original, replacement),
         encoding="utf-8",
     )
 
     with pytest.raises(ValidationError, match=error):
         load_claims(config)
+
+
+def test_bundled_selections_are_exact_source_spans():
+    claims = load_claims(CLAIMS_FILE)
+    paper_dir = CLAIMS_FILE.parents[2] / "docs/papers/2504.11393v2"
+    quotes = read_quotes(claims, paper_dir)
+    for claim_id, claim in claims.items():
+        for location, quote in zip(claim.locations, quotes[claim_id], strict=True):
+            line = (
+                (paper_dir / location.source_file)
+                .read_text()
+                .splitlines()[location.line - 1]
+            )
+            assert 0 <= location.start < location.end <= len(line)
+            assert quote == line[location.start : location.end]
+            assert len(quote) == location.end - location.start

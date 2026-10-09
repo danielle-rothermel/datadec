@@ -6,17 +6,16 @@ from pathlib import Path
 import pytest
 from rich.console import Console
 
-from repro.claim_evaluation import evaluate_claims
+from repro.evidence import collect_claim_evidence
 from repro.datasets import (
     InputArtifact,
     RunMetadata,
     latest_run,
-    read_claim_results,
-    write_claim_results,
+    read_claim_evidence,
+    write_claim_evidence,
     write_run_metadata,
 )
 from repro.reporting import load_claim_report, print_claim_report
-from repro.results import ClaimStatus
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -52,23 +51,22 @@ def saved_run(sweep, config, tmp_path):
         ),
         tmp_path / "run.json",
     )
-    write_claim_results(
-        evaluate_claims(sweep, config), tmp_path / "claim_results.parquet"
+    write_claim_evidence(
+        collect_claim_evidence(sweep, config), tmp_path / "claim_evidence.parquet"
     )
     return tmp_path, config
 
 
-def test_report_uses_saved_numbers_and_verdict_and_reads_paper(saved_run):
+def test_report_uses_saved_numbers_and_extracts_only_source_text(saved_run):
     run_dir, config = saved_run
     result = next(
         r
-        for r in read_claim_results(run_dir / "claim_results.parquet")
+        for r in read_claim_evidence(run_dir / "claim_evidence.parquet")
         if r.claim_id == "DD-0014"
     )
     measurement = result.measurements[0]
     result = replace(
         result,
-        status=ClaimStatus.NOT_SUPPORTED,
         measurements=(
             replace(
                 measurement,
@@ -77,7 +75,6 @@ def test_report_uses_saved_numbers_and_verdict_and_reads_paper(saved_run):
                     decision_accuracy=0.73,
                     seed_accuracies=(0.72, 0.73, 0.74),
                 ),
-                passes_bound=False,
             ),
         ),
     )
@@ -85,14 +82,12 @@ def test_report_uses_saved_numbers_and_verdict_and_reads_paper(saved_run):
     quote = "Original paper claim."
     (run_dir / "paper.tex").write_text("prefix " + quote + " suffix\n")
     inventory.write_text(f"""[claims.DD-0014]
-statement = "Inventory label."
 original_entry_ids = ["DD-0014"]
 [[claims.DD-0014.locations]]
 source_file = "paper.tex"
 line = 1
 start = 7
 end = {7 + len(quote)}
-section = "Abstract"
 """)
     values = config.model_dump()
     values["run"]["claim_inventory"] = inventory
@@ -104,16 +99,17 @@ section = "Abstract"
         ),
         run_dir / "run.json",
     )
-    write_claim_results((result,), run_dir / "claim_results.parquet")
+    write_claim_evidence((result,), run_dir / "claim_evidence.parquet")
     report = load_claim_report(inventory, run_dir, run_dir)
     assert report.claims[0].evidence == result
     assert report.claims[0].quotes[0].text == quote
     assert report.claims[0].quotes[0].location.start == 7
     output = render(report)
     assert quote in output
+    assert "statement" not in output
+    assert "judgment" not in output
+    assert "supported" not in output
     assert "0.730000" in output
-    assert "not_supported" in output
-    assert "mmlu > 0.8: false" in output
     assert "\x1b[" in render(report, color=True)
     assert "\x1b[" not in output
     assert "…" not in render(report, width=80)
@@ -126,22 +122,21 @@ section = "Abstract"
     assert updated.claims[0].evidence == result
 
 
-def test_report_keeps_all_claims_and_pending_measurements_visible(saved_run):
+def test_report_keeps_all_selections_and_missing_measurements_visible(saved_run):
     run_dir, config = saved_run
     result = next(
         r
-        for r in read_claim_results(run_dir / "claim_results.parquet")
+        for r in read_claim_evidence(run_dir / "claim_evidence.parquet")
         if r.claim_id == "DD-0010"
     )
     result = replace(
         result,
-        status=ClaimStatus.INSUFFICIENT_DATA,
         evidence_ids=(),
         measurements=(
             replace(result.measurements[0], best=None, available_comparisons=0),
         ),
     )
-    write_claim_results((result,), run_dir / "claim_results.parquet")
+    write_claim_evidence((result,), run_dir / "claim_evidence.parquet")
     report = load_claim_report(
         config.run.claim_inventory, config.run.paper_dir, run_dir
     )
@@ -149,10 +144,9 @@ def test_report_keeps_all_claims_and_pending_measurements_visible(saved_run):
     assert report.claims[0].evidence == result
     assert report.claims[1].evidence is None
     output = render(report)
-    assert "insufficient_data" in output
-    assert "No measurement" in output
-    assert result.judgment in output
-    assert output.count("No relevant evidence has been extracted.") == 63
+    assert "With measurements: 0 | Without measurements: 64" in output
+    assert "Unavailable rows:" in output
+    assert output.count("Linked ranking rows: 0") == 64
 
 
 def test_quotes_remain_available_without_saved_results(config):
@@ -163,8 +157,8 @@ def test_quotes_remain_available_without_saved_results(config):
     assert len(report.claims) == 64
     assert all(claim.evidence is None for claim in report.claims)
     output = render(report)
-    assert "No saved analysis report found." in output
-    assert output.count("No relevant evidence has been extracted.") == 64
+    assert "Saved report: none" in output
+    assert output.count("Linked ranking rows: 0") == 64
     assert r"\rankingMethod{}" in output
 
 
@@ -193,8 +187,12 @@ def test_latest_run_uses_manifest_time_and_ignores_incomplete_or_other_inventory
             )
         write_run_metadata(metadata, output / "run.json")
         if name != "incomplete":
-            write_claim_results((), output / "claim_results.parquet")
+            write_claim_evidence((), output / "claim_evidence.parquet")
         os.utime(output / "run.json", ns=(timestamp, timestamp))
+    historical = reports / "historical"
+    historical.mkdir()
+    (historical / "run.json").write_text('{"configuration": "obsolete"}')
+    (historical / "claim_results.parquet").touch()
     assert latest_run(reports, config.run.claim_inventory) == reports / "new"
     assert latest_run(run_dir / "absent", config.run.claim_inventory) is None
 

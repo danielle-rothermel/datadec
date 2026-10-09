@@ -3,9 +3,8 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from repro.claim_evaluation import evaluate_claims
+from repro.evidence import collect_claim_evidence
 from repro.config import DEFAULT_CONFIG_PATH, EvaluationConfig, load_evaluation_config
-from repro.results import ClaimStatus
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -17,7 +16,7 @@ def test_default_config_matches_explicit_toml_and_claim_inventory(config):
     explicit = load_evaluation_config(ROOT / DEFAULT_CONFIG_PATH)
     assert explicit == config
     inventory = load_claims(ROOT / config.run.claim_inventory)
-    assert set(config.claims) | set(config.skipped_math_code_claims) <= inventory.keys()
+    assert set(config.claims) <= inventory.keys()
     assert config.predictors.seeds_for("1B") == config.target.seeds
     assert config.predictors.seeds_for("150M") == config.predictors.default_seeds
 
@@ -27,7 +26,7 @@ def test_default_config_matches_explicit_toml_and_claim_inventory(config):
     [
         ("unknown_task_group", "unknown selection groups"),
         ("unknown_metric", "invalid metrics"),
-        ("unknown_criterion", "unknown criterion"),
+        ("authored_judgment", "Extra inputs"),
         ("invalid_range", "minimum compute ratio"),
         ("duplicate_seeds", "seed sets"),
         ("unknown_setting", "Extra inputs"),
@@ -40,8 +39,8 @@ def test_invalid_config_is_rejected(config, change, message):
         values["claims"]["DD-0014"]["task_groups"] = ["typo"]
     elif change == "unknown_metric":
         values["claims"]["DD-0014"]["metrics"] = ["typo"]
-    elif change == "unknown_criterion":
-        values["claims"]["DD-0014"]["criterion"] = "typo"
+    elif change == "authored_judgment":
+        values["claims"]["DD-0014"]["judgment"] = "Authored interpretation"
     elif change == "invalid_range":
         values["claims"]["DD-0014"]["min_compute_ratio"] = 0.9
     elif change == "duplicate_seeds":
@@ -54,17 +53,20 @@ def test_invalid_config_is_rejected(config, change, message):
         EvaluationConfig.model_validate(values)
 
 
-def test_custom_toml_controls_threshold_without_claim_id_special_case(tmp_path, sweep):
+def test_custom_toml_controls_selection_without_claim_id_special_case(tmp_path, sweep):
     source = (ROOT / DEFAULT_CONFIG_PATH).read_text()
-    source = source.replace("[claims.DD-0014]", "[claims.custom-claim]")
-    source = source.replace("accuracy_gt = 0.8", "accuracy_gt = 0.85")
+    source = source.replace("[claims.DD-0014]", "[claims.custom-selection]")
+    source = source.replace("max_compute_ratio = 0.0001", "max_compute_ratio = 0.00001")
     path = tmp_path / "evaluation.toml"
     path.write_text(source)
     config = load_evaluation_config(path)
-    evidence = {result.claim_id: result for result in evaluate_claims(sweep, config)}
+    evidence = {
+        result.claim_id: result for result in collect_claim_evidence(sweep, config)
+    }
     assert "DD-0014" not in evidence
-    assert evidence["custom-claim"].status == ClaimStatus.NOT_SUPPORTED
-    assert evidence["custom-claim"].judgment == config.claims["custom-claim"].judgment
+    selected = evidence["custom-selection"]
+    assert selected.has_measurements
+    assert (sweep.loc[list(selected.evidence_ids), "compute_ratio"] <= 0.00001).all()
 
 
 def test_named_groups_resolve_in_order_without_repeated_metrics(config):
