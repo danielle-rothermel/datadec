@@ -1,0 +1,388 @@
+{
+ "jobs": [
+  {
+   "name": "t-socialiqa-baselines-qwen8b-base",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 8,
+   "model": "Qwen/Qwen3-8B-Base"
+  },
+  {
+   "name": "t-socialiqa-baselines-qwen8b",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 8,
+   "model": "Qwen/Qwen3-8B"
+  },
+  {
+   "name": "t-socialiqa-baselines-olmo3-base",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 16,
+   "model": "allenai/Olmo-3-1025-7B"
+  },
+  {
+   "name": "t-socialiqa-baselines-olmo3-sft",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 16,
+   "model": "allenai/Olmo-3-7B-Instruct-SFT"
+  },
+  {
+   "name": "t-socialiqa-baselines-olmo3-dpo",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 16,
+   "model": "allenai/Olmo-3-7B-Instruct-DPO"
+  },
+  {
+   "name": "t-socialiqa-baselines-olmo3-instruct",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 16,
+   "model": "allenai/Olmo-3-7B-Instruct"
+  },
+  {
+   "name": "t-socialiqa-baselines-qwen4b-base",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 16,
+   "model": "Qwen/Qwen3-4B-Base"
+  },
+  {
+   "name": "t-socialiqa-baselines-qwen4b",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 16,
+   "model": "Qwen/Qwen3-4B"
+  },
+  {
+   "name": "t-socialiqa-baselines-pythia2.8b",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 64,
+   "model": "EleutherAI/pythia-2.8b",
+   "revision": "step143000"
+  },
+  {
+   "name": "t-socialiqa-baselines-qwen14b-base",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 4,
+   "model": "Qwen/Qwen3-14B-Base"
+  },
+  {
+   "name": "t-socialiqa-baselines-qwen14b",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 4,
+   "model": "Qwen/Qwen3-14B"
+  },
+  {
+   "name": "t-socialiqa-pythia-ladder-12b",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 4,
+   "model": "EleutherAI/pythia-12b",
+   "revision": "step143000"
+  },
+  {
+   "name": "t-socialiqa-pythia-ladder-6.9b",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 8,
+   "model": "EleutherAI/pythia-6.9b",
+   "revision": "step143000"
+  },
+  {
+   "name": "t-socialiqa-pythia-ladder-1.4b",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 32,
+   "model": "EleutherAI/pythia-1.4b",
+   "revision": "step143000"
+  },
+  {
+   "name": "t-socialiqa-g4-olmoe-1b-7b-base",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 8,
+   "model": "allenai/OLMoE-1B-7B-0125"
+  },
+  {
+   "name": "t-socialiqa-g4-olmoe-1b-7b-instruct",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 8,
+   "model": "allenai/OLMoE-1B-7B-0125-Instruct"
+  },
+  {
+   "name": "t-socialiqa-g5-granite4-micro-base",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 16,
+   "model": "ibm-granite/granite-4.0-micro-base"
+  },
+  {
+   "name": "t-socialiqa-g5-granite4-micro-instruct",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 16,
+   "model": "ibm-granite/granite-4.0-micro"
+  },
+  {
+   "name": "t-socialiqa-quant-olmo3-base-bf16",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 16,
+   "model": "allenai/Olmo-3-1025-7B",
+   "dtype": "bfloat16"
+  },
+  {
+   "name": "t-socialiqa-quant-olmo3-sft-bf16",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 16,
+   "model": "allenai/Olmo-3-7B-Instruct-SFT",
+   "dtype": "bfloat16"
+  },
+  {
+   "name": "t-socialiqa-quant-olmo3-dpo-bf16",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 16,
+   "model": "allenai/Olmo-3-7B-Instruct-DPO",
+   "dtype": "bfloat16"
+  },
+  {
+   "name": "t-socialiqa-quant-olmo3-instruct-bf16",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 16,
+   "model": "allenai/Olmo-3-7B-Instruct",
+   "dtype": "bfloat16"
+  },
+  {
+   "name": "t-socialiqa-quant-olmo3-base-int8",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 8,
+   "model": "allenai/Olmo-3-1025-7B",
+   "dtype": "bfloat16",
+   "quant": "int8"
+  },
+  {
+   "name": "t-socialiqa-quant-olmo3-sft-int8",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 8,
+   "model": "allenai/Olmo-3-7B-Instruct-SFT",
+   "dtype": "bfloat16",
+   "quant": "int8"
+  },
+  {
+   "name": "t-socialiqa-quant-olmo3-dpo-int8",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 8,
+   "model": "allenai/Olmo-3-7B-Instruct-DPO",
+   "dtype": "bfloat16",
+   "quant": "int8"
+  },
+  {
+   "name": "t-socialiqa-quant-olmo3-instruct-int8",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 8,
+   "model": "allenai/Olmo-3-7B-Instruct",
+   "dtype": "bfloat16",
+   "quant": "int8"
+  },
+  {
+   "name": "t-socialiqa-quant-olmo3-base-nf4",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 8,
+   "model": "allenai/Olmo-3-1025-7B",
+   "dtype": "bfloat16",
+   "quant": "nf4"
+  },
+  {
+   "name": "t-socialiqa-quant-olmo3-sft-nf4",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 8,
+   "model": "allenai/Olmo-3-7B-Instruct-SFT",
+   "dtype": "bfloat16",
+   "quant": "nf4"
+  },
+  {
+   "name": "t-socialiqa-quant-olmo3-dpo-nf4",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 8,
+   "model": "allenai/Olmo-3-7B-Instruct-DPO",
+   "dtype": "bfloat16",
+   "quant": "nf4"
+  },
+  {
+   "name": "t-socialiqa-quant-olmo3-instruct-nf4",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 8,
+   "model": "allenai/Olmo-3-7B-Instruct",
+   "dtype": "bfloat16",
+   "quant": "nf4"
+  }
+ ]
+}

@@ -1,0 +1,459 @@
+{
+ "jobs": [
+  {
+   "name": "ladder-dd-dclm-4m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-4M",
+   "revision": "step5745-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dolma-4m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dolma1_7-4M",
+   "revision": "step5735-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-c4-4m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-c4-4M",
+   "revision": "step5735-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dclm-6m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-6M",
+   "revision": "step9182-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dolma-6m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dolma1_7-6M",
+   "revision": "step9182-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-c4-6m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-c4-6M",
+   "revision": "step9182-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dclm-8m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-8M",
+   "revision": "step13039-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dolma-8m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dolma1_7-8M",
+   "revision": "step13039-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-c4-8m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-c4-8M",
+   "revision": "step13039-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dclm-10m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-10M",
+   "revision": "step15117-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dolma-10m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dolma1_7-10M",
+   "revision": "step15117-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-c4-10m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-c4-10M",
+   "revision": "step15117-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dclm-14m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-14M",
+   "revision": "step21953-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dolma-14m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dolma1_7-14M",
+   "revision": "step21953-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-c4-14m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-c4-14M",
+   "revision": "step21953-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dclm-16m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-16M",
+   "revision": "step24432-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dolma-16m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dolma1_7-16M",
+   "revision": "step24432-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-c4-16m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-c4-16M",
+   "revision": "step24432-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dclm-20m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-20M",
+   "revision": "step14594-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dolma-20m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dolma1_7-20M",
+   "revision": "step14594-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-c4-20m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-c4-20M",
+   "revision": "step14594-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dclm-60m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-60M",
+   "revision": "step29052-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dolma-60m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dolma1_7-60M",
+   "revision": "step29052-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-c4-60m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-c4-60M",
+   "revision": "step29052-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dclm-90m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-90M",
+   "revision": "step29901-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dolma-90m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dolma1_7-90M",
+   "revision": "step29901-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-c4-90m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-c4-90M",
+   "revision": "step29901-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-c4-150m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-c4-150M",
+   "revision": "step37500-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-c4-300m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-c4-300M",
+   "revision": "step45000-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dolma-530m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dolma1_7-530M",
+   "revision": "step57776-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-c4-530m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-c4-530M",
+   "revision": "step57776-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dclm-750m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-750M",
+   "revision": "step63589-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-dolma-750m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dolma1_7-750M",
+   "revision": "step63589-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-c4-750m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-c4-750M",
+   "revision": "step63589-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  },
+  {
+   "name": "ladder-dd-c4-1b",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/DataDecide-c4-1B",
+   "revision": "step69369-seed-default",
+   "task": "arc_easy",
+   "batch_size": 64
+  }
+ ]
+}

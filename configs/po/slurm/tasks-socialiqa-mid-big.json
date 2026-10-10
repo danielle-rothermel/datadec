@@ -1,0 +1,43 @@
+{
+ "jobs": [
+  {
+   "name": "t-socialiqa-mid-pythia-12b",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 4,
+   "model": "EleutherAI/pythia-12b",
+   "revision": "step71000"
+  },
+  {
+   "name": "t-socialiqa-mid-pythia-6.9b",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 8,
+   "model": "EleutherAI/pythia-6.9b",
+   "revision": "step71000"
+  },
+  {
+   "name": "t-socialiqa-mid-pythia-2.8b",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "task": "socialiqa",
+   "batch_size": 16,
+   "model": "EleutherAI/pythia-2.8b",
+   "revision": "step71000"
+  }
+ ]
+}

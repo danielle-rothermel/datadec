@@ -1,0 +1,106 @@
+{
+ "jobs": [
+  {
+   "name": "obqafull-dd-dclm-1b",
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "obqafull-dd-dolma-1b",
+   "model": "allenai/DataDecide-dolma1_7-1B",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "obqafull-dd-c4-1b",
+   "model": "allenai/DataDecide-c4-1B",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 64,
+   "revision": "step69369-seed-default"
+  },
+  {
+   "name": "obqafull-qwen3-0.6b-base",
+   "model": "Qwen/Qwen3-0.6B-Base",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 16
+  },
+  {
+   "name": "obqafull-qwen3-0.6b",
+   "model": "Qwen/Qwen3-0.6B",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 16
+  },
+  {
+   "name": "obqafull-qwen3-1.7b-base",
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 16
+  },
+  {
+   "name": "obqafull-qwen3-1.7b",
+   "model": "Qwen/Qwen3-1.7B",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 16
+  },
+  {
+   "name": "obqafull-qwen3-4b-base",
+   "model": "Qwen/Qwen3-4B-Base",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 16
+  },
+  {
+   "name": "obqafull-qwen3-4b",
+   "model": "Qwen/Qwen3-4B",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 16
+  }
+ ]
+}

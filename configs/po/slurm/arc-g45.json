@@ -1,0 +1,100 @@
+{
+ "jobs": [
+  {
+   "name": "g4-olmo2-1b-base",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/OLMo-2-0425-1B",
+   "task": "arc_easy",
+   "batch_size": 32
+  },
+  {
+   "name": "g4-olmo2-1b-instruct",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/OLMo-2-0425-1B-Instruct",
+   "task": "arc_easy",
+   "batch_size": 32
+  },
+  {
+   "name": "g4-olmoe-1b-7b-base",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/OLMoE-1B-7B-0125",
+   "task": "arc_easy",
+   "batch_size": 8
+  },
+  {
+   "name": "g4-olmoe-1b-7b-instruct",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/OLMoE-1B-7B-0125-Instruct",
+   "task": "arc_easy",
+   "batch_size": 8
+  },
+  {
+   "name": "g5-granite4-micro-base",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "ibm-granite/granite-4.0-micro-base",
+   "task": "arc_easy",
+   "batch_size": 16
+  },
+  {
+   "name": "g5-granite4-micro-instruct",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "ibm-granite/granite-4.0-micro",
+   "task": "arc_easy",
+   "batch_size": 16
+  },
+  {
+   "name": "g5-granite4-h-micro-base",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "ibm-granite/granite-4.0-h-micro-base",
+   "task": "arc_easy",
+   "batch_size": 16
+  },
+  {
+   "name": "g5-granite4-h-micro-instruct",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "ibm-granite/granite-4.0-h-micro",
+   "task": "arc_easy",
+   "batch_size": 16
+  }
+ ]
+}

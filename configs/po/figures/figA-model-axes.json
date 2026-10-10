@@ -1,0 +1,386 @@
+{
+ "title": "Model axes on ARC-Easy (canonical prompt, RC)",
+ "rows": 2,
+ "cols": 3,
+ "metric_mode": "value",
+ "panels": [
+  {
+   "title": "DataDecide recipe ladder",
+   "task": "arc_easy",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM",
+     "filter": {
+      "family": "datadecide",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32",
+      "recipe": "dclm"
+     },
+     "color": "dclm",
+     "band": "seed",
+     "marker": "o"
+    },
+    {
+     "label": "Dolma",
+     "filter": {
+      "family": "datadecide",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32",
+      "recipe": "dolma"
+     },
+     "color": "dolma",
+     "band": "seed",
+     "marker": "s"
+    },
+    {
+     "label": "C4",
+     "filter": {
+      "family": "datadecide",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32",
+      "recipe": "c4"
+     },
+     "color": "c4",
+     "band": "seed",
+     "marker": "^"
+    }
+   ],
+   "chance_line": true,
+   "arrows": {
+    "contrast_type": "gepa"
+   }
+  },
+  {
+   "title": "Era ladders (base models)",
+   "task": "arc_easy",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "Pythia (2023)",
+     "filter": {
+      "family": "pythia",
+      "checkpoint_kind": "final"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "DataDecide DCLM (2025)",
+     "filter": {
+      "family": "datadecide",
+      "checkpoint_kind": "final",
+      "precision": "fp32-tf32",
+      "recipe": "dclm",
+      "seed_label": "default"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "Qwen3 Base (2025)",
+     "filter": {
+      "family": "qwen3",
+      "variant": "base"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMo-2 1B",
+     "filter": {
+      "family": "olmo2",
+      "variant": "base"
+     },
+     "color": "olmo2",
+     "band": null,
+     "marker": "D"
+    },
+    {
+     "label": "OLMoE 1B-7B",
+     "filter": {
+      "family": "olmoe",
+      "variant": "base"
+     },
+     "color": "olmoe",
+     "band": null,
+     "marker": "P"
+    }
+   ],
+   "chance_line": true,
+   "arrows": {
+    "contrast_type": "gepa"
+   }
+  },
+  {
+   "title": "Base vs instruct",
+   "task": "arc_easy",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "Qwen3 base",
+     "filter": {
+      "family": "qwen3",
+      "variant": "base"
+     },
+     "color": "base",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Qwen3 instruct",
+     "filter": {
+      "family": "qwen3",
+      "variant": "instruct"
+     },
+     "color": "instruct",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-2 base",
+     "filter": {
+      "family": "olmo2",
+      "variant": "base"
+     },
+     "color": "base",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "OLMo-2 instruct",
+     "filter": {
+      "family": "olmo2",
+      "variant": "instruct"
+     },
+     "color": "instruct",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "OLMoE base",
+     "filter": {
+      "family": "olmoe",
+      "variant": "base"
+     },
+     "color": "base",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMoE instruct",
+     "filter": {
+      "family": "olmoe",
+      "variant": "instruct"
+     },
+     "color": "instruct",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMo-3 7B base",
+     "filter": {
+      "family": "olmo3",
+      "size_label": "7B",
+      "variant": "base",
+      "precision": "fp32-tf32"
+     },
+     "color": "base",
+     "band": null,
+     "marker": "D"
+    },
+    {
+     "label": "OLMo-3 7B instruct",
+     "filter": {
+      "family": "olmo3",
+      "size_label": "7B",
+      "variant": "instruct",
+      "precision": "fp32-tf32"
+     },
+     "color": "instruct",
+     "band": null,
+     "marker": "D"
+    }
+   ],
+   "chance_line": true,
+   "arrows": {
+    "contrast_type": "gepa"
+   }
+  },
+  {
+   "title": "Post-training stages",
+   "task": "arc_easy",
+   "role": "test",
+   "x": {
+    "field": "stage_index",
+    "order": [
+     0,
+     1,
+     2,
+     3
+    ],
+    "labels": {
+     "0": "Base",
+     "1": "SFT",
+     "2": "DPO",
+     "3": "Instruct"
+    }
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "model": [
+       "allenai/Olmo-3-1025-7B",
+       "allenai/Olmo-3-7B-Instruct-SFT",
+       "allenai/Olmo-3-7B-Instruct-DPO",
+       "allenai/Olmo-3-7B-Instruct"
+      ],
+      "precision": "fp32-tf32"
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-2 1B",
+     "filter": {
+      "family": "olmo2",
+      "variant": [
+       "base",
+       "sft",
+       "dpo",
+       "instruct"
+      ]
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "OLMo-2 1B RLVR1",
+     "filter": {
+      "family": "olmo2",
+      "variant": "rlvr"
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "v"
+    },
+    {
+     "label": "OLMo-3.1 32B (bf16)",
+     "filter": {
+      "model": [
+       "allenai/Olmo-3-1125-32B",
+       "allenai/Olmo-3.1-32B-Instruct-SFT",
+       "allenai/Olmo-3.1-32B-Instruct-DPO",
+       "allenai/Olmo-3.1-32B-Instruct"
+      ],
+      "precision": "bf16"
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "D"
+    }
+   ],
+   "chance_line": true,
+   "arrows": {
+    "contrast_type": "gepa"
+   }
+  },
+  {
+   "title": "Weight precision",
+   "task": "arc_easy",
+   "role": "test",
+   "x": {
+    "field": "precision",
+    "order": [
+     "fp32-tf32",
+     "bf16",
+     "int8",
+     "nf4"
+    ],
+    "labels": {
+     "fp32-tf32": "fp32"
+    }
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "model": "allenai/Olmo-3-1025-7B"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-3 7B Instruct",
+     "filter": {
+      "model": "allenai/Olmo-3-7B-Instruct"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "OLMo-3 32B",
+     "filter": {
+      "model": "allenai/Olmo-3-1125-32B"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMo-3.1 32B Instruct",
+     "filter": {
+      "model": "allenai/Olmo-3.1-32B-Instruct"
+     },
+     "color": "by:precision",
+     "band": null,
+     "marker": "D"
+    }
+   ],
+   "chance_line": true,
+   "arrows": {
+    "contrast_type": "gepa"
+   }
+  }
+ ]
+}

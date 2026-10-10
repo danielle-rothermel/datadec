@@ -1,0 +1,170 @@
+{
+ "jobs": [
+  {
+   "name": "tasks-arc_challenge-qwen1.7b-base",
+   "subsets": [
+    "configs/po/subsets/arc_challenge-train-part-train-n739-seed0.json",
+    "configs/po/subsets/arc_challenge-train-part-traindev-n369-seed0.json",
+    "configs/po/subsets/arc_challenge-validation-n299-seed0.json",
+    "configs/po/subsets/arc_challenge-test-part-test1-n586-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "arc_challenge",
+   "batch_size": 16
+  },
+  {
+   "name": "tasks-arc_challenge-qwen1.7b",
+   "subsets": [
+    "configs/po/subsets/arc_challenge-train-part-train-n739-seed0.json",
+    "configs/po/subsets/arc_challenge-train-part-traindev-n369-seed0.json",
+    "configs/po/subsets/arc_challenge-validation-n299-seed0.json",
+    "configs/po/subsets/arc_challenge-test-part-test1-n586-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "arc_challenge",
+   "batch_size": 16
+  },
+  {
+   "name": "tasks-openbookqa-qwen1.7b-base",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "openbookqa",
+   "batch_size": 16
+  },
+  {
+   "name": "tasks-openbookqa-qwen1.7b",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-part-train-n500-seed0.json",
+    "configs/po/subsets/openbookqa-train-part-traindev-n250-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-part-test1-n250-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "openbookqa",
+   "batch_size": 16
+  },
+  {
+   "name": "tasks-csqa-qwen1.7b-base",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "csqa",
+   "batch_size": 16
+  },
+  {
+   "name": "tasks-csqa-qwen1.7b",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "csqa",
+   "batch_size": 16
+  },
+  {
+   "name": "tasks-socialiqa-qwen1.7b-base",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "socialiqa",
+   "batch_size": 16
+  },
+  {
+   "name": "tasks-socialiqa-qwen1.7b",
+   "subsets": [
+    "configs/po/subsets/socialiqa-train-part-train-n1954-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-traindev-n977-seed0.json",
+    "configs/po/subsets/socialiqa-validation-part-test-n977-seed0.json",
+    "configs/po/subsets/socialiqa-train-part-testaug-n977-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "socialiqa",
+   "batch_size": 16
+  },
+  {
+   "name": "tasks-piqa-qwen1.7b-base",
+   "subsets": [
+    "configs/po/subsets/piqa-train-part-train-n1838-seed0.json",
+    "configs/po/subsets/piqa-train-part-traindev-n919-seed0.json",
+    "configs/po/subsets/piqa-validation-part-test-n919-seed0.json",
+    "configs/po/subsets/piqa-train-part-testaug-n919-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "piqa",
+   "batch_size": 16
+  },
+  {
+   "name": "tasks-piqa-qwen1.7b",
+   "subsets": [
+    "configs/po/subsets/piqa-train-part-train-n1838-seed0.json",
+    "configs/po/subsets/piqa-train-part-traindev-n919-seed0.json",
+    "configs/po/subsets/piqa-validation-part-test-n919-seed0.json",
+    "configs/po/subsets/piqa-train-part-testaug-n919-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "piqa",
+   "batch_size": 16
+  },
+  {
+   "name": "tasks-winogrande-qwen1.7b-base",
+   "subsets": [
+    "configs/po/subsets/winogrande-train-part-train-n1267-seed0.json",
+    "configs/po/subsets/winogrande-train-part-traindev-n633-seed0.json",
+    "configs/po/subsets/winogrande-validation-part-test-n633-seed0.json",
+    "configs/po/subsets/winogrande-train-part-testaug-n634-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "winogrande",
+   "batch_size": 16
+  },
+  {
+   "name": "tasks-winogrande-qwen1.7b",
+   "subsets": [
+    "configs/po/subsets/winogrande-train-part-train-n1267-seed0.json",
+    "configs/po/subsets/winogrande-train-part-traindev-n633-seed0.json",
+    "configs/po/subsets/winogrande-validation-part-test-n633-seed0.json",
+    "configs/po/subsets/winogrande-train-part-testaug-n634-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "winogrande",
+   "batch_size": 16
+  },
+  {
+   "name": "tasks-hellaswag-qwen1.7b-base",
+   "subsets": [
+    "configs/po/subsets/hellaswag-train-part-train-n2000-seed0.json",
+    "configs/po/subsets/hellaswag-train-part-traindev-n1000-seed0.json",
+    "configs/po/subsets/hellaswag-validation-part-test-n2000-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "hellaswag",
+   "batch_size": 16
+  },
+  {
+   "name": "tasks-hellaswag-qwen1.7b",
+   "subsets": [
+    "configs/po/subsets/hellaswag-train-part-train-n2000-seed0.json",
+    "configs/po/subsets/hellaswag-train-part-traindev-n1000-seed0.json",
+    "configs/po/subsets/hellaswag-validation-part-test-n2000-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "hellaswag",
+   "batch_size": 16
+  }
+ ]
+}

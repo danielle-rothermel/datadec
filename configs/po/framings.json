@@ -1,0 +1,13 @@
+{
+ "note": "Framing lists for instruction seed generation (Promptbreeder-style crossing). First round 2026-09-17: 3 operators x 3 stances. Edit freely; ids are recorded per candidate.",
+ "operators": [
+  {"id": "plain", "text": "Write it as a plain statement of what to do."},
+  {"id": "rule", "text": "Write it as a rule the reader must follow."},
+  {"id": "short", "text": "Make it as short as possible."}
+ ],
+ "stances": [
+  {"id": "eliminate", "text": "It should tell the reader to rule out the wrong options first."},
+  {"id": "commonsense", "text": "It should tell the reader to prefer the most common-sense answer."},
+  {"id": "none", "text": ""}
+ ]
+}

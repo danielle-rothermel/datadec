@@ -1,0 +1,14 @@
+{
+ "dataset_path": "allenai/hellaswag",
+ "dataset_name": null,
+ "split": "validation",
+ "seed": 0,
+ "ids": [
+  34598,
+  37679,
+  3528,
+  23108,
+  45805
+ ],
+ "n": 5
+}

@@ -1,0 +1,556 @@
+{
+ "title": "Instruction tuning: instruct \u2212 base (top) and successive post-training stages (bottom)",
+ "rows": 2,
+ "cols": 4,
+ "metric_mode": "delta",
+ "panels": [
+  {
+   "title": "arc_easy: instruct \u2212 base",
+   "task": "arc_easy",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "Qwen3",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "qwen3",
+      "precision": "fp32-tf32"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-2 1B",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "olmo2",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmo2",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "OLMoE 1B-7B",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "olmoe",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmoe",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "olmo3",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmo3",
+     "band": null,
+     "marker": "D"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "arc_challenge: instruct \u2212 base",
+   "task": "arc_challenge",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "Qwen3",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "qwen3",
+      "precision": "fp32-tf32"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-2 1B",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "olmo2",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmo2",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "OLMoE 1B-7B",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "olmoe",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmoe",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "olmo3",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmo3",
+     "band": null,
+     "marker": "D"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "hellaswag: instruct \u2212 base",
+   "task": "hellaswag",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "Qwen3",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "qwen3",
+      "precision": "fp32-tf32"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-2 1B",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "olmo2",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmo2",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "OLMoE 1B-7B",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "olmoe",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmoe",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "olmo3",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmo3",
+     "band": null,
+     "marker": "D"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "csqa: instruct \u2212 base",
+   "task": "csqa",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "Qwen3",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "qwen3",
+      "precision": "fp32-tf32"
+     },
+     "color": "qwen3",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "OLMo-2 1B",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "olmo2",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmo2",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "OLMoE 1B-7B",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "olmoe",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmoe",
+     "band": null,
+     "marker": "^"
+    },
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "base-vs-instruct",
+      "family": "olmo3",
+      "precision": "fp32-tf32"
+     },
+     "color": "olmo3",
+     "band": null,
+     "marker": "D"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "arc_easy: stages",
+   "task": "arc_easy",
+   "role": "test",
+   "x": {
+    "field": "stage_index",
+    "order": [
+     1,
+     2,
+     3
+    ],
+    "labels": {
+     "1": "+SFT",
+     "2": "+DPO",
+     "3": "+Instr/RLVR"
+    },
+    "label": "Stage added (vs previous stage)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo3",
+      "size_label": "7B",
+      "precision": "fp32-tf32"
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "D"
+    },
+    {
+     "label": "OLMo-2 1B",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo2",
+      "variant": [
+       "sft",
+       "dpo",
+       "instruct"
+      ]
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "OLMo-2 1B RLVR1",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo2",
+      "variant": "rlvr"
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "v"
+    },
+    {
+     "label": "OLMo-3.1 32B (bf16)",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo3.1",
+      "precision": "bf16"
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "o"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "arc_challenge: stages",
+   "task": "arc_challenge",
+   "role": "test",
+   "x": {
+    "field": "stage_index",
+    "order": [
+     1,
+     2,
+     3
+    ],
+    "labels": {
+     "1": "+SFT",
+     "2": "+DPO",
+     "3": "+Instr/RLVR"
+    },
+    "label": "Stage added (vs previous stage)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo3",
+      "size_label": "7B",
+      "precision": "fp32-tf32"
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "D"
+    },
+    {
+     "label": "OLMo-2 1B",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo2",
+      "variant": [
+       "sft",
+       "dpo",
+       "instruct"
+      ]
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "OLMo-2 1B RLVR1",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo2",
+      "variant": "rlvr"
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "v"
+    },
+    {
+     "label": "OLMo-3.1 32B (bf16)",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo3.1",
+      "precision": "bf16"
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "o"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "hellaswag: stages",
+   "task": "hellaswag",
+   "role": "test",
+   "x": {
+    "field": "stage_index",
+    "order": [
+     1,
+     2,
+     3
+    ],
+    "labels": {
+     "1": "+SFT",
+     "2": "+DPO",
+     "3": "+Instr/RLVR"
+    },
+    "label": "Stage added (vs previous stage)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo3",
+      "size_label": "7B",
+      "precision": "fp32-tf32"
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "D"
+    },
+    {
+     "label": "OLMo-2 1B",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo2",
+      "variant": [
+       "sft",
+       "dpo",
+       "instruct"
+      ]
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "OLMo-2 1B RLVR1",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo2",
+      "variant": "rlvr"
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "v"
+    },
+    {
+     "label": "OLMo-3.1 32B (bf16)",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo3.1",
+      "precision": "bf16"
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "o"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "csqa: stages",
+   "task": "csqa",
+   "role": "test",
+   "x": {
+    "field": "stage_index",
+    "order": [
+     1,
+     2,
+     3
+    ],
+    "labels": {
+     "1": "+SFT",
+     "2": "+DPO",
+     "3": "+Instr/RLVR"
+    },
+    "label": "Stage added (vs previous stage)"
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "OLMo-3 7B",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo3",
+      "size_label": "7B",
+      "precision": "fp32-tf32"
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "D"
+    },
+    {
+     "label": "OLMo-2 1B",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo2",
+      "variant": [
+       "sft",
+       "dpo",
+       "instruct"
+      ]
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "s"
+    },
+    {
+     "label": "OLMo-2 1B RLVR1",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo2",
+      "variant": "rlvr"
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "v"
+    },
+    {
+     "label": "OLMo-3.1 32B (bf16)",
+     "filter": {
+      "contrast_type": "stage",
+      "family": "olmo3.1",
+      "precision": "bf16"
+     },
+     "color": "by:stage_index",
+     "band": null,
+     "marker": "o"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  }
+ ]
+}

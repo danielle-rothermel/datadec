@@ -1,0 +1,28 @@
+{
+ "jobs": [
+  {
+   "name": "baselines-qwen14b-base",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-14B-Base",
+   "task": "arc_easy",
+   "batch_size": 4
+  },
+  {
+   "name": "baselines-qwen14b",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "Qwen/Qwen3-14B",
+   "task": "arc_easy",
+   "batch_size": 4
+  }
+ ]
+}

@@ -1,0 +1,92 @@
+{
+ "jobs": [
+  {
+   "name": "obqafull-qwen3-8b-base",
+   "model": "Qwen/Qwen3-8B-Base",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 8
+  },
+  {
+   "name": "obqafull-qwen3-8b",
+   "model": "Qwen/Qwen3-8B",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 8
+  },
+  {
+   "name": "obqafull-qwen3-14b-base",
+   "model": "Qwen/Qwen3-14B-Base",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 4
+  },
+  {
+   "name": "obqafull-qwen3-14b",
+   "model": "Qwen/Qwen3-14B",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 4
+  },
+  {
+   "name": "obqafull-olmo3-7b-base",
+   "model": "allenai/Olmo-3-1025-7B",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 16
+  },
+  {
+   "name": "obqafull-olmo3-7b-sft",
+   "model": "allenai/Olmo-3-7B-Instruct-SFT",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 16
+  },
+  {
+   "name": "obqafull-olmo3-7b-dpo",
+   "model": "allenai/Olmo-3-7B-Instruct-DPO",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 16
+  },
+  {
+   "name": "obqafull-olmo3-7b-instruct",
+   "model": "allenai/Olmo-3-7B-Instruct",
+   "subsets": [
+    "configs/po/subsets/openbookqa-train-n4948-seed0.json",
+    "configs/po/subsets/openbookqa-validation-n500-seed0.json",
+    "configs/po/subsets/openbookqa-test-n500-seed0.json"
+   ],
+   "task": "openbookqa",
+   "batch_size": 16
+  }
+ ]
+}

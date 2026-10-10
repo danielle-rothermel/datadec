@@ -1,0 +1,929 @@
+{
+ "title": "Intermediate checkpoints: mid-training and norm-peak \u2212 final",
+ "rows": 2,
+ "cols": 4,
+ "metric_mode": "delta",
+ "legend": "first",
+ "panels": [
+  {
+   "title": "arc_easy",
+   "task": "arc_easy",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "DCLM peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Dolma mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Dolma peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "C4 mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "mid"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "C4 peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "peak"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Pythia mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "mid"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Pythia peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "peak"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "arc_challenge",
+   "task": "arc_challenge",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "DCLM peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Dolma mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Dolma peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "C4 mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "mid"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "C4 peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "peak"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Pythia mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "mid"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Pythia peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "peak"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "hellaswag",
+   "task": "hellaswag",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "DCLM peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Dolma mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Dolma peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "C4 mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "mid"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "C4 peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "peak"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Pythia mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "mid"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Pythia peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "peak"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "csqa",
+   "task": "csqa",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "DCLM peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Dolma mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Dolma peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "C4 mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "mid"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "C4 peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "peak"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Pythia mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "mid"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Pythia peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "peak"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "socialiqa",
+   "task": "socialiqa",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "DCLM peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Dolma mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Dolma peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "C4 mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "mid"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "C4 peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "peak"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Pythia mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "mid"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Pythia peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "peak"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "openbookqa",
+   "task": "openbookqa",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "DCLM peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Dolma mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Dolma peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "C4 mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "mid"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "C4 peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "peak"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Pythia mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "mid"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Pythia peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "peak"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "piqa",
+   "task": "piqa",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "DCLM peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Dolma mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Dolma peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "C4 mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "mid"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "C4 peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "peak"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Pythia mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "mid"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Pythia peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "peak"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  },
+  {
+   "title": "winogrande",
+   "task": "winogrande",
+   "role": "test",
+   "x": {
+    "field": "params",
+    "log": true
+   },
+   "metrics": [
+    "accuracy",
+    "likelihood"
+   ],
+   "series": [
+    {
+     "label": "DCLM mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "DCLM peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dclm",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dclm",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Dolma mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "mid"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Dolma peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "dolma",
+      "checkpoint_kind": "peak"
+     },
+     "color": "dolma",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "C4 mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "mid"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "C4 peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "datadecide",
+      "recipe": "c4",
+      "checkpoint_kind": "peak"
+     },
+     "color": "c4",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    },
+    {
+     "label": "Pythia mid \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "mid"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "o"
+    },
+    {
+     "label": "Pythia peak \u2212 final",
+     "filter": {
+      "contrast_type": "checkpoint",
+      "family": "pythia",
+      "checkpoint_kind": "peak"
+     },
+     "color": "pythia",
+     "band": null,
+     "marker": "^",
+     "linestyle": "--"
+    }
+   ],
+   "chance_line": true,
+   "arrows": null
+  }
+ ]
+}

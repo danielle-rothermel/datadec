@@ -1,0 +1,168 @@
+{
+ "jobs": [
+  {
+   "name": "quant-olmo3-base-bf16",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/Olmo-3-1025-7B",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "dtype": "bfloat16"
+  },
+  {
+   "name": "quant-olmo3-sft-bf16",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/Olmo-3-7B-Instruct-SFT",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "dtype": "bfloat16"
+  },
+  {
+   "name": "quant-olmo3-dpo-bf16",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/Olmo-3-7B-Instruct-DPO",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "dtype": "bfloat16"
+  },
+  {
+   "name": "quant-olmo3-instruct-bf16",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/Olmo-3-7B-Instruct",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "dtype": "bfloat16"
+  },
+  {
+   "name": "quant-olmo3-base-int8",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/Olmo-3-1025-7B",
+   "task": "arc_easy",
+   "batch_size": 8,
+   "dtype": "bfloat16",
+   "quant": "int8"
+  },
+  {
+   "name": "quant-olmo3-sft-int8",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/Olmo-3-7B-Instruct-SFT",
+   "task": "arc_easy",
+   "batch_size": 8,
+   "dtype": "bfloat16",
+   "quant": "int8"
+  },
+  {
+   "name": "quant-olmo3-dpo-int8",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/Olmo-3-7B-Instruct-DPO",
+   "task": "arc_easy",
+   "batch_size": 8,
+   "dtype": "bfloat16",
+   "quant": "int8"
+  },
+  {
+   "name": "quant-olmo3-instruct-int8",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/Olmo-3-7B-Instruct",
+   "task": "arc_easy",
+   "batch_size": 8,
+   "dtype": "bfloat16",
+   "quant": "int8"
+  },
+  {
+   "name": "quant-olmo3-base-nf4",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/Olmo-3-1025-7B",
+   "task": "arc_easy",
+   "batch_size": 8,
+   "dtype": "bfloat16",
+   "quant": "nf4"
+  },
+  {
+   "name": "quant-olmo3-sft-nf4",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/Olmo-3-7B-Instruct-SFT",
+   "task": "arc_easy",
+   "batch_size": 8,
+   "dtype": "bfloat16",
+   "quant": "nf4"
+  },
+  {
+   "name": "quant-olmo3-dpo-nf4",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/Olmo-3-7B-Instruct-DPO",
+   "task": "arc_easy",
+   "batch_size": 8,
+   "dtype": "bfloat16",
+   "quant": "nf4"
+  },
+  {
+   "name": "quant-olmo3-instruct-nf4",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "allenai/Olmo-3-7B-Instruct",
+   "task": "arc_easy",
+   "batch_size": 8,
+   "dtype": "bfloat16",
+   "quant": "nf4"
+  }
+ ]
+}

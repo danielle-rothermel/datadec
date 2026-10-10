@@ -1,0 +1,624 @@
+{
+ "jobs": [
+  {
+   "name": "valtest1-dd150m-validation",
+   "model": "allenai/DataDecide-dclm-baseline-150M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step37500-seed-default",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-dd150m-test1",
+   "model": "allenai/DataDecide-dclm-baseline-150M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step37500-seed-default",
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-dd300m-validation",
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step45000-seed-default",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-dd300m-test1",
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step45000-seed-default",
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-dd530m-validation",
+   "model": "allenai/DataDecide-dclm-baseline-530M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step57776-seed-default",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-dd530m-test1",
+   "model": "allenai/DataDecide-dclm-baseline-530M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step57776-seed-default",
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-dd1b-validation",
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step69369-seed-default",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-dd1b-test1",
+   "model": "allenai/DataDecide-dclm-baseline-1B",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step69369-seed-default",
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-dd-dolma-150m-validation",
+   "model": "allenai/DataDecide-dolma1_7-150M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step37500-seed-default",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-dd-dolma-150m-test1",
+   "model": "allenai/DataDecide-dolma1_7-150M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step37500-seed-default",
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-dd-dolma-300m-validation",
+   "model": "allenai/DataDecide-dolma1_7-300M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step45000-seed-default",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-dd-dolma-300m-test1",
+   "model": "allenai/DataDecide-dolma1_7-300M",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step45000-seed-default",
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-dd-dolma-1b-validation",
+   "model": "allenai/DataDecide-dolma1_7-1B",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step69369-seed-default",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-dd-dolma-1b-test1",
+   "model": "allenai/DataDecide-dolma1_7-1B",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step69369-seed-default",
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-pythia160m-validation",
+   "model": "EleutherAI/pythia-160m",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step143000",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-pythia160m-test1",
+   "model": "EleutherAI/pythia-160m",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step143000",
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-pythia410m-validation",
+   "model": "EleutherAI/pythia-410m",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step143000",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-pythia410m-test1",
+   "model": "EleutherAI/pythia-410m",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step143000",
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-pythia1b-validation",
+   "model": "EleutherAI/pythia-1b",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step143000",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-pythia1b-test1",
+   "model": "EleutherAI/pythia-1b",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step143000",
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-pythia2.8b-validation",
+   "model": "EleutherAI/pythia-2.8b",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step143000",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-pythia2.8b-test1",
+   "model": "EleutherAI/pythia-2.8b",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step143000",
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen0.6b-base-validation",
+   "model": "Qwen/Qwen3-0.6B-Base",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen0.6b-base-test1",
+   "model": "Qwen/Qwen3-0.6B-Base",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen0.6b-validation",
+   "model": "Qwen/Qwen3-0.6B",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen0.6b-test1",
+   "model": "Qwen/Qwen3-0.6B",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen1.7b-base-validation",
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen1.7b-base-test1",
+   "model": "Qwen/Qwen3-1.7B-Base",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen1.7b-validation",
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen1.7b-test1",
+   "model": "Qwen/Qwen3-1.7B",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen4b-base-validation",
+   "model": "Qwen/Qwen3-4B-Base",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen4b-base-test1",
+   "model": "Qwen/Qwen3-4B-Base",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen4b-validation",
+   "model": "Qwen/Qwen3-4B",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen4b-test1",
+   "model": "Qwen/Qwen3-4B",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen8b-base-validation",
+   "model": "Qwen/Qwen3-8B-Base",
+   "task": "arc_easy",
+   "batch_size": 8,
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen8b-base-test1",
+   "model": "Qwen/Qwen3-8B-Base",
+   "task": "arc_easy",
+   "batch_size": 8,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen8b-validation",
+   "model": "Qwen/Qwen3-8B",
+   "task": "arc_easy",
+   "batch_size": 8,
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-qwen8b-test1",
+   "model": "Qwen/Qwen3-8B",
+   "task": "arc_easy",
+   "batch_size": 8,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-olmo3-base-validation",
+   "model": "allenai/Olmo-3-1025-7B",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-olmo3-base-test1",
+   "model": "allenai/Olmo-3-1025-7B",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-olmo3-sft-validation",
+   "model": "allenai/Olmo-3-7B-Instruct-SFT",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-olmo3-sft-test1",
+   "model": "allenai/Olmo-3-7B-Instruct-SFT",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-olmo3-dpo-validation",
+   "model": "allenai/Olmo-3-7B-Instruct-DPO",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-olmo3-dpo-test1",
+   "model": "allenai/Olmo-3-7B-Instruct-DPO",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-olmo3-instruct-validation",
+   "model": "allenai/Olmo-3-7B-Instruct",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  },
+  {
+   "name": "valtest1-olmo3-instruct-test1",
+   "model": "allenai/Olmo-3-7B-Instruct",
+   "task": "arc_easy",
+   "batch_size": 16,
+   "subsets": [
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "formulations": [
+    "rc",
+    "mc"
+   ]
+  }
+ ]
+}

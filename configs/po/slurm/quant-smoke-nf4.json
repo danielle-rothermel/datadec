@@ -1,0 +1,16 @@
+{
+ "jobs": [
+  {
+   "name": "quant-smoke2-dd300m-nf4",
+   "subsets": [
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json"
+   ],
+   "model": "allenai/DataDecide-dclm-baseline-300M",
+   "revision": "step45000-seed-default",
+   "task": "arc_easy",
+   "batch_size": 32,
+   "dtype": "bfloat16",
+   "quant": "nf4"
+  }
+ ]
+}

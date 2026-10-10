@@ -1,0 +1,82 @@
+{
+ "jobs": [
+  {
+   "name": "pythia-ladder-12b",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "EleutherAI/pythia-12b",
+   "task": "arc_easy",
+   "batch_size": 4,
+   "revision": "step143000"
+  },
+  {
+   "name": "pythia-ladder-6.9b",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "EleutherAI/pythia-6.9b",
+   "task": "arc_easy",
+   "batch_size": 8,
+   "revision": "step143000"
+  },
+  {
+   "name": "pythia-ladder-1.4b",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "EleutherAI/pythia-1.4b",
+   "task": "arc_easy",
+   "batch_size": 32,
+   "revision": "step143000"
+  },
+  {
+   "name": "pythia-ladder-70m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "EleutherAI/pythia-70m",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step143000"
+  },
+  {
+   "name": "pythia-ladder-31m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "EleutherAI/pythia-31m",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step143000"
+  },
+  {
+   "name": "pythia-ladder-14m",
+   "subsets": [
+    "configs/po/subsets/arc_easy-train-part-train-n1495-seed0.json",
+    "configs/po/subsets/arc_easy-train-part-traindev-n748-seed0.json",
+    "configs/po/subsets/arc_easy-validation-n570-seed0.json",
+    "configs/po/subsets/arc_easy-test-part-test1-n1188-seed0.json"
+   ],
+   "model": "EleutherAI/pythia-14m",
+   "task": "arc_easy",
+   "batch_size": 64,
+   "revision": "step143000"
+  }
+ ]
+}

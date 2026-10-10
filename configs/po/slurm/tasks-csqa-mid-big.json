@@ -1,0 +1,43 @@
+{
+ "jobs": [
+  {
+   "name": "t-csqa-mid-pythia-12b",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 4,
+   "model": "EleutherAI/pythia-12b",
+   "revision": "step71000"
+  },
+  {
+   "name": "t-csqa-mid-pythia-6.9b",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 8,
+   "model": "EleutherAI/pythia-6.9b",
+   "revision": "step71000"
+  },
+  {
+   "name": "t-csqa-mid-pythia-2.8b",
+   "subsets": [
+    "configs/po/subsets/csqa-train-part-train-n1221-seed0.json",
+    "configs/po/subsets/csqa-train-part-traindev-n610-seed0.json",
+    "configs/po/subsets/csqa-validation-part-test-n610-seed0.json",
+    "configs/po/subsets/csqa-train-part-testaug-n611-seed0.json"
+   ],
+   "task": "csqa",
+   "batch_size": 16,
+   "model": "EleutherAI/pythia-2.8b",
+   "revision": "step71000"
+  }
+ ]
+}
