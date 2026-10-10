@@ -1,7 +1,7 @@
 import pandas as pd
 import pytest
 
-from repro.checkpoints import select_compute_budget
+from eval.checkpoints import select_compute_budget
 
 
 def test_budget_lookup_reports_no_match_and_enforces_tolerance():

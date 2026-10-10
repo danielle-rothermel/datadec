@@ -3,7 +3,7 @@
 import pandas as pd
 
 from repro.approaches import approach_rankings
-from repro.checkpoints import select_compute_budget
+from eval.checkpoints import select_compute_budget
 
 
 def matched_compute_comparisons(

@@ -7,6 +7,8 @@ from typing import Self
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from repro.table_evidence import EvidenceTable
+
 
 DEFAULT_CONFIG_PATH = Path("configs/repro_evaluations/magnusson2025-datadecide.toml")
 
@@ -54,13 +56,48 @@ class EvidenceSelection(_ConfigModel):
     min_compute_ratio: float = Field(default=0, ge=0, le=1)
     max_compute_ratio: float = Field(default=1, ge=0, le=1)
     predictor_size: str | None = None
-    related_tables: tuple[str, ...] | None = Field(default=None, min_length=1)
+    related_tables: tuple[EvidenceTable, ...] | None = Field(default=None, min_length=1)
 
     @model_validator(mode="after")
     def validate_range(self) -> Self:
         if self.min_compute_ratio > self.max_compute_ratio:
             raise ValueError("minimum compute ratio cannot exceed maximum")
         return self
+
+
+class ScoreCheckpoint(_ConfigModel):
+    size: str
+    step: int = Field(ge=0)
+
+
+class MeasurementSettings(_ConfigModel):
+    score_metrics: tuple[str, ...] = ()
+    score_checkpoints: tuple[ScoreCheckpoint, ...] = ()
+    noise_ddof: int = Field(default=0, ge=0, le=1)
+    budget_ratios: tuple[float, ...] = ()
+    budget_metrics: tuple[str, ...] = ()
+    scaling_metrics: tuple[str, ...] = ()
+    scaling_setups: tuple[str, ...] = ()
+    loss_metric: str = "train_cross_entropy"
+
+    @model_validator(mode="after")
+    def validate_budgets(self) -> Self:
+        if any(not 0 < ratio <= 1 for ratio in self.budget_ratios):
+            raise ValueError("budget ratios must be positive and at most one")
+        if self.budget_ratios and not self.budget_metrics:
+            raise ValueError("budget ratios require at least one budget metric")
+        if self.scaling_metrics and not self.scaling_setups:
+            raise ValueError("scaling metrics require explicit released setups")
+        return self
+
+
+class TableSelection(_ConfigModel):
+    table: EvidenceTable
+    tasks: tuple[str, ...] = ()
+    metrics: tuple[str, ...] = ()
+    sizes: tuple[str, ...] = ()
+    steps: tuple[int, ...] = ()
+    setups: tuple[str, ...] = ()
 
 
 def _resolve_selection(
@@ -87,7 +124,11 @@ class EvaluationConfig(_ConfigModel):
     task_groups: dict[str, tuple[str, ...]]
     metric_groups: dict[str, tuple[str, ...]]
     claims: dict[str, EvidenceSelection] = Field(min_length=1)
-    default_related_tables: tuple[str, ...] = Field(min_length=1)
+    default_related_tables: tuple[EvidenceTable, ...] = Field(min_length=1)
+    measurements: MeasurementSettings = Field(default_factory=MeasurementSettings)
+    measurement_claims: dict[str, tuple[TableSelection, ...]] = Field(
+        default_factory=dict
+    )
 
     @property
     def benchmarks(self) -> tuple[str, ...]:
@@ -147,12 +188,29 @@ class EvaluationConfig(_ConfigModel):
             ):
                 raise ValueError(f"invalid metrics for {claim_id}")
 
+    def _validate_measurements(self) -> None:
+        if set(
+            self.measurements.score_metrics + self.measurements.budget_metrics
+        ) - set(self.metrics):
+            raise ValueError("measurement metrics must be included in sweep metrics")
+        predictor_seed_sets = (
+            self.predictors.default_seeds,
+            *self.predictors.seeds_by_size.values(),
+        )
+        if self.measurements.score_metrics and any(
+            len(seeds) <= self.measurements.noise_ddof for seeds in predictor_seed_sets
+        ):
+            raise ValueError(
+                "score statistics require more predictor seeds than noise_ddof"
+            )
+
     @model_validator(mode="after")
     def validate_references(self) -> Self:
         self._validate_aggregation()
         self._validate_groups()
         self._validate_seeds()
         self._validate_claims()
+        self._validate_measurements()
         return self
 
 

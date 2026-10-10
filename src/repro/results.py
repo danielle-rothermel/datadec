@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 
 from eval.approaches import PredictionApproach
+from repro.table_evidence import TableEvidence
 
 
 @dataclass(frozen=True, slots=True)
@@ -43,6 +44,7 @@ class ClaimEvidence:
     claim_id: str
     tasks: tuple[TaskEvidence, ...]
     related_tables: tuple[str, ...]
+    table_links: tuple[TableEvidence, ...] = ()
 
     @property
     def evidence_ids(self) -> tuple[int, ...]:
@@ -54,4 +56,6 @@ class ClaimEvidence:
 
     @property
     def has_measurements(self) -> bool:
-        return any(task.evidence_ids for task in self.tasks)
+        return any(task.evidence_ids for task in self.tasks) or any(
+            link.row_ids for link in self.table_links
+        )

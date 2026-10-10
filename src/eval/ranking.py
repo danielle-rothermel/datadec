@@ -2,14 +2,12 @@
 
 import pandas as pd
 
-from eval.checkpoint_scores import checkpoint_rows, checkpoint_scores
 from datadec.recipes import (
     DataRecipeName,
     RecipeNameResolver,
-    load_recipe_name_resolver,
 )
-from eval.recipe_scores import MultiRecipeScores
-from eval.results import Checkpoint, RankingResult, RecipeRanking, SingleSeedRanking
+from eval.results import RankingResult, RecipeRanking, SingleSeedRanking
+from eval.score_statistics import recipe_scores_at_checkpoint, summarize_recipe_scores
 
 
 def predict_recipe_ranking(
@@ -41,73 +39,43 @@ def predict_recipe_ranking(
     """
     if predictor_step < 0 or predicted_step < 0:
         raise ValueError("checkpoint steps must be nonnegative")
-    resolver = (
-        recipe_name_resolver
-        if recipe_name_resolver is not None
-        else load_recipe_name_resolver()
-    )
-    predictor = checkpoint_rows(
-        evaluations, predictor_size, predictor_step, task
-    ).copy()
-    target = checkpoint_rows(evaluations, predicted_size, predicted_step, task).copy()
-    predictor["data"] = predictor["data"].map(resolver.resolve)
-    target["data"] = target["data"].map(resolver.resolve)
-    canonical_recipes = (
-        tuple(resolver.resolve(recipe) for recipe in recipes)
-        if recipes is not None
-        else tuple(resolver.resolve(name) for name in sorted(set(predictor["data"])))
-    )
-    if len(canonical_recipes) < 2 or len(set(canonical_recipes)) != len(
-        canonical_recipes
-    ):
+    if recipes is not None and len(recipes) < 2:
         raise ValueError("at least two unique recipes are required")
-    predictor_seeds = (
-        predictor_seeds
-        if predictor_seeds is not None
-        else tuple(sorted(predictor["seed"].unique()))
+    predictor = recipe_scores_at_checkpoint(
+        evaluations,
+        predictor_size,
+        predictor_step,
+        task,
+        predictor_task_metric,
+        seeds=predictor_seeds,
+        recipes=recipes,
+        recipe_name_resolver=recipe_name_resolver,
     )
-    predicted_seeds = (
-        predicted_seeds
-        if predicted_seeds is not None
-        else tuple(sorted(target["seed"].unique()))
+    if len(predictor.recipes) < 2:
+        raise ValueError("at least two unique recipes are required")
+    target = recipe_scores_at_checkpoint(
+        evaluations,
+        predicted_size,
+        predicted_step,
+        task,
+        predicted_task_metric,
+        seeds=predicted_seeds,
+        recipes=predictor.recipes,
+        recipe_name_resolver=recipe_name_resolver,
     )
-    pred_scores, pred_compute = checkpoint_scores(
-        predictor, predictor_task_metric, canonical_recipes, predictor_seeds
-    )
-    target_scores, target_compute = checkpoint_scores(
-        target, predicted_task_metric, canonical_recipes, predicted_seeds
-    )
-    if target_compute <= 0:
+    if target.checkpoint.compute <= 0:
         raise ValueError("target checkpoint compute must be positive")
-    truth = target_scores.mean(axis=1).to_numpy()
-    rankings = tuple(
-        SingleSeedRanking(
-            seed=seed,
-            ranking=RecipeRanking(
-                predictor_per_recipe_scores=MultiRecipeScores(
-                    dict(
-                        zip(
-                            canonical_recipes,
-                            map(float, pred_scores[seed]),
-                            strict=True,
-                        )
-                    )
-                ),
-                predictor_higher_is_better=predictor_higher_is_better,
-            ),
-        )
-        for seed in predictor_seeds
-    )
     return RankingResult(
-        predictor=Checkpoint(predictor_size, predictor_step, pred_compute),
-        predicted=Checkpoint(predicted_size, predicted_step, target_compute),
+        predictor=predictor.checkpoint,
+        predicted=target.checkpoint,
         task=task,
         predictor_task_metric=predictor_task_metric,
         predicted_task_metric=predicted_task_metric,
-        target_seeds=predicted_seeds,
-        target_per_recipe_scores=MultiRecipeScores(
-            dict(zip(canonical_recipes, map(float, truth), strict=True))
-        ),
+        target_seeds=tuple(target.per_seed_scores),
+        target_per_recipe_scores=summarize_recipe_scores(target).mean_per_recipe_scores,
         predicted_higher_is_better=predicted_higher_is_better,
-        seed_rankings=rankings,
+        seed_rankings=tuple(
+            SingleSeedRanking(seed, RecipeRanking(scores, predictor_higher_is_better))
+            for seed, scores in predictor.per_seed_scores.items()
+        ),
     )

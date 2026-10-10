@@ -7,7 +7,7 @@ import pandas as pd
 from datadec.config import load_olmes_contract
 from eval import RankingResult, UnavailableRankingError, predict_recipe_ranking
 from eval.results import Checkpoint
-from repro.checkpoints import observed_checkpoints
+from eval.checkpoints import observed_checkpoints
 from repro.config import EvaluationConfig
 from repro.observations import RankingObservation, observations_frame
 

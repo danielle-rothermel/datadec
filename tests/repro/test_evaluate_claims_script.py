@@ -100,6 +100,21 @@ primary = ["primary_metric"]
 [claims.DD-0014]
 tasks = ["mmlu"]
 metric_groups = ["primary"]
+
+[measurements]
+score_metrics = ["primary_metric"]
+budget_metrics = ["primary_metric"]
+budget_ratios = [0.01, 1.0]
+scaling_metrics = ["primary_metric"]
+scaling_setups = ["3_param"]
+loss_metric = "train_cross_entropy"
+
+[[measurement_claims.DD-0098]]
+table = "noise_spread.parquet"
+[[measurement_claims.DD-0142]]
+table = "score_summaries.parquet"
+[[measurement_claims.DD-0304]]
+table = "scaling_summaries.parquet"
 '''
     config_path = tmp_path / "evaluation.toml"
     config_path.write_text(source)
@@ -129,6 +144,31 @@ metric_groups = ["primary"]
     data_dir = tmp_path / "data"
     (data_dir / "processed").mkdir(parents=True)
     pd.DataFrame(rows).to_parquet(data_dir / "processed/olmes.parquet", index=False)
+    scaling = data_dir / "processed/scaling-law"
+    scaling.mkdir()
+    evaluation_rows = pd.DataFrame(rows).assign(source_file="released-evaluations.csv")
+    evaluation_rows.to_parquet(scaling / "evaluations.parquet", index=False)
+    loss_rows = evaluation_rows.drop(columns=["task", "primary_metric"]).assign(
+        train_cross_entropy=2.0
+    )
+    loss_rows.to_parquet(scaling / "checkpoint-losses.parquet", index=False)
+    published = data_dir / "processed/published-results"
+    published.mkdir()
+    pd.DataFrame(
+        [
+            dict(
+                source_file="released-predictions.csv",
+                source_unit="unit",
+                task="mmlu",
+                mix=recipe,
+                metric="primary_metric",
+                setup="3_param",
+                stacked_pred=float(index) + 0.5,
+                stacked_y=float(index),
+            )
+            for index, recipe in enumerate(load_olmes_contract().recipe_map.values())
+        ]
+    ).to_parquet(published / "cheap_decisions.parquet", index=False)
     output = tmp_path / "output"
     result = subprocess.run(
         [
@@ -151,6 +191,8 @@ metric_groups = ["primary"]
     assert metadata["configuration"]["target"]["step"] == 10
     assert metadata["configuration"]["run"]["matched_compute_tolerance"] == 0.02
     assert metadata["input"]["sha256"]
+    assert len(metadata["additional_inputs"]) == 3
+    assert len(metadata["tables"]) == 11
     assert "Saved analysis report to" in result.stderr
     assert "scripts/repro/claims.py --run-dir" in result.stderr
     assert set(path.name for path in output.iterdir()) == {
@@ -162,11 +204,20 @@ metric_groups = ["primary"]
         "checkpoints.csv",
         "claim_evidence.parquet",
         "run.json",
+        "recipe_scores.parquet",
+        "score_summaries.parquet",
+        "noise_spread.parquet",
+        "budget_accuracy.parquet",
+        "scaling_observations.parquet",
+        "scaling_errors.parquet",
+        "scaling_summaries.parquet",
     }
     # Reporting must use persisted measurements and config, with no OLMES read
     # or analysis rerun. Only the paper and claim inventory remain necessary.
     (data_dir / "processed/olmes.parquet").unlink()
     config_path.unlink()
+    for source in [*scaling.glob("*.parquet"), *published.glob("*.parquet")]:
+        source.unlink()
     viewed = subprocess.run(
         [
             sys.executable,
@@ -195,7 +246,11 @@ metric_groups = ["primary"]
         load_claims(ROOT / config.run.claim_inventory), ROOT / config.run.paper_dir
     )
     assert "DD-0014" in viewed.stdout
-    assert "With measurements: 1 | Without measurements: 63" in viewed.stdout
+    assert "noise_spread.parquet | Rows shown:" in viewed.stdout
+    assert "scaling_summaries.parquet | Rows shown:" in viewed.stdout
+    assert "score_summaries.parquet | Rows shown:" in viewed.stdout
+    assert "budget_accuracy.parquet | Rows shown:" in viewed.stdout
+    assert "With measurements: 4 | Without measurements: 60" in viewed.stdout
     assert "1.000000" in viewed.stdout
     assert "Linked ranking rows: 0" in viewed.stdout
     # Rich wraps passages for the terminal; the loaded source remains exact.

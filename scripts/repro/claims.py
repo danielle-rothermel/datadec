@@ -27,7 +27,22 @@ def parse_arguments(argv: list[str] | None = None) -> argparse.Namespace:
         help="search this directory recursively for the latest completed run",
     )
     parser.add_argument("--width", type=int, help="override terminal rendering width")
-    return parser.parse_args(argv)
+    parser.add_argument(
+        "--claim",
+        action="append",
+        default=[],
+        help="display this claim ID (repeatable)",
+    )
+    parser.add_argument(
+        "--max-rows",
+        type=int,
+        default=12,
+        help="rows per numerical table; 0 displays all",
+    )
+    args = parser.parse_args(argv)
+    if args.max_rows < 0:
+        parser.error("--max-rows must be nonnegative")
+    return args
 
 
 def main() -> None:
@@ -38,7 +53,12 @@ def main() -> None:
         else latest_run(args.reports_dir, CLAIMS_FILE)
     )
     report = load_claim_report(CLAIMS_FILE, PAPER_DIR, run_dir)
-    print_claim_report(report, Console(width=args.width))
+    print_claim_report(
+        report,
+        Console(width=args.width),
+        max_rows=args.max_rows or None,
+        claim_ids=tuple(args.claim),
+    )
 
 
 if __name__ == "__main__":
