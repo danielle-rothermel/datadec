@@ -85,6 +85,8 @@ def test_named_groups_resolve_in_order_without_repeated_metrics(config):
 def test_narrow_experiment_can_retain_unused_group_definitions(config):
     values = config.model_dump()
     values["sweep_metric_group"] = "primary"
+    values["measurements"] = {}
+    values["measurement_claims"] = {}
     values["claims"] = {"DD-0010": values["claims"]["DD-0010"]}
     updated = EvaluationConfig.model_validate(values)
     assert updated.metrics == ("primary_metric",)

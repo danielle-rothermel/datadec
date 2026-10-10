@@ -15,6 +15,7 @@ def test_all_configured_selections_link_scoped_rows(sweep, config):
         "claim_id",
         "tasks",
         "related_tables",
+        "table_links",
     }
 
 

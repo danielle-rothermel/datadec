@@ -4,6 +4,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 
+import pandas as pd
 from rich import box
 from rich.console import Console
 from rich.table import Table
@@ -18,7 +19,9 @@ from repro.datasets import (
     read_run_metadata,
 )
 from repro.observations import RankingObservation
+from repro.numerical_tables import load_linked_tables, print_linked_table
 from repro.results import ClaimEvidence
+from repro.table_evidence import EvidenceTable
 
 
 @dataclass(frozen=True, slots=True)
@@ -40,6 +43,7 @@ class ClaimReport:
     metadata: RunMetadata | None
     claims: tuple[ReportedClaim, ...]
     rankings: Mapping[int, RankingObservation]
+    tables: Mapping[EvidenceTable, pd.DataFrame]
 
 
 def load_claim_report(
@@ -64,10 +68,16 @@ def load_claim_report(
         read_rankings(run_dir / "rankings.parquet") if run_dir is not None else {}
     )
     validate_evidence_references(tuple(results.values()), rankings)
+    tables = (
+        load_linked_tables(run_dir, tuple(results.values()), metadata.tables)
+        if run_dir is not None and metadata is not None
+        else {}
+    )
     return ClaimReport(
         rankings=rankings,
         run_dir=run_dir,
         metadata=metadata,
+        tables=tables,
         claims=tuple(
             ReportedClaim(
                 claim_id=claim_id,
@@ -158,7 +168,13 @@ def evidence_table(
     return table
 
 
-def print_claim_report(report: ClaimReport, console: Console) -> None:
+def print_claim_report(
+    report: ClaimReport,
+    console: Console,
+    *,
+    max_rows: int | None = 12,
+    claim_ids: tuple[str, ...] = (),
+) -> None:
     console.print("Paper selections and linked measurements", style="bold")
     with_measurements = sum(
         claim.evidence is not None and claim.evidence.has_measurements
@@ -173,7 +189,12 @@ def print_claim_report(report: ClaimReport, console: Console) -> None:
     else:
         console.print(Text(f"Saved report: {report.run_dir.resolve()}", style="dim"))
     console.print()
+    unknown = set(claim_ids) - {claim.claim_id for claim in report.claims}
+    if unknown:
+        raise ValueError(f"unknown claim IDs: {sorted(unknown)}")
     for claim in report.claims:
+        if claim_ids and claim.claim_id not in claim_ids:
+            continue
         console.print(Text(claim.claim_id, style="bold cyan"))
         for passage in claim.quotes:
             location = passage.location
@@ -188,12 +209,18 @@ def print_claim_report(report: ClaimReport, console: Console) -> None:
                 f"Linked ranking rows: {len(result.evidence_ids)} | "
                 f"Unavailable rows: {len(result.unavailable_ids)}"
             )
-            console.print(evidence_table(result, report.rankings))
-            console.print(
-                Text(
-                    "Data tables: "
-                    + ", ".join(("rankings.parquet", *result.related_tables)),
-                    style="dim",
+            if result.tasks:
+                console.print(evidence_table(result, report.rankings))
+            for link in result.table_links:
+                print_linked_table(
+                    link, report.tables[link.table], console, max_rows=max_rows
+                )
+            names = dict.fromkeys(
+                (
+                    *(("rankings.parquet",) if result.tasks else ()),
+                    *(link.table.value for link in result.table_links),
                 )
             )
+            if names:
+                console.print(Text("Data tables: " + ", ".join(names), style="dim"))
         console.print()

@@ -1,4 +1,4 @@
-# Default single-scale experiment and claim-analysis policy for DataDecide.
+# Default experiment and evidence selections for DataDecide.
 # Paper selections remain in the separate claim inventory.
 sweep_metric_group = "all"
 default_related_tables = ["curves.csv", "proxy_comparisons.parquet"]
@@ -226,3 +226,268 @@ metrics = ["primary_metric", "norm_correct_prob_per_char", "margin_per_char"]
 [claims.DD-0208]
 task_groups = ["benchmarks"]
 metric_groups = ["primary", "character_proxies"]
+
+[measurements]
+score_metrics = ["primary_metric", "correct_prob", "correct_prob_per_char", "total_prob_per_char"]
+noise_ddof = 0
+budget_ratios = [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0]
+budget_metrics = ["primary_metric", "correct_prob_per_char", "total_prob_per_char"]
+scaling_metrics = ["primary_metric"]
+scaling_setups = ["2_param", "3_param", "3_param-1_step", "3_param-helper_points", "3_param-helper_points-step2=0.5", "3_param-intermediate", "3_param-intermediate-helper_points", "3_param-step2=0.5", "5_param-1_step-ai2", "5_param-ai2"]
+loss_metric = "train_cross_entropy"
+
+[[measurement_claims.DD-0056]]
+table = "noise_spread.parquet"
+sizes = ["150M"]
+
+[[measurement_claims.DD-0056]]
+table = "score_summaries.parquet"
+sizes = ["150M"]
+
+
+[[measurement_claims.DD-0057]]
+table = "noise_spread.parquet"
+sizes = ["150M"]
+
+[[measurement_claims.DD-0057]]
+table = "score_summaries.parquet"
+sizes = ["150M"]
+
+
+[[measurement_claims.DD-0098]]
+table = "noise_spread.parquet"
+sizes = ["1B"]
+
+[[measurement_claims.DD-0098]]
+table = "score_summaries.parquet"
+sizes = ["1B"]
+
+
+[[measurement_claims.DD-0209]]
+table = "noise_spread.parquet"
+sizes = ["150M"]
+tasks = ["hellaswag"]
+
+[[measurement_claims.DD-0209]]
+table = "score_summaries.parquet"
+sizes = ["150M"]
+tasks = ["hellaswag"]
+
+
+[[measurement_claims.DD-0210]]
+table = "noise_spread.parquet"
+sizes = ["150M"]
+tasks = ["socialiqa"]
+
+[[measurement_claims.DD-0210]]
+table = "score_summaries.parquet"
+sizes = ["150M"]
+tasks = ["socialiqa"]
+
+
+[[measurement_claims.DD-0212]]
+table = "noise_spread.parquet"
+sizes = ["150M"]
+
+[[measurement_claims.DD-0212]]
+table = "score_summaries.parquet"
+sizes = ["150M"]
+
+
+[[measurement_claims.DD-0218]]
+table = "noise_spread.parquet"
+sizes = ["150M"]
+tasks = ["mmlu"]
+
+[[measurement_claims.DD-0218]]
+table = "score_summaries.parquet"
+sizes = ["150M"]
+tasks = ["mmlu"]
+
+
+[[measurement_claims.DD-0219]]
+table = "noise_spread.parquet"
+sizes = ["150M"]
+tasks = ["arc_easy"]
+
+[[measurement_claims.DD-0219]]
+table = "score_summaries.parquet"
+sizes = ["150M"]
+tasks = ["arc_easy"]
+
+
+[[measurement_claims.DD-0220]]
+table = "noise_spread.parquet"
+sizes = ["150M"]
+
+[[measurement_claims.DD-0220]]
+table = "score_summaries.parquet"
+sizes = ["150M"]
+
+[[measurement_claims.DD-0142]]
+table = "score_summaries.parquet"
+metrics = ["primary_metric"]
+
+[[measurement_claims.DD-0013]]
+table = "scaling_summaries.parquet"
+
+[[measurement_claims.DD-0013]]
+table = "scaling_errors.parquet"
+
+[[measurement_claims.DD-0119]]
+table = "scaling_summaries.parquet"
+
+[[measurement_claims.DD-0119]]
+table = "scaling_errors.parquet"
+
+[[measurement_claims.DD-0189]]
+table = "scaling_summaries.parquet"
+
+[[measurement_claims.DD-0189]]
+table = "scaling_errors.parquet"
+
+[[measurement_claims.DD-0301]]
+table = "scaling_summaries.parquet"
+setups = ["3_param-helper_points-step2=0.5"]
+
+[[measurement_claims.DD-0301]]
+table = "scaling_errors.parquet"
+setups = ["3_param-helper_points-step2=0.5"]
+
+[[measurement_claims.DD-0302]]
+table = "scaling_summaries.parquet"
+setups = ["3_param-helper_points"]
+
+[[measurement_claims.DD-0302]]
+table = "scaling_errors.parquet"
+setups = ["3_param-helper_points"]
+
+[[measurement_claims.DD-0303]]
+table = "scaling_summaries.parquet"
+setups = ["3_param-step2=0.5"]
+
+[[measurement_claims.DD-0303]]
+table = "scaling_errors.parquet"
+setups = ["3_param-step2=0.5"]
+
+[[measurement_claims.DD-0304]]
+table = "scaling_summaries.parquet"
+setups = ["3_param"]
+
+[[measurement_claims.DD-0304]]
+table = "scaling_errors.parquet"
+setups = ["3_param"]
+
+[[measurement_claims.DD-0305]]
+table = "scaling_summaries.parquet"
+setups = ["2_param"]
+
+[[measurement_claims.DD-0305]]
+table = "scaling_errors.parquet"
+setups = ["2_param"]
+
+[[measurement_claims.DD-0306]]
+table = "scaling_summaries.parquet"
+setups = ["5_param-1_step-ai2"]
+
+[[measurement_claims.DD-0306]]
+table = "scaling_errors.parquet"
+setups = ["5_param-1_step-ai2"]
+
+[[measurement_claims.DD-0307]]
+table = "scaling_summaries.parquet"
+setups = ["3_param-1_step"]
+
+[[measurement_claims.DD-0307]]
+table = "scaling_errors.parquet"
+setups = ["3_param-1_step"]
+
+[[measurement_claims.DD-0308]]
+table = "scaling_summaries.parquet"
+setups = ["5_param-ai2"]
+
+[[measurement_claims.DD-0308]]
+table = "scaling_errors.parquet"
+setups = ["5_param-ai2"]
+
+[[measurement_claims.DD-0311]]
+table = "scaling_summaries.parquet"
+
+[[measurement_claims.DD-0311]]
+table = "scaling_errors.parquet"
+
+[[measurement_claims.DD-0312]]
+table = "scaling_summaries.parquet"
+
+[[measurement_claims.DD-0312]]
+table = "scaling_errors.parquet"
+
+[[measurement_claims.DD-0119]]
+table = "scaling_observations.parquet"
+tasks = ["arc_easy"]
+
+[[measurement_claims.DD-0056]]
+table = "recipe_scores.parquet"
+sizes = ["150M"]
+
+
+
+[[measurement_claims.DD-0057]]
+table = "recipe_scores.parquet"
+sizes = ["150M"]
+
+
+
+[[measurement_claims.DD-0098]]
+table = "recipe_scores.parquet"
+sizes = ["1B"]
+
+
+
+[[measurement_claims.DD-0209]]
+table = "recipe_scores.parquet"
+sizes = ["150M"]
+tasks = ["hellaswag"]
+
+
+
+[[measurement_claims.DD-0210]]
+table = "recipe_scores.parquet"
+sizes = ["150M"]
+tasks = ["socialiqa"]
+
+
+
+[[measurement_claims.DD-0212]]
+table = "recipe_scores.parquet"
+sizes = ["150M"]
+
+
+
+[[measurement_claims.DD-0218]]
+table = "recipe_scores.parquet"
+sizes = ["150M"]
+tasks = ["mmlu"]
+
+
+
+[[measurement_claims.DD-0219]]
+table = "recipe_scores.parquet"
+sizes = ["150M"]
+tasks = ["arc_easy"]
+
+
+
+[[measurement_claims.DD-0220]]
+table = "recipe_scores.parquet"
+sizes = ["150M"]
+
+
+[[measurement_claims.DD-0142]]
+table = "recipe_scores.parquet"
+metrics = ["primary_metric"]
+
+
+[[measurements.score_checkpoints]]
+size = "150M"
+step = 37500

@@ -13,11 +13,13 @@ from repro.aggregation import load_evaluations
 from repro.evidence import collect_claim_evidence
 from repro.claims import load_claims
 from repro.config import DEFAULT_CONFIG_PATH, EvaluationConfig, load_evaluation_config
-from repro.checkpoints import observed_checkpoints
-from repro.diagnostics.compute_matches import matched_compute_comparisons
-from repro.diagnostics.crossovers import recipe_crossovers
-from repro.diagnostics.curves import curve_summary
-from repro.diagnostics.proxies import proxy_comparisons
+from eval.checkpoints import observed_checkpoints
+from repro.measurement_runner import (
+    additional_sources,
+    build_analysis_tables,
+    write_measurement_tables,
+)
+from repro.table_evidence import EvidenceTable
 from repro.datasets import (
     InputArtifact,
     RunMetadata,
@@ -77,7 +79,7 @@ def resolve_config(args: argparse.Namespace) -> EvaluationConfig:
 def validate_run_claims(config: EvaluationConfig) -> None:
     """Check configured claim references before starting the expensive sweep."""
     claims = load_claims(config.run.claim_inventory)
-    unknown = set(config.claims) - claims.keys()
+    unknown = (set(config.claims) | set(config.measurement_claims)) - claims.keys()
     if unknown:
         raise ValueError(f"unknown claim IDs in evaluation config: {sorted(unknown)}")
 
@@ -91,28 +93,6 @@ def hash_file(path: Path) -> str:
         return file_digest(file, "sha256").hexdigest()
 
 
-def write_analysis_tables(
-    output: Path,
-    evaluations: pd.DataFrame,
-    sweep: pd.DataFrame,
-    config: EvaluationConfig,
-) -> None:
-    sweep.to_parquet(output / "rankings.parquet")
-    curve_summary(sweep).to_csv(output / "curves.csv", index=False)
-    proxy_comparisons(sweep, baseline_metric=config.target.metric).to_parquet(
-        output / "proxy_comparisons.parquet", index=False
-    )
-    recipe_crossovers(
-        evaluations, tasks=config.benchmarks, metric=config.target.metric
-    ).to_csv(output / "recipe_crossovers.csv", index=False)
-    matched_compute_comparisons(
-        sweep,
-        baseline_metric=config.target.metric,
-        relative_tolerance=config.run.matched_compute_tolerance,
-    ).to_csv(output / "matched_compute.csv", index=False)
-    observed_checkpoints(evaluations).to_csv(output / "checkpoints.csv", index=False)
-
-
 def write_run_outputs(
     evaluations: pd.DataFrame,
     sweep: pd.DataFrame,
@@ -120,14 +100,20 @@ def write_run_outputs(
     config: EvaluationConfig,
     source: Path,
     source_sha256: str,
+    tables: dict[EvidenceTable, pd.DataFrame],
+    extra_inputs: tuple[InputArtifact, ...],
 ) -> None:
     output = config.run.output_dir
     output.mkdir(parents=True, exist_ok=True)
-    write_analysis_tables(output, evaluations, sweep, config)
+    sweep.to_parquet(output / "rankings.parquet")
+    observed_checkpoints(evaluations).to_csv(output / "checkpoints.csv", index=False)
+    write_measurement_tables(tables, output)
     write_claim_evidence(evidence, output / "claim_evidence.parquet")
     metadata = RunMetadata(
         input=InputArtifact(path=source.resolve(), sha256=source_sha256),
         configuration=config,
+        additional_inputs=extra_inputs,
+        tables=tuple(tables),
     )
     write_run_metadata(metadata, output / "run.json")
 
@@ -146,11 +132,28 @@ def main() -> None:
     validate_run_claims(config)
     source = DataArtifacts(config.run.data_dir).get_path("olmes_processed")
     LOGGER.info("Reading %s", source)
+    sources = additional_sources(config)
+    missing = [path for path in sources if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(f"missing configured analysis inputs: {missing}")
     source_sha256 = hash_file(source)
+    extra_inputs = tuple(
+        InputArtifact(path=path.resolve(), sha256=hash_file(path)) for path in sources
+    )
     evaluations = load_evaluations(config.run.data_dir, config)
     sweep = sweep_rankings(evaluations, config, progress=LOGGER.info)
-    evidence = collect_claim_evidence(sweep, config)
-    write_run_outputs(evaluations, sweep, evidence, config, source, source_sha256)
+    tables = build_analysis_tables(evaluations, sweep, config)
+    evidence = collect_claim_evidence(sweep, config, tables)
+    write_run_outputs(
+        evaluations,
+        sweep,
+        evidence,
+        config,
+        source,
+        source_sha256,
+        tables,
+        extra_inputs,
+    )
     log_saved_report(config.run.output_dir)
 
 

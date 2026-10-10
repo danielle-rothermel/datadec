@@ -42,6 +42,7 @@ def test_claim_dataset_pins_persisted_links_without_copied_measurements(
     assert pq.read_table(path).to_pylist() == [
         {
             "claim_id": "DD-0014",
+            "table_links": [],
             "related_tables": ["curves.csv"],
             "tasks": [
                 {

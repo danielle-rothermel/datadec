@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, TypeAdapter
 from repro.config import EvaluationConfig
 from repro.results import ClaimEvidence
 from repro.observations import RankingObservation, observations_from_frame
+from repro.table_evidence import EvidenceTable
 
 
 # Explicit persisted link ownership. Ranking measurements come from rankings.parquet.
@@ -29,6 +30,18 @@ CLAIM_EVIDENCE_SCHEMA = pa.schema(
         pa.field("claim_id", pa.string(), nullable=False),
         pa.field("tasks", pa.list_(_TASK_EVIDENCE), nullable=False),
         pa.field("related_tables", pa.list_(pa.string()), nullable=False),
+        pa.field(
+            "table_links",
+            pa.list_(
+                pa.struct(
+                    [
+                        pa.field("table", pa.string(), nullable=False),
+                        pa.field("row_ids", pa.list_(pa.int64()), nullable=False),
+                    ]
+                )
+            ),
+            nullable=False,
+        ),
     ]
 )
 _EVIDENCE_ADAPTER = TypeAdapter(tuple[ClaimEvidence, ...])
@@ -46,6 +59,8 @@ class RunMetadata(BaseModel):
 
     input: InputArtifact
     configuration: EvaluationConfig
+    additional_inputs: tuple[InputArtifact, ...] = ()
+    tables: tuple[EvidenceTable, ...] = ()
 
 
 def write_claim_evidence(results: tuple[ClaimEvidence, ...], path: Path) -> None:

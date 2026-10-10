@@ -2,7 +2,7 @@ import pandas as pd
 import pytest
 
 from repro.aggregation import prepare_evaluations
-from repro.checkpoints import observed_checkpoints
+from eval.checkpoints import observed_checkpoints
 
 
 def test_macro_average_weights_mmlu_once(raw, config):
