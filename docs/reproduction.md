@@ -94,3 +94,5 @@ noise/spread measurements are separate datasets. Scaling observations, errors,
 and setup/task summaries are separate datasets. The viewer also reads saved
 curve, proxy, crossover, and matched-compute diagnostics. Table row IDs remain
 available for inspecting the complete Parquet or CSV data.
+
+As of 2026-10-09, PR #53 leaves 8 paper selections without linked evidence.

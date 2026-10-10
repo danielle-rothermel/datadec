@@ -55,9 +55,11 @@ def test_noise_is_within_recipe_and_spread_is_between_recipe_means(scores):
     assert sample.noise == sample.spread == pytest.approx(2**0.5)
     pd.testing.assert_frame_equal(scores, original)
     with pytest.raises(TypeError):
-        selected.per_seed_scores["c"] = selected.per_seed_scores["a"]
+        selected.per_seed_scores["c"] = selected.per_seed_scores[
+            "a"
+        ]  # ty: ignore[invalid-assignment]
     with pytest.raises(FrozenInstanceError):
-        selected.task = "other"
+        selected.task = "other"  # ty: ignore[invalid-assignment]
 
 
 def test_score_summary_rejects_insufficient_seeds_for_sample_std(scores):
