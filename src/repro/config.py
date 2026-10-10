@@ -84,6 +84,8 @@ class MeasurementSettings(_ConfigModel):
     def validate_budgets(self) -> Self:
         if any(not 0 < ratio <= 1 for ratio in self.budget_ratios):
             raise ValueError("budget ratios must be positive and at most one")
+        if self.budget_ratios and not self.budget_metrics:
+            raise ValueError("budget ratios require at least one budget metric")
         if self.scaling_metrics and not self.scaling_setups:
             raise ValueError("scaling metrics require explicit released setups")
         return self
@@ -186,16 +188,29 @@ class EvaluationConfig(_ConfigModel):
             ):
                 raise ValueError(f"invalid metrics for {claim_id}")
 
+    def _validate_measurements(self) -> None:
+        if set(
+            self.measurements.score_metrics + self.measurements.budget_metrics
+        ) - set(self.metrics):
+            raise ValueError("measurement metrics must be included in sweep metrics")
+        predictor_seed_sets = (
+            self.predictors.default_seeds,
+            *self.predictors.seeds_by_size.values(),
+        )
+        if self.measurements.score_metrics and any(
+            len(seeds) <= self.measurements.noise_ddof for seeds in predictor_seed_sets
+        ):
+            raise ValueError(
+                "score statistics require more predictor seeds than noise_ddof"
+            )
+
     @model_validator(mode="after")
     def validate_references(self) -> Self:
         self._validate_aggregation()
         self._validate_groups()
         self._validate_seeds()
         self._validate_claims()
-        if set(
-            self.measurements.score_metrics + self.measurements.budget_metrics
-        ) - set(self.metrics):
-            raise ValueError("measurement metrics must be included in sweep metrics")
+        self._validate_measurements()
         return self
 
 

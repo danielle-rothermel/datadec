@@ -91,3 +91,35 @@ def test_narrow_experiment_can_retain_unused_group_definitions(config):
     updated = EvaluationConfig.model_validate(values)
     assert updated.metrics == ("primary_metric",)
     assert set(updated.claims) == {"DD-0010"}
+
+
+def test_budget_ratios_require_metrics_before_analysis(config):
+    values = config.model_dump()
+    values["measurements"]["budget_metrics"] = []
+    with pytest.raises(ValidationError, match="budget ratios require.*budget metric"):
+        EvaluationConfig.model_validate(values)
+
+
+@pytest.mark.parametrize("override_size", [None, "1B"])
+def test_sample_noise_rejects_single_seed_predictors_before_analysis(
+    config, override_size
+):
+    values = config.model_dump()
+    values["measurements"]["noise_ddof"] = 1
+    if override_size is None:
+        values["predictors"]["default_seeds"] = ["default"]
+    else:
+        values["predictors"]["seeds_by_size"][override_size] = ["default"]
+    with pytest.raises(ValidationError, match="more predictor seeds than noise_ddof"):
+        EvaluationConfig.model_validate(values)
+
+
+@pytest.mark.parametrize("ddof, score_metrics", [(0, ["primary_metric"]), (1, [])])
+def test_single_seed_is_valid_for_population_noise_or_disabled_score_statistics(
+    config, ddof, score_metrics
+):
+    values = config.model_dump()
+    values["measurements"]["noise_ddof"] = ddof
+    values["measurements"]["score_metrics"] = score_metrics
+    values["predictors"]["default_seeds"] = ["default"]
+    EvaluationConfig.model_validate(values)

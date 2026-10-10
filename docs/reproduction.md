@@ -84,7 +84,9 @@ wrappers. `numerical_tables.py` renders linked numerical rows.
 standard-deviation convention, budget ratios/metrics, released scaling setups,
 and loss metric. Score extraction includes observed completed checkpoints and
 explicitly selected additional checkpoints; `schedule_complete` retains their
-observed status. `[[measurement_claims.<id>]]` selects table rows by task,
+observed status. Budget ratios require budget metrics; enabled score statistics
+require every configured predictor seed set to contain more seeds than
+`noise_ddof`. `[[measurement_claims.<id>]]` selects table rows by task,
 metric, size, step, or released setup. Existing `[claims.<id>]` entries select
 ranking rows by task, metric, size, and compute range.
 
