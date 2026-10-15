@@ -263,8 +263,14 @@ uv run python scripts/models/convert_checkpoint.py \
   --work-dir /tmp/datadec-convert
 ```
 
-Published so far: `drotherm/DataDecide-dclm-baseline-150M`, branch
-`step38157-seed0`, tag `final-seed0` (maximum absolute logit difference 0.0).
+Published so far, all public, each at the paper's final step with the tag
+`final-seed<k>`: `drotherm/DataDecide-dclm-baseline-150M` (seed 0, step
+38157), `drotherm/DataDecide-dclm-baseline-300M` (seed 0, step 45787),
+`drotherm/DataDecide-dolma1.7-300M` (seeds 0 and 1, step 45787),
+`drotherm/DataDecide-dclm-baseline-1B` and `drotherm/DataDecide-dolma1.7-1B`
+(seeds 0 to 2, step 69369). The 150M and 300M strict checks are exact; the 1B
+checks differ by under 5e-5 in maximum absolute logit with full argmax
+agreement. The other 300M auxiliary seeds have no checkpoint at step 45787.
 The converted checkpoints load with transformers 5; the verbatim
 `tokenizer_config.json` declares `OLMoTokenizer`, which transformers 4.x
 rejects, and `config.json` uses the transformers 5 `rope_parameters` key. Each
