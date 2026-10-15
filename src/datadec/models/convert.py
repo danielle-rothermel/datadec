@@ -22,6 +22,7 @@ __all__ = [
     "UnsupportedCheckpointError",
     "convert_hf_olmo_to_native",
     "download_source_checkpoint",
+    "load_source_tensors",
     "sha256_file",
 ]
 
@@ -108,7 +109,7 @@ def convert_hf_olmo_to_native(
     *,
     source_dir: Path | None = None,
 ) -> ConversionRecord:
-    from safetensors.torch import load_file, save_file  # noqa: PLC0415
+    from safetensors.torch import save_file  # noqa: PLC0415
 
     checkpoint_contract = load_checkpoint_contract()
     contract = checkpoint_contract.source
@@ -120,7 +121,7 @@ def convert_hf_olmo_to_native(
         source_dir = download_source_checkpoint(source_repo_id, source_revision)
     source_config = json.loads((source_dir / "config.json").read_text())
     target_config = native_config(source_config)
-    source_tensors = load_file(source_dir / conversion.weights_filename)
+    source_tensors = load_source_tensors(source_dir)
     target_tensors, mappings = map_tensors(source_tensors, source_config)
     check_target_shapes(target_config, target_tensors)
 
@@ -156,6 +157,38 @@ def convert_hf_olmo_to_native(
         json.dumps(record.model_dump(mode="json"), indent=2, sort_keys=True) + "\n"
     )
     return record
+
+
+def load_source_tensors(source_dir: Path) -> dict[str, torch.Tensor]:
+    from safetensors.torch import load_file  # noqa: PLC0415
+
+    conversion = load_checkpoint_contract().conversion
+    single = source_dir / conversion.weights_filename
+    if single.is_file():
+        return load_file(single)
+    index_path = source_dir / conversion.weights_index_filename
+    if not index_path.is_file():
+        raise UnsupportedCheckpointError(
+            f"no {conversion.weights_filename} or "
+            f"{conversion.weights_index_filename} in {source_dir}"
+        )
+    weight_map = json.loads(index_path.read_text())["weight_map"]
+    tensors: dict[str, torch.Tensor] = {}
+    for shard_name in sorted(set(weight_map.values())):
+        shard = load_file(source_dir / shard_name)
+        duplicates = sorted(set(shard) & set(tensors))
+        if duplicates:
+            raise UnsupportedCheckpointError(
+                f"tensors in several shards: {duplicates[:5]}"
+            )
+        tensors |= shard
+    missing = sorted(set(weight_map) - set(tensors))
+    extra = sorted(set(tensors) - set(weight_map))
+    if missing or extra:
+        raise UnsupportedCheckpointError(
+            f"shards disagree with the index: missing={missing[:5]} extra={extra[:5]}"
+        )
+    return tensors
 
 
 def native_config(source: dict[str, object]) -> dict[str, object]:

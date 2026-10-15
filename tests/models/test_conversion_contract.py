@@ -10,6 +10,7 @@ def test_conversion_literals_are_pinned() -> None:
     assert conversion.target_model_type == "llama"
     assert conversion.target_architecture == "LlamaForCausalLM"
     assert conversion.weights_filename == "model.safetensors"
+    assert conversion.weights_index_filename == "model.safetensors.index.json"
     assert conversion.conversion_record_filename == "conversion.json"
 
 

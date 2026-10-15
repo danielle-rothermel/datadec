@@ -130,6 +130,7 @@ class ConversionContract(ConfigModel):
     target_model_type: str = Field(min_length=1)
     target_architecture: str = Field(min_length=1)
     weights_filename: str = Field(min_length=1)
+    weights_index_filename: str = Field(min_length=1)
     conversion_record_filename: str = Field(min_length=1)
     supported_source_layout: SupportedSourceLayout
     tensor_map: tuple[TensorMapRule, ...] = Field(min_length=1)

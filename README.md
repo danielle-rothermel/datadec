@@ -227,7 +227,9 @@ carrying a learned scale, SwiGLU, RoPE, no biases, no QKV clipping and untied
 embeddings, which is exactly the Llama layout, so the target class is
 `LlamaForCausalLM` (transformers' native `olmo` class uses a non-parametric
 LayerNorm and cannot hold these weights). Fused projections are split and
-nothing else changes; any source config outside that layout is refused.
+nothing else changes; any source config outside that layout is refused. A
+source stored as transformers shards with `model.safetensors.index.json` (the
+1B checkpoints) is read through its index and written as one file.
 Tokenizer files are copied byte for byte, and `conversion.json` records the
 tensor and config mapping.
 

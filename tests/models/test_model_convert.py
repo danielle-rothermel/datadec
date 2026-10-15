@@ -13,6 +13,7 @@ from datadec.models.convert import (
     ConversionRecord,
     UnsupportedCheckpointError,
     convert_hf_olmo_to_native,
+    load_source_tensors,
     map_tensors,
     native_config,
     sha256_file,
@@ -88,13 +89,28 @@ def _source_tensors() -> dict[str, torch.Tensor]:
     return tensors
 
 
-def _write_source(path: Path, config: dict[str, object] | None = None) -> Path:
+def _write_source(
+    path: Path, config: dict[str, object] | None = None, *, shards: int = 1
+) -> Path:
     path.mkdir()
     (path / "config.json").write_text(json.dumps(config or SOURCE_CONFIG))
     (path / "generation_config.json").write_text(
         json.dumps({"eos_token_id": 15, "pad_token_id": 1})
     )
-    save_file(_source_tensors(), path / "model.safetensors")
+    tensors = _source_tensors()
+    if shards == 1:
+        save_file(tensors, path / "model.safetensors")
+    else:
+        names = sorted(tensors)
+        weight_map = {}
+        for index in range(shards):
+            shard_name = f"model-{index + 1:05d}-of-{shards:05d}.safetensors"
+            chunk = names[index::shards]
+            save_file({name: tensors[name] for name in chunk}, path / shard_name)
+            weight_map |= dict.fromkeys(chunk, shard_name)
+        (path / "model.safetensors.index.json").write_text(
+            json.dumps({"metadata": {}, "weight_map": weight_map})
+        )
     for name, content in TOKENIZER_FILES.items():
         (path / name).write_bytes(content)
     return path
@@ -156,6 +172,56 @@ def test_conversion_matches_the_olmo_forward_pass(tmp_path: Path) -> None:
 
     assert native.shape == (len(ids), EMBEDDING_SIZE)
     torch.testing.assert_close(native, reference, atol=1e-5, rtol=1e-5)
+
+
+def test_sharded_source_converts_to_the_same_single_file(tmp_path: Path) -> None:
+    single = convert_hf_olmo_to_native(
+        "allenai/x",
+        REVISION,
+        tmp_path / "out1",
+        source_dir=_write_source(tmp_path / "s1"),
+    )
+    sharded = convert_hf_olmo_to_native(
+        "allenai/x",
+        REVISION,
+        tmp_path / "out2",
+        source_dir=_write_source(tmp_path / "s2", shards=2),
+    )
+
+    assert sorted(p.name for p in (tmp_path / "s2").iterdir()) == sorted(
+        [
+            "config.json",
+            "generation_config.json",
+            "model-00001-of-00002.safetensors",
+            "model-00002-of-00002.safetensors",
+            "model.safetensors.index.json",
+            *TOKENIZER_FILES,
+        ]
+    )
+    assert sharded.weights_sha256 == single.weights_sha256
+    assert sharded.tensors == single.tensors
+    assert (tmp_path / "out2" / "model.safetensors").is_file()
+
+
+def test_shards_must_match_the_index(tmp_path: Path) -> None:
+    source = _write_source(tmp_path / "source", shards=2)
+    index_path = source / "model.safetensors.index.json"
+    index = json.loads(index_path.read_text())
+    index["weight_map"]["model.transformer.phantom"] = (
+        "model-00001-of-00002.safetensors"
+    )
+    index_path.write_text(json.dumps(index))
+
+    with pytest.raises(UnsupportedCheckpointError, match="disagree with the index"):
+        load_source_tensors(source)
+
+
+def test_source_without_weights_is_refused(tmp_path: Path) -> None:
+    source = _write_source(tmp_path / "source")
+    (source / "model.safetensors").unlink()
+
+    with pytest.raises(UnsupportedCheckpointError, match="no model.safetensors"):
+        load_source_tensors(source)
 
 
 def test_conversion_writes_verbatim_tokenizer_and_record(tmp_path: Path) -> None:

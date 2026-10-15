@@ -7,12 +7,16 @@
 [source]
 repo_id_template = "allenai/DataDecide-{slug}-{size}"
 branch_template = "step{step}-seed-{seed_slug}"
-# Only these files are downloaded; the authors' repos also carry optimizer
-# state under training/, which conversion does not need.
+# Only these files are downloaded (snapshot_download allow patterns); the
+# authors' repos also carry optimizer state under training/, which conversion
+# does not need. Sizes up to 750M store one model.safetensors; 1B stores
+# transformers shards (model-00001-of-00002.safetensors, ...) with an index.
 files = [
   "config.json",
   "generation_config.json",
   "model.safetensors",
+  "model-*-of-*.safetensors",
+  "model.safetensors.index.json",
   "special_tokens_map.json",
   "tokenizer.json",
   "tokenizer_config.json",
@@ -66,6 +70,7 @@ source_tensor_prefix = "model.transformer."
 target_model_type = "llama"
 target_architecture = "LlamaForCausalLM"
 weights_filename = "model.safetensors"
+weights_index_filename = "model.safetensors.index.json"
 conversion_record_filename = "conversion.json"
 
 [conversion.supported_source_layout]
