@@ -44,7 +44,11 @@ def _evidence(**changes: object) -> FinalStepEvidence:
 
 def test_training_data_name_inverts_the_source_group_map() -> None:
     assert training_data_name("dclm-baseline") == "DCLM-baseline"
-    assert training_data_name("dolma1.7") == "dolma17"
+    assert training_data_name("dolma1.7-no-code") == "no_code"
+
+
+def test_training_data_name_uses_the_final_paths_alias_for_dolma17() -> None:
+    assert training_data_name("dolma1.7") == "baseline"
 
 
 def test_parse_final_paths_reads_the_unsharded_step() -> None:

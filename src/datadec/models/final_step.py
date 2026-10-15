@@ -51,6 +51,9 @@ class FinalStepDecision:
 
 
 def training_data_name(recipe: str) -> str:
+    aliases = load_checkpoint_contract().final_step.final_paths_training_data_names
+    if recipe in aliases:
+        return aliases[recipe]
     names = [
         name
         for name, key in load_scaling_law_contract().source_group_map.items()

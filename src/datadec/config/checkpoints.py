@@ -6,6 +6,14 @@ from typing import Literal, Self
 from pydantic import Field, model_validator
 
 from datadec.config._load import ConfigModel, load_toml
+from datadec.config.olmes import load_olmes_contract
+
+
+def _validate_recipe_keys(mapping: dict[str, str], field: str) -> None:
+    recipes = set(load_olmes_contract().recipe_map)
+    unknown = sorted(set(mapping) - recipes)
+    if unknown:
+        raise ValueError(f"{field} names unknown recipes: {unknown}")
 
 
 class CheckpointSourceContract(ConfigModel):
@@ -13,11 +21,23 @@ class CheckpointSourceContract(ConfigModel):
     branch_template: str
     files: tuple[str, ...] = Field(min_length=1)
     tokenizer_files: tuple[str, ...] = Field(min_length=1)
+    repo_slugs: dict[str, str]
 
     @model_validator(mode="after")
     def validate_tokenizer_files(self) -> Self:
         if not set(self.tokenizer_files) <= set(self.files):
             raise ValueError("tokenizer_files must be a subset of files")
+        return self
+
+    @model_validator(mode="after")
+    def validate_repo_slugs(self) -> Self:
+        _validate_recipe_keys(self.repo_slugs, "repo_slugs")
+        missing = sorted(set(load_olmes_contract().recipe_map) - set(self.repo_slugs))
+        if missing:
+            raise ValueError(f"repo_slugs lacks recipes: {missing}")
+        slugs = list(self.repo_slugs.values())
+        if any(not slug for slug in slugs) or len(slugs) != len(set(slugs)):
+            raise ValueError("repo_slugs values must be non-empty and unique")
         return self
 
 
@@ -64,7 +84,15 @@ class PaperTable(ConfigModel):
 class FinalStepContract(ConfigModel):
     final_paths_url: str
     final_paths_commit: str = Field(pattern=r"^[0-9a-f]{40}$")
+    final_paths_training_data_names: dict[str, str]
     paper: PaperTable
+
+    @model_validator(mode="after")
+    def validate_training_data_names(self) -> Self:
+        _validate_recipe_keys(
+            self.final_paths_training_data_names, "final_paths_training_data_names"
+        )
+        return self
 
 
 class SupportedSourceLayout(ConfigModel):

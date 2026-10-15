@@ -62,8 +62,10 @@ class DataDecideCheckpoint:
 
     @property
     def source_repo_id(self) -> str:
-        template = load_checkpoint_contract().source.repo_id_template
-        return template.format(recipe=self.recipe, size=self.size)
+        source = load_checkpoint_contract().source
+        return source.repo_id_template.format(
+            slug=source.repo_slugs[self.recipe], size=self.size
+        )
 
     @property
     def source_branch(self) -> str:
