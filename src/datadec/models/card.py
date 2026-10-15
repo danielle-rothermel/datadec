@@ -73,8 +73,8 @@ step {checkpoint.step}, seed {seed.ordinal}
 A conversion of the DataDecide checkpoint `{facts.source.repo_id}` at commit
 `{facts.source.revision}` (branch `{checkpoint.source_branch}`) from the
 `hf_olmo` model type to the native transformers class
-`{conversion.target_architecture}`. It loads with `transformers` alone; no
-`ai2-olmo` package or remote code is needed.
+`{conversion.target_architecture}`. It loads with `transformers` 5 alone; no
+`ai2-olmo` package or remote code is needed. See the loading caveats below.
 
 ## Checkpoint
 
@@ -128,6 +128,17 @@ The tokenizer files are copied verbatim from the source commit:
 | File | sha256 |
 | --- | --- |
 {tokenizer_rows}
+
+## Loading caveats
+
+- `tokenizer_config.json` is the source file byte for byte and declares
+  `tokenizer_class: OLMoTokenizer`. `AutoTokenizer` in transformers 5 resolves
+  the tokenizer from `tokenizer.json`; transformers 4.x rejects the class name,
+  so load `tokenizer.json` with `PreTrainedTokenizerFast` there.
+- `config.json` was written by transformers {conversion.transformers_version}
+  and keeps the RoPE settings under `rope_parameters`. Transformers 4.x does
+  not read that key and falls back to its default `rope_theta` of 10000, which
+  equals the source checkpoint's value.
 
 ## Verification
 

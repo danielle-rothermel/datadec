@@ -60,3 +60,6 @@ def test_card_states_the_checkpoint_facts() -> None:
     assert "- DataDecide-eval-results ends at step 37500" in card
     assert f"| `tokenizer.json` | `{'c' * 64}` |" in card
     assert '"max_abs_logit_diff": 0.0' in card
+    assert "## Loading caveats" in card
+    assert "`tokenizer_class: OLMoTokenizer`" in card
+    assert "written by transformers 5.19.0" in card

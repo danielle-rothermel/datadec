@@ -260,6 +260,10 @@ uv run python scripts/models/convert_checkpoint.py \
 
 Published so far: `drotherm/DataDecide-dclm-baseline-150M`, branch
 `step38157-seed0`, tag `final-seed0` (maximum absolute logit difference 0.0).
+The converted checkpoints load with transformers 5; the verbatim
+`tokenizer_config.json` declares `OLMoTokenizer`, which transformers 4.x
+rejects, and `config.json` uses the transformers 5 `rope_parameters` key. Each
+model card lists these caveats.
 
 ## Converted-model verification
 
