@@ -214,14 +214,14 @@ index is not maintained.
 | `datadec.data.publication` / `publish` | Atomic publication units, upload, and immutable remote verification |
 | `datadec.data.cleanup` | Scoped raw and full cleanup plans |
 | `datadec.data.pipeline` | End-to-end stage coordination and cleanup policy |
-| `datadec.models` | DataDecide checkpoint naming, `hf_olmo` to native conversion, final-step evidence, model cards, private republication |
+| `datadec.models` | DataDecide checkpoint naming, `hf_olmo` to native conversion, final-step evidence, model cards, public republication |
 | `datadec.eval` | OLMES cloze requests for ARC-Challenge, likelihood decision rules, converted-checkpoint verification |
 
 ## Converted checkpoints
 
 The authors' DataDecide checkpoints declare `model_type: hf_olmo`, which only
 loads with the `ai2-olmo` package. `datadec.models` converts one checkpoint
-commit to a native transformers class and republishes it privately under the
+commit to a native transformers class and republishes it publicly under the
 `drotherm` namespace. Every DataDecide size uses pre-norm blocks with RMSNorm
 carrying a learned scale, SwiGLU, RoPE, no biases, no QKV clipping and untied
 embeddings, which is exactly the Llama layout, so the target class is
@@ -263,8 +263,14 @@ uv run python scripts/models/convert_checkpoint.py \
   --work-dir /tmp/datadec-convert
 ```
 
-Published so far: `drotherm/DataDecide-dclm-baseline-150M`, branch
-`step38157-seed0`, tag `final-seed0` (maximum absolute logit difference 0.0).
+Published so far, all public, each at the paper's final step with the tag
+`final-seed<k>`: `drotherm/DataDecide-dclm-baseline-150M` (seed 0, step
+38157), `drotherm/DataDecide-dclm-baseline-300M` (seed 0, step 45787),
+`drotherm/DataDecide-dolma1.7-300M` (seeds 0 and 1, step 45787),
+`drotherm/DataDecide-dclm-baseline-1B` and `drotherm/DataDecide-dolma1.7-1B`
+(seeds 0 to 2, step 69369). The 150M and 300M strict checks are exact; the 1B
+checks differ by under 5e-5 in maximum absolute logit with full argmax
+agreement. The other 300M auxiliary seeds have no checkpoint at step 45787.
 The converted checkpoints load with transformers 5; the verbatim
 `tokenizer_config.json` declares `OLMoTokenizer`, which transformers 4.x
 rejects, and `config.json` uses the transformers 5 `rope_parameters` key. Each
