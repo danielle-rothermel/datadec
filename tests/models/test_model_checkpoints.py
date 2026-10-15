@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import pytest
 
+from datadec.config import load_olmes_contract
+from datadec.config.checkpoints import load_checkpoint_contract
 from datadec.models import DataDecideCheckpoint
 
 
@@ -38,6 +40,44 @@ def test_aux_seed_literals_depend_on_size_group(
     assert (checkpoint.seed.name, checkpoint.seed.value) == (name, value)
     assert checkpoint.source_branch == f"step1250-seed-{slug}"
     assert checkpoint.target_branch == f"step1250-seed{ordinal}"
+
+
+@pytest.mark.parametrize(
+    ("recipe", "slug"),
+    [
+        ("dolma1.7", "dolma1_7"),
+        ("dolma1.6++", "dolma1_6plus"),
+        ("dolma1.7-no-math-no-code", "dolma1_7-no-math-code"),
+        ("dclm-baseline-top-fw2-7p", "dclm-baseline-qc-7p-fw2"),
+        ("falcon-with-cc-top-orig-10p", "falcon-and-cc-qc-orig-10p"),
+        ("dclm-baseline-25p-dolma1.7-75p", "dclm-baseline-25p-dolma1.7-75p"),
+    ],
+)
+def test_source_repo_uses_the_authors_hub_slug(recipe: str, slug: str) -> None:
+    checkpoint = DataDecideCheckpoint(
+        recipe=recipe, size="300M", seed_ordinal=0, step=45787
+    )
+
+    assert checkpoint.source_repo_id == f"allenai/DataDecide-{slug}-300M"
+    assert checkpoint.target_repo_id == f"drotherm/DataDecide-{recipe}-300M"
+
+
+def test_every_recipe_has_a_source_slug() -> None:
+    slugs = load_checkpoint_contract().source.repo_slugs
+
+    assert set(slugs) == set(load_olmes_contract().recipe_map)
+
+
+@pytest.mark.hub
+def test_every_source_slug_names_a_hub_repo() -> None:
+    from huggingface_hub import HfApi
+
+    api = HfApi()
+    for recipe in load_olmes_contract().recipe_map:
+        checkpoint = DataDecideCheckpoint(
+            recipe=recipe, size="1B", seed_ordinal=0, step=0
+        )
+        assert api.repo_exists(checkpoint.source_repo_id), checkpoint.source_repo_id
 
 
 @pytest.mark.parametrize(

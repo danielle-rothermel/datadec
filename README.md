@@ -236,6 +236,9 @@ into `up_proj` then `gate_proj`), the strict-check reference environment and
 prompts, naming, seed literals, and final-step sources are declared in
 [`configs/checkpoints.toml`](configs/checkpoints.toml):
 
+- source repo `allenai/DataDecide-<slug>-<size>`, where the slug is the
+  authors' Hub spelling of the recipe (`dolma1_7` for `dolma1.7`, `qc` where
+  the recipe keys say `top`), declared per recipe in `[source.repo_slugs]`
 - repo `drotherm/DataDecide-<recipe>-<size>`, branch `step<N>-seed<k>`, where
   `k` is the seed ordinal (0 is the authors' default seed 6198; 1 and 2 are
   the auxiliary seeds, 14 and 15 below 1B and 4 and 5 at 1B)
