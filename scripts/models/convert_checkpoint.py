@@ -9,7 +9,9 @@ from datadec.models import DataDecideCheckpoint, convert_and_publish
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(
+        description="Convert a DataDecide checkpoint and publish it privately."
+    )
     parser.add_argument("--recipe", required=True)
     parser.add_argument("--size", required=True)
     parser.add_argument("--seed", type=int, required=True, help="seed ordinal")

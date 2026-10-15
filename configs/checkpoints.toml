@@ -157,6 +157,10 @@ reason = "ai2-olmo 0.6.0 requires huggingface-hub below 1.0"
 requirement = "datasets"
 reason = "imported by olmo.util when hf_olmo loads"
 
+[[strict_check.reference_environment]]
+requirement = "pyarrow<26"
+reason = "ai2-olmo 0.6.0 resolves NumPy 1.x, and pyarrow 26 (pulled in by the unpinned datasets) requires NumPy 2 at import without declaring it, so numpy<2 does not help; pyarrow 25 imports with NumPy 1.26"
+
 # Final-step evidence sources.
 [final_step]
 # Authors' list of final default-seed checkpoints. model_name is
