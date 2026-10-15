@@ -68,4 +68,5 @@ def test_strict_check_prompts_are_pinned() -> None:
         "transformers==4.50.3",
         "huggingface-hub<1.0",
         "datasets",
+        "pyarrow<26",
     ]

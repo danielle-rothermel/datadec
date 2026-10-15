@@ -34,7 +34,9 @@ MAX_SEQUENCE_LENGTH = 2048
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(
+        description="Score a converted DataDecide checkpoint on ARC-Challenge."
+    )
     parser.add_argument("--recipe", required=True)
     parser.add_argument("--size", required=True)
     parser.add_argument("--seed", type=int, required=True, help="seed ordinal")

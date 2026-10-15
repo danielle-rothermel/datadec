@@ -1,6 +1,6 @@
 # Verification: drotherm/DataDecide-dclm-baseline-150M
 
-Run on 2026-10-09. Verdict: **accepted**.
+Run on 2026-10-15. Verdict: **accepted**.
 
 The converted checkpoint was scored on ARC-Challenge with requests built by
 `datadec.eval.olmes_rc` and compared with the DataDecide instance-level
@@ -12,15 +12,15 @@ results published for the original checkpoint. OLMES was not used.
 | --- | --- |
 | Dataset | `allenai/ai2_arc` config `ARC-Challenge` @ `210d026faf9955653af8916fad021475a3f00453` |
 | Subset | `test@origin-210d026` (1172 items, content hash `10961d071b6ff165`) |
-| Model | `drotherm/DataDecide-dclm-baseline-150M` @ `3b714eb60054c7b3628d66e38d8b22024b4a91c4` (resolved from `step38157-seed0`) |
-| Provider config hash | `c7e8829ef017574a290569fc32a32d5cd20cec85281b0ec2b30418b16c1eb56f` |
+| Model | `drotherm/DataDecide-dclm-baseline-150M` @ `311fb6f863e5d6e348dd62d4af917d7684d2b3b9` (resolved from `step38157-seed0`) |
+| Provider config hash | `f5989814cd7ed150f8b8e92f7d36a3460bb4dcd8a00a3198addc84ef8e8a748a` |
 | Scoring | dr-providers `LocalModelProvider`, device mps (arm64 macOS-26.5.2), float32, batch size 8, flat text, no BOS |
 | Libraries | torch 2.14.1, transformers 5.19.0 |
 | Published values | datadec `olmes-details` instances and choices, recipe `dclm-baseline`, params `150M`, seed `default`, step 38157, task `arc_challenge` |
 
 Requests: one score request per context, the 5-shot prompt and the
 unconditional `Answer:` context, 2344 requests in total.
-Wall time for scoring: 113.1 s.
+Wall time for scoring: 92.3 s.
 
 ## Agreement per decision rule
 
