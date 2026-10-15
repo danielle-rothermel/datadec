@@ -1,0 +1,99 @@
+# Evaluation of converted DataDecide checkpoints without OLMES in the loop:
+# the ARC-Challenge source, the OLMES ranked-classification prompt format, the
+# curated few-shot examples copied from upstream OLMES, and the acceptance
+# thresholds of the converted-model verification.
+
+[arc_challenge]
+repo_id = "allenai/ai2_arc"
+config = "ARC-Challenge"
+native_id_field = "id"
+evaluation_split = "test"
+task = "arc_challenge"
+
+[olmes_rc]
+question_prefix = "Question: "
+answer_prefix = "Answer:"
+continuation_prefix = " "
+shot_separator = "\n\n"
+unconditional_context = "Answer:"
+answer_letters = "ABCDE"
+
+[olmes_rc.numeric_answer_keys]
+"1" = "A"
+"2" = "B"
+"3" = "C"
+"4" = "D"
+"5" = "E"
+
+[olmes_rc.arc_challenge_shots_source]
+repo = "https://github.com/allenai/olmes"
+commit = "5a51f502d463b8cdc4a2dcad7d7096c41ff1197e"
+path = "oe_eval/tasks/fewshot_sources.py"
+symbol = 'FEWSHOT_SOURCES["OLMES:ARC-Challenge"]'
+license = "Apache-2.0"
+
+[[olmes_rc.arc_challenge_shots]]
+id = "Mercury_SC_415702"
+question = "George wants to warm his hands quickly by rubbing them. Which skin surface will produce the most heat?"
+choices = [
+  "dry palms",
+  "wet palms",
+  "palms covered with oil",
+  "palms covered with lotion",
+]
+answer_key = "A"
+
+[[olmes_rc.arc_challenge_shots]]
+id = "MCAS_2009_5_6516"
+question = "Which of the following statements best explains why magnets usually stick to a refrigerator door?"
+choices = [
+  "The refrigerator door is smooth.",
+  "The refrigerator door contains iron.",
+  "The refrigerator door is a good conductor.",
+  "The refrigerator door has electric wires in it.",
+]
+answer_key = "B"
+
+[[olmes_rc.arc_challenge_shots]]
+id = "Mercury_7233695"
+question = "A fold observed in layers of sedimentary rock most likely resulted from the"
+choices = [
+  "cooling of flowing magma.",
+  "converging of crustal plates.",
+  "deposition of river sediments.",
+  "solution of carbonate minerals.",
+]
+answer_key = "B"
+
+[[olmes_rc.arc_challenge_shots]]
+id = "Mercury_7041615"
+question = "Which of these do scientists offer as the most recent explanation as to why many plants and animals died out at the end of the Mesozoic era?"
+choices = [
+  "worldwide disease",
+  "global mountain building",
+  "rise of mammals that preyed upon plants and animals",
+  "impact of an asteroid created dust that blocked the sunlight",
+]
+answer_key = "D"
+
+[[olmes_rc.arc_challenge_shots]]
+id = "MCAS_1998_4_3"
+question = "Which of the following is a trait that a dog does NOT inherit from its parents?"
+choices = [
+  "the length of its fur",
+  "the shape of its nose",
+  "the size of its appetite",
+  "the color of its fur",
+]
+answer_key = "C"
+
+[verification.acceptance]
+min_predicted_index_agreement_pmi = 0.98
+min_predicted_index_agreement_per_char = 0.98
+max_mean_abs_sum_logits_diff_nats = 0.05
+
+[verification.published_prediction_columns]
+raw = "predicted_index_raw"
+per_token = "predicted_index_per_token"
+per_char = "predicted_index_per_char"
+pmi = "predicted_index_uncond"

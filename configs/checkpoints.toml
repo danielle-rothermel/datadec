@@ -1,0 +1,187 @@
+# DataDecide checkpoint conversion and republication.
+#
+# Source checkpoints are the authors' Hugging Face repos; converted copies are
+# published privately under the drotherm namespace. Recipe keys and display
+# names come from olmes.toml; model sizes come from catalog.toml.
+
+[source]
+repo_id_template = "allenai/DataDecide-{recipe}-{size}"
+branch_template = "step{step}-seed-{seed_slug}"
+# Only these files are downloaded; the authors' repos also carry optimizer
+# state under training/, which conversion does not need.
+files = [
+  "config.json",
+  "generation_config.json",
+  "model.safetensors",
+  "special_tokens_map.json",
+  "tokenizer.json",
+  "tokenizer_config.json",
+]
+tokenizer_files = [
+  "special_tokens_map.json",
+  "tokenizer.json",
+  "tokenizer_config.json",
+]
+
+[target]
+repo_id_template = "drotherm/DataDecide-{recipe}-{size}"
+branch_template = "step{step}-seed{ordinal}"
+final_tag_template = "final-seed{ordinal}"
+private = true
+
+[conversion]
+source_model_type = "hf_olmo"
+source_tensor_prefix = "model.transformer."
+target_model_type = "llama"
+target_architecture = "LlamaForCausalLM"
+weights_filename = "model.safetensors"
+conversion_record_filename = "conversion.json"
+
+[conversion.supported_source_layout]
+required_absent = ["clip_qkv", "mlp_hidden_size", "multi_query_attention", "n_kv_heads"]
+
+[conversion.supported_source_layout.required_values]
+activation_type = "swiglu"
+alibi = false
+attention_layer_norm = false
+bias_for_layer_norm = false
+block_group_size = 1
+block_type = "sequential"
+embedding_layer_norm = false
+include_bias = false
+layer_norm_type = "rms"
+layer_norm_with_affine = true
+norm_after = false
+rope = true
+scale_logits = false
+weight_tying = false
+
+[[conversion.tensor_map]]
+source = "wte.weight"
+targets = ["model.embed_tokens.weight"]
+transform = "copy"
+
+[[conversion.tensor_map]]
+source = "blocks.{layer}.att_proj.weight"
+targets = [
+  "model.layers.{layer}.self_attn.q_proj.weight",
+  "model.layers.{layer}.self_attn.k_proj.weight",
+  "model.layers.{layer}.self_attn.v_proj.weight",
+]
+transform = "split_rows_equal"
+
+[[conversion.tensor_map]]
+source = "blocks.{layer}.attn_out.weight"
+targets = ["model.layers.{layer}.self_attn.o_proj.weight"]
+transform = "copy"
+
+[[conversion.tensor_map]]
+source = "blocks.{layer}.ff_proj.weight"
+targets = [
+  "model.layers.{layer}.mlp.up_proj.weight",
+  "model.layers.{layer}.mlp.gate_proj.weight",
+]
+transform = "split_rows_equal"
+
+[[conversion.tensor_map]]
+source = "blocks.{layer}.ff_out.weight"
+targets = ["model.layers.{layer}.mlp.down_proj.weight"]
+transform = "copy"
+
+[[conversion.tensor_map]]
+source = "blocks.{layer}.attn_norm.weight"
+targets = ["model.layers.{layer}.input_layernorm.weight"]
+transform = "copy"
+
+[[conversion.tensor_map]]
+source = "blocks.{layer}.ff_norm.weight"
+targets = ["model.layers.{layer}.post_attention_layernorm.weight"]
+transform = "copy"
+
+[[conversion.tensor_map]]
+source = "ln_f.weight"
+targets = ["model.norm.weight"]
+transform = "copy"
+
+[[conversion.tensor_map]]
+source = "ff_out.weight"
+targets = ["lm_head.weight"]
+transform = "copy"
+
+# Seed ordinals: 0 is the authors' default seed; 1 and 2 are the auxiliary
+# seeds, whose literal values differ by size group. Names and literals follow
+# SEED_MAPPING in checkpoints/README.md of github.com/allenai/DataDecide at
+# commit 68abc496587935b7211e9894206e78f15d535832. The authors' Hub branches
+# spell the names with hyphens (seed-small-aux-2).
+[seeds]
+large_sizes = ["1B"]
+
+[[seeds.ordinals]]
+ordinal = 0
+small = { name = "default", value = 6198 }
+large = { name = "default", value = 6198 }
+
+[[seeds.ordinals]]
+ordinal = 1
+small = { name = "small aux 2", value = 14 }
+large = { name = "large aux 2", value = 4 }
+
+[[seeds.ordinals]]
+ordinal = 2
+small = { name = "small aux 3", value = 15 }
+large = { name = "large aux 3", value = 5 }
+
+[strict_check]
+python = "3.12"
+prompts = [
+  "Question: George wants to warm his hands quickly by rubbing them. Which skin surface will produce the most heat?\nAnswer: dry palms",
+  "The capital of France is Paris. The capital of Germany is",
+  "def fibonacci(n):\n    if n < 2:\n        return n\n    return",
+  "In 1905, Albert Einstein published four papers that changed physics: the photoelectric effect, Brownian motion, special relativity, and",
+  "Answer: impact of an asteroid created dust that blocked the sunlight",
+]
+
+[[strict_check.reference_environment]]
+requirement = "ai2-olmo==0.6.0"
+reason = "provides the hf_olmo model class the source checkpoints declare"
+
+[[strict_check.reference_environment]]
+requirement = "transformers==4.50.3"
+reason = "the transformers version the source checkpoints were saved with"
+
+[[strict_check.reference_environment]]
+requirement = "huggingface-hub<1.0"
+reason = "ai2-olmo 0.6.0 requires huggingface-hub below 1.0"
+
+[[strict_check.reference_environment]]
+requirement = "datasets"
+reason = "imported by olmo.util when hf_olmo loads"
+
+# Final-step evidence sources.
+[final_step]
+# Authors' list of final default-seed checkpoints. model_name is
+# "{training data name}-{size}-6198"; training data names map to recipe keys
+# through scaling_law.toml source_group_map.
+final_paths_url = "https://raw.githubusercontent.com/allenai/DataDecide/68abc496587935b7211e9894206e78f15d535832/checkpoints/final_defualt_seed_paths.jsonl"
+final_paths_commit = "68abc496587935b7211e9894206e78f15d535832"
+
+# Model table of the DataDecide paper (arXiv 2504.11393v2, Appendix A,
+# Table "suite_stats"): sequences per batch and training steps per size.
+[final_step.paper]
+source = "arXiv 2504.11393v2, Appendix A, model configuration table"
+
+[final_step.paper.sizes]
+4M = { batch_size = 32, training_steps = 5725 }
+6M = { batch_size = 32, training_steps = 9182 }
+8M = { batch_size = 32, training_steps = 13039 }
+10M = { batch_size = 32, training_steps = 15117 }
+14M = { batch_size = 32, training_steps = 21953 }
+16M = { batch_size = 32, training_steps = 24432 }
+20M = { batch_size = 64, training_steps = 14584 }
+60M = { batch_size = 96, training_steps = 29042 }
+90M = { batch_size = 160, training_steps = 29901 }
+150M = { batch_size = 192, training_steps = 38157 }
+300M = { batch_size = 320, training_steps = 45787 }
+530M = { batch_size = 448, training_steps = 57786 }
+750M = { batch_size = 576, training_steps = 63589 }
+1B = { batch_size = 704, training_steps = 69369 }
