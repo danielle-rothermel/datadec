@@ -214,14 +214,14 @@ index is not maintained.
 | `datadec.data.publication` / `publish` | Atomic publication units, upload, and immutable remote verification |
 | `datadec.data.cleanup` | Scoped raw and full cleanup plans |
 | `datadec.data.pipeline` | End-to-end stage coordination and cleanup policy |
-| `datadec.models` | DataDecide checkpoint naming, `hf_olmo` to native conversion, final-step evidence, model cards, private republication |
+| `datadec.models` | DataDecide checkpoint naming, `hf_olmo` to native conversion, final-step evidence, model cards, public republication |
 | `datadec.eval` | OLMES cloze requests for ARC-Challenge, likelihood decision rules, converted-checkpoint verification |
 
 ## Converted checkpoints
 
 The authors' DataDecide checkpoints declare `model_type: hf_olmo`, which only
 loads with the `ai2-olmo` package. `datadec.models` converts one checkpoint
-commit to a native transformers class and republishes it privately under the
+commit to a native transformers class and republishes it publicly under the
 `drotherm` namespace. Every DataDecide size uses pre-norm blocks with RMSNorm
 carrying a learned scale, SwiGLU, RoPE, no biases, no QKV clipping and untied
 embeddings, which is exactly the Llama layout, so the target class is

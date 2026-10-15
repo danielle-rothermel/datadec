@@ -1,7 +1,7 @@
 # DataDecide checkpoint conversion and republication.
 #
 # Source checkpoints are the authors' Hugging Face repos; converted copies are
-# published privately under the drotherm namespace. Recipe keys and display
+# published publicly under the drotherm namespace. Recipe keys and display
 # names come from olmes.toml; model sizes come from catalog.toml.
 
 [source]
@@ -62,7 +62,7 @@ fineweb-pro = "fineweb-pro"
 repo_id_template = "drotherm/DataDecide-{recipe}-{size}"
 branch_template = "step{step}-seed{ordinal}"
 final_tag_template = "final-seed{ordinal}"
-private = true
+private = false
 
 [conversion]
 source_model_type = "hf_olmo"

@@ -62,6 +62,10 @@ def test_source_repo_uses_the_authors_hub_slug(recipe: str, slug: str) -> None:
     assert checkpoint.target_repo_id == f"drotherm/DataDecide-{recipe}-300M"
 
 
+def test_target_repos_are_public() -> None:
+    assert load_checkpoint_contract().target.private is False
+
+
 def test_every_recipe_has_a_source_slug() -> None:
     slugs = load_checkpoint_contract().source.repo_slugs
 
